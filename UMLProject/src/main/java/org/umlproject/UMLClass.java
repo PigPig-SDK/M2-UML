@@ -12,6 +12,10 @@ public class UMLClass
         return this.className;
     }
     @Override
+    public String toString() {
+        return String.format("UML class print info: %s", className);
+    }
+    @Override
     public boolean equals(Object  obj) 
     {
         if(this == obj) 

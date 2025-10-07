@@ -12,6 +12,10 @@ public class UMLMethod
         return this.methodName;
     }
     @Override
+    public String toString() {
+        return String.format("UML method print info: %s", methodName);
+    }
+    @Override
     public boolean equals(Object obj) 
     {
         if(this == obj) 

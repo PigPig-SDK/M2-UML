@@ -20,6 +20,10 @@ public class UMLRelationship
         return this.destinationName;
     }
     @Override
+    public String toString() {
+        return String.format("UML relationship print info: %s %s", sourceName, destinationName);
+    }
+    @Override
     public boolean equals(Object  obj) 
     {
         if(this == obj) 

@@ -13,6 +13,10 @@ public class UMLDataField
         return this.fieldName;
     }
     @Override
+    public String toString() {
+        return String.format("UML data field print info: %s", fieldName);
+    }
+    @Override
     public boolean equals(Object  obj) 
     {
         if(this == obj) 
