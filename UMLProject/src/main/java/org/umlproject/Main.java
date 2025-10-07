@@ -1,9 +1,11 @@
-package org.example;
+package org.umlproject;
 
 public class Main 
 {
     public static void main(String[] args) 
     {
-        System.out.printf("Test main.");
+        TerminalHandler terminalHandler = new TerminalHandler();
+        terminalHandler.print("Test");
+        // So on...
     }
 }
