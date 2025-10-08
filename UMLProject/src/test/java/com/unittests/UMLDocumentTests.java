@@ -1,6 +1,7 @@
 package com.unittests;
 
 import static org.junit.jupiter.api.Assertions.*;
+import org.umlproject.UMLClass;
 import org.umlproject.UMLDocument;
 
 public class UMLDocumentTests
@@ -16,7 +17,7 @@ public class UMLDocumentTests
         assertEquals(fileString, umldocument.getFileLocation()); 
     }
     @org.junit.jupiter.api.Test
-    public void addClass_singleclass_success()
+    public void addClass_multiclass_success()
     {
         // Arrange
         UMLDocument umldocument = new UMLDocument("test.json");
@@ -26,5 +27,29 @@ public class UMLDocumentTests
         // Assert
         assertEquals(2, umldocument.getClassCount());
     }
-
+        @org.junit.jupiter.api.Test
+    public void addClass_dupeclass_success()
+    {
+        // Arrange
+        UMLDocument umldocument = new UMLDocument("test.json");
+        // Act
+        umldocument.addClass("test class");
+        UMLClass testclass = umldocument.addClass("test class");
+        // Assert
+        assertEquals(1, umldocument.getClassCount());
+        assertNull(testclass);
+    }
+        @org.junit.jupiter.api.Test
+    public void getClass_doesntExist_success()
+    {
+        // Arrange
+        UMLDocument umldocument = new UMLDocument("test.json");
+        // Act
+        UMLClass testclass1 = umldocument.addClass("test class");
+        UMLClass testclass2 = umldocument.getClass("test class");
+        
+        
+        assertEquals(testclass1,testclass2);
+        assertNull(umldocument.getClass("this class isnt real"));
+    }
 }
