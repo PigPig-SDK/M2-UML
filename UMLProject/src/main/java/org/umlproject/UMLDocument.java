@@ -30,21 +30,79 @@ public class UMLDocument
     {
        throw new UnsupportedOperationException("No feature exists!"); 
     }
-    public boolean deleteRelationship(String relationshipName)
-    {
-        throw new UnsupportedOperationException("No feature exists!");
+    public boolean addRelationship(String className, String destinationName){
+
+        if(relationshipSearch(className, destinationName) == -1){
+            relationshipList.add(new UMLRelationship(className, destinationName));
+            return true;
+        }
+        return false;
+
     }
-    public boolean deleteAllRelationships(String relationshipName)
+    public boolean deleteRelationship(String relationshipName, String destinationName)
     {
-        throw new UnsupportedOperationException("No feature exists!");
+
+        int found = relationshipSearch(relationshipName, destinationName);
+        if(found != -1){
+            relationshipList.remove(found);
+            return true;
+        }
+        return false;
+        //throw new UnsupportedOperationException("No feature exists!");
+    }
+    public boolean deleteAllClassRelationships(String className)
+    {
+
+        boolean checked = false;
+        for(UMLRelationship iRelationship : relationshipList){
+            if(iRelationship.getSourceName().equals(className)){
+                relationshipList.remove(iRelationship);
+                checked = true;
+            }
+        }
+        return checked;
+
     }
     public UMLRelationship findRelationship(String relationshipName, String destinationName)
     {
-        throw new UnsupportedOperationException("No feature exists!");
+
+        int found = relationshipSearch(relationshipName, destinationName);
+        if(found != -1){
+            return relationshipList.get(found);
+        }
+        return null;
+
+        //throw new UnsupportedOperationException("No feature exists!");
     }
     public ArrayList<UMLRelationship> findAllRelationships(String relationshipName)
     {
-        throw new UnsupportedOperationException("No feature exists!");
+
+        ArrayList<UMLRelationship> allList = new ArrayList<UMLRelationship>();
+
+        for(UMLRelationship iRelationship : relationshipList){
+            if(iRelationship.getSourceName().equals(relationshipName)){
+                allList.add(iRelationship);
+            }
+        }
+
+        return allList;
+        //throw new UnsupportedOperationException("No feature exists!");
+    }
+
+    /**
+     * Placeholder reminder, replace with contains if possible
+     */
+    private int relationshipSearch(String relationshipName, String destinationName){
+
+        for(int i = 0; i < relationshipList.size(); i++){
+            if(relationshipList.get(i).getSourceName().equals(relationshipName) &&
+                    relationshipList.get(i).getDestinationName().equals(destinationName)){
+                return i;
+            }
+        }
+
+        return -1;
+
     }
     public UMLClass getClass(String className)
     {
