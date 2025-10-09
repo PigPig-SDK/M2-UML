@@ -9,7 +9,7 @@ public class UMLDocument
 {
     private String fileLocation = null;
     private Map<String, UMLClass> classSet = new HashMap<>();
-    private ArrayList<UMLRelationship> relationshipList = new ArrayList<>();
+    private Map<String,ArrayList<UMLRelationship>> relationshipList = new HashMap<>();
     public UMLDocument(String fileLocation)
     {
         this.fileLocation = fileLocation;
@@ -30,80 +30,98 @@ public class UMLDocument
     {
        throw new UnsupportedOperationException("No feature exists!"); 
     }
+    /**
+     * Adds a relationship to the file
+     * @param className The source class
+     * @param  destinationName The destination of the class.
+     * @return True if the class was added
+     * */
     public boolean addRelationship(String className, String destinationName){
-
-        if(relationshipSearch(className, destinationName) == -1){
-            relationshipList.add(new UMLRelationship(className, destinationName));
-            return true;
-        }
-        return false;
-
+        if(!relationshipList.containsKey(className))
+            relationshipList.put(className, new ArrayList<UMLRelationship>());
+        if(hasRelationship(className,destinationName))
+            return  false;
+        relationshipList.get(className).add(new UMLRelationship(className, destinationName));
+        return true;
     }
-    public boolean deleteRelationship(String relationshipName, String destinationName)
-    {
-
-        int found = relationshipSearch(relationshipName, destinationName);
-        if(found != -1){
-            relationshipList.remove(found);
-            return true;
-        }
-        return false;
-        //throw new UnsupportedOperationException("No feature exists!");
+    /**
+     * Checks to see if a specified classname, destination exists
+     * @param className The classname to check against
+     * @param  destinationName the destination to check against
+     * */
+    public boolean hasRelationship(String className, String destinationName) {
+        return getRelationship(className, destinationName) != null;
     }
-    public boolean deleteAllClassRelationships(String className)
-    {
+    /**
+     * @param className The classname we search with
+     * @param destinationName The destination of the class we are searching for
+     * */
+    public boolean removeRelationship(String className, String destinationName){
 
-        boolean checked = false;
-        for(UMLRelationship iRelationship : relationshipList){
-            if(iRelationship.getSourceName().equals(className)){
-                relationshipList.remove(iRelationship);
-                checked = true;
-            }
-        }
-        return checked;
-
+        if(!relationshipList.containsKey(className))
+            return false;
+        int index = relationshipSearch(className, destinationName);
+        if(index == -1)
+            return false;
+        relationshipList.get(className).remove(index);
+        return true;
     }
-    public UMLRelationship findRelationship(String relationshipName, String destinationName)
+    /**
+     * @param className The class which relationships will be 'cleared out'
+     * */
+    public boolean removeAllClassRelationships(String className)
     {
-
-        int found = relationshipSearch(relationshipName, destinationName);
-        if(found != -1){
-            return relationshipList.get(found);
+        if(!relationshipList.containsKey(className))
+            return false;
+        relationshipList.remove(className);
+        return true;
+    }
+    /**
+     * @param  className The source of the relationship
+     * @param destinationName The destination of the relationship
+     * @return NULL if no relationship exists.
+     * */
+    public UMLRelationship getRelationship(String className, String destinationName)
+    {
+        if(!relationshipList.containsKey(className))
+            return null;//CANNOT EXIST!
+        for(UMLRelationship relationship : relationshipList.get(className))
+        {
+            if(relationship.getSourceName().equals(className) && relationship.getDestinationName().equals(destinationName))
+                return relationship;
         }
         return null;
-
-        //throw new UnsupportedOperationException("No feature exists!");
     }
-    public ArrayList<UMLRelationship> findAllRelationships(String relationshipName)
+    /**
+     * @param className The source checked
+     * @return A list of
+     *  */
+    public ArrayList<UMLRelationship> getAllRelationships(String className)
     {
-
-        ArrayList<UMLRelationship> allList = new ArrayList<UMLRelationship>();
-
-        for(UMLRelationship iRelationship : relationshipList){
-            if(iRelationship.getSourceName().equals(relationshipName)){
-                allList.add(iRelationship);
-            }
-        }
-
-        return allList;
-        //throw new UnsupportedOperationException("No feature exists!");
+        if(!relationshipList.containsKey(className))
+            return null;
+        return relationshipList.get(className);
     }
 
     /**
-     * Placeholder reminder, replace with contains if possible
+     * @param  className The class relationships to search through
+     * @param destinationName The relationships destination
      */
-    private int relationshipSearch(String relationshipName, String destinationName){
-
-        for(int i = 0; i < relationshipList.size(); i++){
-            if(relationshipList.get(i).getSourceName().equals(relationshipName) &&
-                    relationshipList.get(i).getDestinationName().equals(destinationName)){
+    private int relationshipSearch(String className, String destinationName){
+        if(!relationshipList.containsKey(className))
+            return -1;
+        for(int i = 0; i < relationshipList.get(className).size(); i++)
+        {
+            if(relationshipList.get(className).get(i).getSourceName().equals(className)
+                    && relationshipList.get(className).get(i).getDestinationName().equals(destinationName)){
                 return i;
             }
         }
-
         return -1;
-
     }
+    /***
+     * @return Returns the desired UMLClass if it exists.
+     */
     public UMLClass getClass(String className)
     {
         return classSet.get(className);
@@ -121,13 +139,11 @@ public class UMLDocument
      * @param className Name given to new class
      * @return Returns created class, or null if class already exists
      */
-    public UMLClass addClass(String className)
-    {
+    public UMLClass addClass(String className){
         if (classSet.containsKey(className)) return null;
         UMLClass umlclass = new UMLClass(className);
         classSet.put(className, umlclass);
         return umlclass;
-
     }
 
     /**
@@ -138,8 +154,7 @@ public class UMLDocument
         return classSet.size();
     }
     @Override
-    public boolean equals(Object obj) 
-    {
+    public boolean equals(Object obj) {
         if(this == obj) 
             return true;
         if(obj == null || getClass() != obj.getClass()) 
