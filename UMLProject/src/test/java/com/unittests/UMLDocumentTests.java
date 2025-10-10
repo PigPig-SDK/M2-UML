@@ -41,6 +41,64 @@ public class UMLDocumentTests
         assertEquals(1, umldocument.getClassCount());
         assertNull(testclass);
     }
+
+    @Test
+    public void deleteClass_successfulDeletion_success()
+    {
+        // Arrange
+        UMLDocument umldocument = new UMLDocument("test.json");
+        // Act
+        umldocument.addClass("test class 1");
+        // Assert
+        assertTrue(umldocument.deleteClass("test class 1"));
+        assertNull(umldocument.getClass("test class 1"));
+    }
+    @Test
+    public void deleteClass_classDoesntExist_success()
+    {
+        // Arrange
+        UMLDocument umldocument = new UMLDocument("test.json");
+        // Act
+        umldocument.addClass("test class 1");
+        // Assert
+        assertFalse(umldocument.deleteClass("test class 2"));
+    }
+    @Test
+    public void renameClass_newNameAlreadyExists_success()
+    {
+        // Arrange
+        UMLDocument umldocument = new UMLDocument("test.json");
+        // Act
+        umldocument.addClass("test class 1");
+        umldocument.addClass("test class 2");
+        // Assert
+        assertFalse(umldocument.renameClass("test class 2", "test class 1"));
+    }
+    @Test
+    public void renameClass_originalNameDoesntExist_success()
+    {
+        // Arrange
+        UMLDocument umldocument = new UMLDocument("test.json");
+        // Act
+        umldocument.addClass("test class 1");
+        // Assert
+        assertFalse(umldocument.renameClass("test class 2", "test class 3"));
+    }
+
+    @Test
+    public void renameClass_successfulRename_success()
+    {
+        // Arrange
+        UMLDocument umldocument = new UMLDocument("test.json");
+        // Act
+        umldocument.addClass("test class 1");
+        umldocument.renameClass("test class 1", "test class 2");
+        // Assert
+
+        //Currently non-functioning until addClass has functionality to add class to relationshipList
+        assertNull(umldocument.getClass("test class 1"));
+        assertNotNull(umldocument.getClass("test class 2"));
+    }
     @Test
     public void getClass_doesntExist_success()
     {
@@ -138,7 +196,7 @@ public class UMLDocumentTests
         umldocument.addRelationship("a", "c");
         // Assert
         assertEquals(2,umldocument.getAllRelationships("a").size());
-        assertTrue(umldocument.removeAllClassRelationships("a"));
+        assertTrue(umldocument.removeClassKeyFromRelationships("a"));
         assertNull(umldocument.getAllRelationships("a"));
     }
     @Test
