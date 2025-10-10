@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-public class UMLDocument 
+public class UMLDocument
 {
     private String fileLocation = null;
     private Map<String, UMLClass> classSet = new HashMap<>();
@@ -22,19 +22,62 @@ public class UMLDocument
     {
         this.fileLocation = newFileLocation;
     }
+
+    /**
+     * Deletes a class from classSet, given the class exists. Removes all class relationships before deletion.
+     * Returns false if class does not exist.
+     *
+     * @param className The class to be removed.
+     *
+     * @return boolean - True if the class was successfully deleted
+     * */
     public boolean deleteClass(String className)
     {
-        throw new UnsupportedOperationException("No feature exists!");
+
+        if (getClass(className) == null){
+            return false;
+        }
+        removeClassKeyFromRelationships(className);
+        classSet.remove(className);
+        return true;
+
     }
+    /**
+     * Renames a class in classSet and relationshipList. First stores the relevant data of the old class name,
+     * removes it, and adds a new class with corresponding data and updated name.
+     *
+     * @param originClassName The name to be changed
+     * @param newName The replacement name
+     *
+     * @return boolean - True if the rename was successful, false if class does not exist in relationship list or
+     * class set, or if the newName already exists in class set or relationship list
+     * */
     public boolean renameClass(String originClassName, String newName)
     {
-       throw new UnsupportedOperationException("No feature exists!"); 
+        if(getAllRelationships(originClassName) == null){
+            return false;
+        }
+
+        ArrayList<UMLRelationship> tempRelationships = getAllRelationships(originClassName);
+
+        if(classSet.containsKey(newName) || relationshipList.containsKey(newName) ||
+                getAllRelationships(originClassName) == null || !deleteClass(originClassName)){
+            return false;
+        }
+
+        //placeholder line until rename method is added to UMLClass
+        classSet.put(newName, new UMLClass(newName));
+        relationshipList.put(newName, tempRelationships);
+
+        return true;
     }
     /**
      * Adds a relationship to the file
+     *
      * @param className The source class
      * @param  destinationName The destination of the class.
-     * @return True if the class was added
+     *
+     * @return boolean - True if the class was added
      * */
     public boolean addRelationship(String className, String destinationName){
         if(!relationshipList.containsKey(className))
@@ -46,30 +89,41 @@ public class UMLDocument
     }
     /**
      * Checks to see if a specified classname, destination exists
+     *
      * @param className The classname to check against
      * @param  destinationName the destination to check against
+     *
+     * @return boolean - Returns true if relationship exists
      * */
     public boolean hasRelationship(String className, String destinationName) {
         return getRelationship(className, destinationName) != null;
     }
     /**
+     * Removes a relationship from a given class in the master relationship list
+     *
      * @param className The classname we search with
      * @param destinationName The destination of the class we are searching for
+     *
+     * @return boolean - Returns true if relationship is successfully removed
      * */
     public boolean removeRelationship(String className, String destinationName){
 
         if(!relationshipList.containsKey(className))
             return false;
-        int index = relationshipSearch(className, destinationName);
+        int index = getRelationshipIndex(className, destinationName);
         if(index == -1)
             return false;
         relationshipList.get(className).remove(index);
         return true;
     }
     /**
+     * Removes a class key from the relationship list
+     *
      * @param className The class which relationships will be 'cleared out'
+     *
+     * @return boolean - Returns true key is successfully removed
      * */
-    public boolean removeAllClassRelationships(String className)
+    public boolean removeClassKeyFromRelationships(String className)
     {
         if(!relationshipList.containsKey(className))
             return false;
@@ -77,9 +131,13 @@ public class UMLDocument
         return true;
     }
     /**
+     * Helper function. Iterates through the given class name provided in the map, searching for relationships
+     * that have a matching className and destinationName, and returns any relationship found.
+     *
      * @param  className The source of the relationship
      * @param destinationName The destination of the relationship
-     * @return NULL if no relationship exists.
+     *
+     * @return UMLRelationship - NULL if no relationship exists.
      * */
     public UMLRelationship getRelationship(String className, String destinationName)
     {
@@ -93,8 +151,12 @@ public class UMLDocument
         return null;
     }
     /**
+     * Returns the list of relationships belonging to a given class in the master relationship list
+     *
      * @param className The source checked
-     * @return A list of
+     *
+     * @return ArrayList - An ArrayList containing all relationships belonging to the given class,
+     * null if class name is not found
      *  */
     public ArrayList<UMLRelationship> getAllRelationships(String className)
     {
@@ -104,10 +166,16 @@ public class UMLDocument
     }
 
     /**
+     * Helper function. Iterates through the given class name provided in the map, searching for relationships
+     * that have a matching className and destinationName, and returns a matching index if a relationship is found.
+     *
      * @param  className The class relationships to search through
      * @param destinationName The relationships destination
+     *
+     * @return int - Representing the index returned. If the relationship is found, i >= 0. If not, -1 is returned,
+     * representing that the index was not found.
      */
-    private int relationshipSearch(String className, String destinationName){
+    private int getRelationshipIndex(String className, String destinationName){
         if(!relationshipList.containsKey(className))
             return -1;
         for(int i = 0; i < relationshipList.get(className).size(); i++)
@@ -120,7 +188,11 @@ public class UMLDocument
         return -1;
     }
     /***
-     * @return Returns the desired UMLClass if it exists.
+     * Returns the desired UMLClass if it exists.
+     *
+     * @param className Name of class to get
+     *
+     * @return UMLClass - Returns class or null if class does not exist
      */
     public UMLClass getClass(String className)
     {
@@ -136,8 +208,11 @@ public class UMLDocument
     }
 
     /**
+     * Adds a class to the classSet map.
+     *
      * @param className Name given to new class
-     * @return Returns created class, or null if class already exists
+     *
+     * @return UMLClass - Returns created class, or null if class already exists
      */
     public UMLClass addClass(String className){
         if (classSet.containsKey(className)) return null;
@@ -155,11 +230,11 @@ public class UMLDocument
     }
     @Override
     public boolean equals(Object obj) {
-        if(this == obj) 
+        if(this == obj)
             return true;
-        if(obj == null || getClass() != obj.getClass()) 
+        if(obj == null || getClass() != obj.getClass())
             return false;
-        
+
         UMLDocument castedObject = (UMLDocument)obj;
         //Bare bones implementation.
         //TODO: When you add more to the class, maintain this equals function.
