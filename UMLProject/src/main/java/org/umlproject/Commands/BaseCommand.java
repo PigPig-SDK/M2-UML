@@ -25,13 +25,22 @@ public abstract class BaseCommand
      */
     public abstract String description();
     
-    
-    
+    /**
+     * User will makes a selection from the given list of objects.
+     * @param <T> The expected input type
+     * @param objects Users selection list
+     * @return The object that the user has selected
+     */
     protected static <T> T promptUserSelectionFromList(T[] objects)
     {
         return promptUserSelectionFromList(objects, System.in);
     }
-    
+    /**
+     * User will makes a selection from the given list of objects.
+     * @param <T> The type of objects the user is selecting
+     * @param objects A users objects to select
+     * @return The index the user has selected
+     */
     protected static <T> int promptUserSelectionIndex(T[] objects)
     {
         return promptUserSelectionIndex(objects, System.in);
