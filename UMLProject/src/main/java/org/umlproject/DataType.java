@@ -9,5 +9,22 @@ public enum DataType {
     DOUBLE,
     CHAR,
     BOOLEAN,
-    OTHER
+    OTHER;
+    
+    public static DataType stringToDatatype(String input) {
+        if (input == null)
+            return OTHER;
+
+        return switch (input.toLowerCase()) {
+            case "byte" -> BYTE;
+            case "short" -> SHORT;
+            case "int", "integer" -> INT;
+            case "long" -> LONG;
+            case "float" -> FLOAT;
+            case "double" -> DOUBLE;
+            case "char", "character" -> CHAR;
+            case "bool", "boolean" -> BOOLEAN;
+            default -> OTHER;
+        };
+    }
 }
