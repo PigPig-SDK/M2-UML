@@ -1,3 +1,4 @@
+package org.umlproject;
 //Enum class representing primitive data types, and OTHER for custom ones
 public enum DataType {
     BYTE,
