@@ -59,6 +59,8 @@ public class UMLDocument
         }
 
         ArrayList<UMLRelationship> tempRelationships = getAllRelationships(originClassName);
+        UMLClass tempClass = classSet.get(originClassName);
+        tempClass.renameField(originClassName, newName);
 
         if(classSet.containsKey(newName) || relationshipList.containsKey(newName) ||
                 getAllRelationships(originClassName) == null || !deleteClass(originClassName)){
@@ -66,7 +68,7 @@ public class UMLDocument
         }
 
         //placeholder line until rename method is added to UMLClass
-        classSet.put(newName, new UMLClass(newName));
+        classSet.put(newName, tempClass);
         relationshipList.put(newName, tempRelationships);
 
         return true;
