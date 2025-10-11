@@ -6,6 +6,10 @@ import java.util.Scanner;
 
 public abstract class BaseCommand 
 {
+    private static final int INVALID_ENTRY = -1;
+    private static final int EXIT = -2;
+
+    
     /** Each command MUST have a unique identifier!
      * The 'actionName' defines the 'hook' of the command
      * @return the heading command string ex: 'add'
@@ -21,9 +25,16 @@ public abstract class BaseCommand
      */
     public abstract String description();
     
-    public static <T> T promptUserSelectionFromList(T[] objects)
+    
+    
+    protected static <T> T promptUserSelectionFromList(T[] objects)
     {
         return promptUserSelectionFromList(objects, System.in);
+    }
+    
+    protected static <T> int promptUserSelectionIndex(T[] objects)
+    {
+        return promptUserSelectionIndex(objects, System.in);
     }
     /**
      * This function prints the object array and prompts the user for a selection
@@ -42,18 +53,27 @@ public abstract class BaseCommand
      * If the length of the list is 1, than it just returns the single object.
      * Returns the users selection if nothing is chosen.
      */
-    public static <T> T promptUserSelectionFromList(T[] objects, InputStream inputSteam)
+    protected static <T> T promptUserSelectionFromList(T[] objects, InputStream inputSteam)
+    {
+        int output = promptUserSelectionIndex(objects,inputSteam);
+        if(output == -1)
+            return null;
+        
+        return objects[output];
+    }
+    protected static <T> int promptUserSelectionIndex(T[] objects, InputStream inputSteam)
     {
         if(objects.length == 0)
-            return null;
+            return INVALID_ENTRY;
         if(objects.length == 1)
-            return objects[0];//No need to prompt
+            return 0;//No need to prompt
+        
         int index;
         for(index = 0; index < objects.length; index++)
         {
-            System.out.println(String.format("[ %d ] %s", index, objects[index].toString()));
+            System.out.println(String.format("[ %d ] : %s", index+1, objects[index].toString()));
         }
-        System.out.println(String.format("[ %d ] Exit this menu. \n\n", ++index));
+        System.out.println(String.format("[ %d ] : Exit this menu. \n\n", ++index));
         System.out.println("-----------------------------");
         
         //Scanning
@@ -70,17 +90,15 @@ public abstract class BaseCommand
                 System.out.println("Invalid input, please enter a number.");
                 scanner.next(); // discard invalid token
             }
-        } 
-        while(selection < 0 || selection > index);
-        selection = scanner.nextInt();
+        }while(selection <= 0 || selection > index);
         //Quit menu...
         if(selection == index)
         {
-            return null;
+            return EXIT;
         }
         else
         {
-            return objects[selection];
+            return (selection - 1);
         }
     }
 }
