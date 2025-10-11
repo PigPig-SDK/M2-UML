@@ -30,16 +30,6 @@ public class UMLClass {
         this.methods = new HashMap<>();
     }
 
-
-    /**
-     * Default UMLClass constructor
-     */
-    public UMLClass() {
-        this.className = "";
-        this.fields = new HashMap<>();
-        this.methods = new HashMap<>();
-    }
-
     /**
      * getter method for fields
      *
@@ -59,7 +49,7 @@ public class UMLClass {
     }
 
     /**
-     * getclassName returns the className
+     * getClassName returns the className
      *
      * @return string representing class name
      */
@@ -76,13 +66,13 @@ public class UMLClass {
      * @return boolean value that indicates whether add was successful or not
      */
     public boolean addField(UMLDataField field) {
-        /** return false if name or field is invalid or empty */
+        //return false if name or field is invalid or empty
         if (field == null || field.getName() == null || field.getName().isEmpty()) {
             return false;
         }
         String name = field.getName();
 
-        /**  check to see if dataField is already in hashMap*/
+        //check to see if dataField is already in hashMap
         if (fields.containsKey(name)) {
             return false;
         }
@@ -93,7 +83,7 @@ public class UMLClass {
 
     /**
      * The removeField method requires a unique Field name as input (note the hashMap
-     * ensures all DataFields are uniquely named atm. If name can be located in fields hashmap,
+     * ensures all DataFields are uniquely named atm). If name can be located in fields hashmap,
      * then it will be removed and true will be returned. If name is not in hashMap, then false will be
      * returned.
      *
@@ -104,9 +94,9 @@ public class UMLClass {
         if (fieldName == null || fieldName.isEmpty()) {
             return false;
         }
-        /**  The remove function removes the value associated with the given key parameter.
-         * Normally, remove() returns the removed value and if it didnt exist, null is returned.
-         * The != null ensures a boolean value is returned*/
+        //The remove function removes the value associated with the given key parameter.
+        //Normally, remove() returns the removed value and if it didn't exist, null is returned.
+        //The != null ensures a boolean value is returned
         return fields.remove(fieldName) != null;
 
     }
@@ -125,12 +115,12 @@ public class UMLClass {
         if (newName == null || newName.isEmpty() || fields.containsKey(newName)) {
             return false;
         }
-        /**  Note that remove returns null if key didnt exist.*/
+        //Note that remove returns null if key didn't exist.
         UMLDataField field = fields.remove(oldName);
         if (field == null) {
             return false;
         }
-        /** update field name */
+        //update field name
         field.setName(newName);
         fields.put(newName, field);
         return true;
@@ -140,14 +130,14 @@ public class UMLClass {
     /**
      * The renameMethod method will take the old method name, the old methods parameter list,
      * and the desired new name of the method all as parameters. If either the old method name
-     * or the new method name are invalid in anyway, i.e. null or empty, then
+     * or the new method name are invalid in any way, i.e. null or empty, then
      * method will return false. Otherwise, attempt to extract the arrayList of methods that
      * corresponds to the old method name. If no such list exists that corresponds to the given
      * old method name, then return false. If it does, search the list for a method that has an
      * equivalent list of method parameters. If no such list can be found, then return false
      * because that overloaded method is not in the list. If a match is found, we need to make sure
      * that a method with the newName and with a matching list of parameters doesn't already exist. If it does
-     * return false. If it doesnt, then we can remove the old method from its previous list, give it a new
+     * return false. If it doesn't, then we can remove the old method from its previous list, give it a new
      * name, and then insert it into the other list of UMLMethods.
      *
      * @param oldName    of method
@@ -160,14 +150,14 @@ public class UMLClass {
             return false;
         }
 
-        /**  If the oldName exists in HashMap, then return its array list of overloaded methods*/
+        //If the oldName exists in HashMap, then return its array list of overloaded methods
         ArrayList<UMLMethod> oldList = methods.get(oldName);
         if (oldList == null) {
-            /** old name was not in hashMap, thus list was null. return false */
+            //old name was not in hashMap, thus list was null. return false
             return false;
         }
 
-        /** old name was in Hashmap, so search for matching parameter list */
+        //old name was in Hashmap, so search for matching parameter list
         UMLMethod target = null;
         for (UMLMethod m : oldList) {
             if (m.getParameters().equals(parameters)) {
@@ -176,16 +166,15 @@ public class UMLClass {
             }
         }
 
-        /** if method with matching parameters was not found, return false */
+        //if method with matching parameters was not found, return false
         if (target == null) {
             return false;
         }
 
-        /** newName may correspond to an existing method with matching parameter list. Need
-         * to check for duplicates. Note that getOrDefault() will search the hashMap for a method
-         * whose name matches the newName parameter. If one is found, an ArrayList of overloaded
-         * methods with that name is returned, otherwise a default empty array list is returned.
-         */
+        //newName may correspond to an existing method with matching parameter list. Need
+        //to check for duplicates. Note that getOrDefault() will search the hashMap for a method
+        //whose name matches the newName parameter. If one is found, an ArrayList of overloaded
+        //methods with that name is returned, otherwise a default empty array list is returned.
 
         ArrayList<UMLMethod> newList = methods.getOrDefault(newName, new ArrayList<>());
         for (UMLMethod m : newList) {
@@ -196,13 +185,13 @@ public class UMLClass {
             }
         }
 
-        /** remove from old list */
+        //remove from old list
         oldList.remove(target);
         if (oldList.isEmpty()) {
             methods.remove(oldName);
         }
 
-        /** update name and insert into new list */
+        //update name and insert into new list
         target.setMethodName(newName);
         newList.add(target);
         methods.put(newName, newList);
@@ -222,14 +211,13 @@ public class UMLClass {
      * @return boolean representing whether adding a new method was successful
      */
     public boolean addMethod(UMLMethod method) {
-        /** make sure method argument is not null and has a valid name */
+        //make sure method argument is not null and has a valid name
         if (method == null || method.getMethodName() == null || method.getMethodName().isEmpty()) {
             return false;
         }
 
-        /** search the parameters to make sure that they are valid inputs, i.e. none are null
-         * and none have an empty string as a name
-         */
+        //search the parameters to make sure that they are valid inputs, i.e. none are null
+        //and none have an empty string as a name
         ArrayList<UMLParameter> params = method.getParameters();
         if (params == null) {
             return false;
@@ -240,10 +228,9 @@ public class UMLClass {
             }
         }
 
-        /** check for duplicate methods before adding. Note that getOrdefault() returns a
-         * list of UMLMethods that correspond to the given name. If no such list exists, a
-         * default empty list is assigned.
-         */
+        //check for duplicate methods before adding. Note that getOrDefault() returns a
+        //list of UMLMethods that correspond to the given name. If no such list exists, a
+        //default empty list is assigned.
         String name = method.getMethodName();
         ArrayList<UMLMethod> list = methods.getOrDefault(name, new ArrayList<>());
 
@@ -253,7 +240,7 @@ public class UMLClass {
             }
         }
 
-        /** no duplicates found. Safe to add to list. */
+        //no duplicates found. Safe to add to list.
         list.add(method);
         methods.put(name, list);
         return true;
@@ -271,28 +258,26 @@ public class UMLClass {
      * @return boolean indicating whether method was successfully removed
      */
     public boolean removeMethod(String methodName, ArrayList<UMLParameter> parameters) {
-        /** make sure inputs are valid */
+        //make sure inputs are valid
         if (methodName == null || methodName.isEmpty() || parameters == null) {
             return false;
         }
 
-        /** find array list of methods that corresponds to the argument name methodName.
-         * If no such list return false.
-         */
+        //find array list of methods that corresponds to the argument name methodName.
+        //If no such list return false.
         ArrayList<UMLMethod> list = methods.get(methodName);
         if (list == null) {
             return false;
         }
 
-        /** locate matching overloaded method and remove */
+        //locate matching overloaded method and remove
         for (int i = 0; i < list.size(); i++) {
             if (list.get(i).getParameters().equals(parameters)) {
                 list.remove(i);
             }
 
-            /** if no more methods in list, remove methodName from hashMap. Otherwise,
-             * put updated method list back into hashMap.
-             */
+            //if no more methods in list, remove methodName from hashMap. Otherwise,
+            //put updated method list back into hashMap.
             if (list.isEmpty()) {
                 methods.remove(methodName);
             } else {
@@ -313,35 +298,34 @@ public class UMLClass {
      * @param methodName   name of method.
      * @param parameters   used to find correct overloaded method.
      * @param newParameter to be added.
-     * @return boolean representing whether paramter addition was successful
+     * @return boolean representing whether parameter addition was successful
      */
     public boolean addParameter(String methodName, ArrayList<UMLParameter> parameters, UMLParameter newParameter) {
-        /** ensure inputs are not invalid, i.e. not null and no empty strings */
+        //ensure inputs are not invalid, i.e. not null and no empty strings
         if (methodName == null || methodName.isEmpty() || parameters == null || newParameter == null) {
             return false;
         }
 
-        /** ensure newParameter is not a duplicate of one in the provided parameter list argument */
+        //ensure newParameter is not a duplicate of one in the provided parameter list argument
         for (int i = 0; i < parameters.size(); i++) {
             if (parameters.get(i).equals(newParameter)) {
                 return false;
             }
         }
 
-        /** check to see if method name exists in hashMap, if not return false. */
+        //check to see if method name exists in hashMap, if not return false.
         ArrayList<UMLMethod> list = methods.get(methodName);
         if (list == null) {
             return false;
         }
-        /** method exists, so track down the proper overloaded version. And insert new parameter
-         */
+        //method exists, so track down the proper overloaded version. And insert new parameter
         for (UMLMethod method : list) {
             if (method.getParameters().equals(parameters)) {
                 method.addParameter(newParameter);
                 return true;
             }
         }
-        /** method doesn't exist in hashMap */
+        //method doesn't exist in hashMap
         return false;
     }
 
@@ -355,30 +339,28 @@ public class UMLClass {
      *
      * @param methodName,    name of method.
      * @param parameters,    used to locate proper overloaded method.
-     * @param paramToRemove, UMLParamter to remove.
-     * @return boolean representing whether removal of paramter was successful.
+     * @param paramToRemove, UMLParameter to remove.
+     * @return boolean representing whether removal of parameter was successful.
      */
     public boolean removeParameter(String methodName, ArrayList<UMLParameter> parameters, UMLParameter paramToRemove) {
-        /** ensure inputs are valid. i.e. nothing is null and no empty strings
-         */
+        //ensure inputs are valid. i.e. nothing is null and no empty strings
         if (methodName == null || methodName.isEmpty() || parameters == null || paramToRemove == null) {
             return false;
         }
-        /** check if overloaded method exists. If no list of methods with given
-         * argument name is returned, return false.
-         */
+        //check if overloaded method exists. If no list of methods with given
+        //argument name is returned, return false.
         ArrayList<UMLMethod> overloads = methods.get(methodName);
         if (overloads == null) {
             return false;
         }
-        /** search for appropriate method to remove parameter from */
+        //search for appropriate method to remove parameter from
         for (UMLMethod method : overloads) {
             if (method.getParameters().equals(parameters)) {
                 boolean removed = method.removeParameter(paramToRemove);
                 return removed;
             }
         }
-        /** no matching overloaded method */
+        //no matching overloaded method
         return false;
     }
 
@@ -388,26 +370,26 @@ public class UMLClass {
      *
      * @param methodName,    name of the Method
      * @param paramToRemove, UMLParameter object to remove
-     * @param oldParameters  used to locate right over loaded method
-     * @param newParameters  to replace old Paramters
+     * @param oldParameters  used to locate right overloaded method
+     * @param newParameters  to replace old Parameters
      * @return boolean indicating whether changing of parameter was successful
      */
     public boolean changeParameter(String methodName, UMLParameter paramToRemove, ArrayList<UMLParameter> oldParameters, ArrayList<UMLParameter> newParameters) {
-        /** ensure inputs are valid */
+        //ensure inputs are valid
         if (methodName == null || methodName.isEmpty() || oldParameters == null || newParameters == null) {
             return false;
         }
 
-        /** ensure the specified methodName exists in class, if not return false */
+        //ensure the specified methodName exists in class, if not return false
         ArrayList<UMLMethod> overloads = methods.get(methodName);
         if (overloads == null) {
             return false;
         }
 
-        /** search for correct overloaded method by comparing parameter list*/
+        //search for correct overloaded method by comparing parameter list
         for (UMLMethod method : overloads) {
             if (method.getParameters().equals(oldParameters)) {
-                /** match found, so swap parameter with parameter list */
+                //match found, so swap parameter with parameter list
                 method.changeParameter(paramToRemove, newParameters);
                 return true;
             }
@@ -417,7 +399,7 @@ public class UMLClass {
 
 
     /**
-     * The changeParameter method will be overloaded. This versian replaces an entire parameter list of a given overloaded
+     * The changeParameter method will be overloaded. This version replaces an entire parameter list of a given overloaded
      * method with a new parameter list. Method checks that arguments are valid. Then ensures methodName exists in class. If
      * not it returns false. If method name exists, then list of overloaded methods is searched for one that matches the
      * oldParameters argument. If match is found, the old list is swapped out with the newParameter list.
@@ -425,24 +407,24 @@ public class UMLClass {
      * @param methodName,   name of method
      * @param oldParameters to be replaced
      * @param newParameters to be swapped with oldParameters
-     * @return boolean representing whether changing of paramter was successful
+     * @return boolean representing whether changing of parameter was successful
      */
     public boolean changeParameter(String methodName, ArrayList<UMLParameter> oldParameters, ArrayList<UMLParameter> newParameters) {
-        /** ensure inputs are valid */
+        //ensure inputs are valid
         if (methodName == null || methodName.isEmpty() || oldParameters == null || newParameters == null) {
             return false;
         }
 
-        /** ensure the specified methodName exists in class, if not return false */
+        //ensure the specified methodName exists in class, if not return false
         ArrayList<UMLMethod> overloads = methods.get(methodName);
         if (overloads == null) {
             return false;
         }
 
-        /** search for correct overloaded method by comparing parameter list*/
+        //search for correct overloaded method by comparing parameter list
         for (UMLMethod method : overloads) {
             if (method.getParameters().equals(oldParameters)) {
-                /** match found, so swap parameter with parameter list */
+                //match found, so swap parameter with parameter list
                 method.setListParameters(newParameters);
                 return true;
             }
