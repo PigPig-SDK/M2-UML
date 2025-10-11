@@ -67,7 +67,7 @@ public class UMLClass {
      */
     public boolean addField(UMLDataField field) {
         //return false if name or field is invalid or empty
-        if (field == null || field.getName() == null || field.getName().isEmpty()) {
+        if (field == null) {
             return false;
         }
         String name = field.getName();
@@ -254,38 +254,20 @@ public class UMLClass {
      * return true.
      *
      * @param methodName, of the method to be removed.
-     * @param parameters  used to find correct overloaded method.
+     * @param index the index within the list
      * @return boolean indicating whether method was successfully removed
      */
-    public boolean removeMethod(String methodName, ArrayList<UMLParameter> parameters) {
+    public boolean removeMethod(String methodName, int index) {
         //make sure inputs are valid
-        if (methodName == null || methodName.isEmpty() || parameters == null) {
+        if (methodName == null || methodName.isEmpty()) {
             return false;
         }
+        //    private HashMap<String, ArrayList<UMLMethod>> methods;
 
-        //find array list of methods that corresponds to the argument name methodName.
-        //If no such list return false.
-        ArrayList<UMLMethod> list = methods.get(methodName);
-        if (list == null) {
-            return false;
-        }
+        if(!methods.containsKey(methodName))
+            return  false;
 
-        //locate matching overloaded method and remove
-        for (int i = 0; i < list.size(); i++) {
-            if (list.get(i).getParameters().equals(parameters)) {
-                list.remove(i);
-            }
-
-            //if no more methods in list, remove methodName from hashMap. Otherwise,
-            //put updated method list back into hashMap.
-            if (list.isEmpty()) {
-                methods.remove(methodName);
-            } else {
-                methods.put(methodName, list);
-            }
-
-        }
-        return true;
+        return methods.get(methodName).remove(index) != null;
     }
 
     /**
