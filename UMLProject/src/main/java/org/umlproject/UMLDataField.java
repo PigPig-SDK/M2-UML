@@ -1,16 +1,21 @@
+package org.umlproject;
+
 import java.util.Scanner;
 
-//This class represents the datafields of a UMLClass instance
-//will consist of a name, visibility modifier, data type (custom or primitive)
-//as well as methods to set or get these values
+/**This class represents the datafields of a UMLClass instance
+ *will consist of a name, visibility modifier, data type (custom or primitive)
+ *as well as methods to set or get these values
+ */
 public class UMLDataField {
-    //name of dataField
+    /** name of dataField
+     */
     private String name;
 
-    //DataType can be either an enum representing a primitive type, or it can be set to
-    //"OTHER", in which case the user will have to enter a string representing their custom type
-    //"In the case of wrapper classes such as "DOUBLE, INT, etc.", visibility will be set to OTHER
-    //and the custom name will hold the value "DOUBLE" etc.
+    /**DataType can be either an enum representing a primitive type, or it can be set to
+     *"OTHER", in which case the user will have to enter a string representing their custom type
+     *"In the case of wrapper classes such as "DOUBLE, INT, etc.", visibility will be set to OTHER
+     *and the custom name will hold the value "DOUBLE" etc.
+     */
     private DataType dataType;
 
     private String customNameType;
@@ -18,8 +23,54 @@ public class UMLDataField {
     private Visibility visibility;
 
 
-    //will not take a customNameType parameter directly. will check to see if dataType == OTHER and
-    //then prompt user for custom data type name
+    /**
+     * UMLDataField constructor that takes a name, dataType and customNameType in the case where
+     * dataType = OTHER. If dataType is not OTHER then set customNameType to null.
+     * @param name of UMLDataField
+     * @param dataType of UMLDataField
+     * @param customNameType of UMLDataFIeld
+     */
+    public UMLDataField(String name, DataType dataType, String customNameType){
+        this.visibility = Visibility.PRIVATE;
+        this.dataType = dataType;
+        this.name = name;
+        if(this.dataType == DataType.OTHER){
+            this.customNameType = customNameType;
+        }
+        else{
+            System.out.println("dataType is not OTHER. setting customNameType to null");
+            customNameType = null;
+        }
+    }
+
+    /**
+     * UMLDataFIeld constructor that takes a name and a dataType as parameter. If this constructor is mistakenly
+     * called with OTHER as the DataType argument, an exception will be thrown and it will be left to the caller to resolve
+     * the error.
+     * @param name of UMLDataField
+     * @param dataType of UMLDataField
+     */
+    public UMLDataField(String name, DataType dataType){
+        this.visibility = Visibility.PRIVATE;
+        this.name = name;
+        this.dataType = dataType;
+        if(this.dataType == DataType.OTHER){
+
+            /** throw exception  since dataType == OTHER. This allows caller to
+             * request a user specified name as the data type.
+             */
+            throw new IllegalArgumentException("Custom type name is required for OTHER data type");
+
+        }
+    }
+
+    /**
+     *UMLDataField constructor that takes a name, DataType, and Visibility argument. If DataType is OTHER
+     * an exception will be thrown to be handled by the caller. Otherwise customNameType is set to null
+     * @param name, name of UMLDataFIeld
+     * @param dataType of UMLDataField
+     * @param visibility of UMLDataField
+     */
     public UMLDataField(String name, DataType dataType, Visibility visibility){
         Scanner input = new Scanner(System.in);
 
@@ -28,14 +79,19 @@ public class UMLDataField {
         this.visibility = visibility;
 
         if(this.dataType == DataType.OTHER){
-            System.out.println("enter your custom data type name");
 
-            //scan for customName since dataType == OTHER
-            customNameType = input.next();
+            /** throw exception  since dataType == OTHER. This allows caller to
+             * request a user specified name as the data type.
+             */
+            throw new IllegalArgumentException("Custom type name is required for OTHER data type");
 
         }
+        this.customNameType = null;
     }
 
+    /**
+     * default DataField constructor
+     */
     public UMLDataField(){
         this.name = null;
         this.dataType = null;
@@ -44,9 +100,11 @@ public class UMLDataField {
     }
 
 
-    //setter to reset dataType. If new dataType is OTHER, then need to prompt user for a customTypeName and
-    //set the customTypeName field. If previous dataType was OTHER, and is being changed to a primitive,
-    //Then we need to set the customNameType to null
+    /**setter to reset dataType. If new dataType is OTHER, then need to prompt user for a customTypeName and
+     *set the customTypeName field. If previous dataType was OTHER, and is being changed to a primitive,
+     *Then we need to set the customNameType to null
+     * @param dataType, The DataType of the UMLDataField
+     */
     public void setDataType(DataType dataType){
         Scanner input = new Scanner(System.in);
         if(this.dataType == DataType.OTHER && dataType != DataType.OTHER){
@@ -55,25 +113,33 @@ public class UMLDataField {
 
         this.dataType = dataType;
         if(this.dataType == DataType.OTHER){
-            System.out.println("enter name of custom type");
-            setCustomNameType(input.next());
+            /** throw IllegalArgumentException and allow caller to request a user specified
+             * data type name.
+             */
+            throw new IllegalArgumentException("Custom type name is required for OTHER data type\n");
         }
 
 
     }
 
-    //setter to reset the visibility modifier
+    /**setter to reset the visibility modifier
+     * @param visibility The Visibility of the UMLDataField
+     */
     public void setVisibility(Visibility visibility){
         this.visibility = visibility;
     }
 
-    //setter to reset name of DataField Instance
+    /** setter to reset name of DataField Instance
+     * @param name The name of the UMLDataField
+     */
     public void setName(String name){
         this.name = name;
     }
 
-    //setter to reset the customNameType ONLY if dataType == OTHER, otherwises prints message
-    //informing user that dataType has an invalid value and then returns.
+    /**setter to reset the customNameType ONLY if dataType == OTHER, otherwises prints message
+     *informing user that dataType has an invalid value and then returns.
+     * @param customNameType the customeNameType that corresponds to DataType.OTHER
+     */
     public void setCustomNameType(String customNameType){
         if(this.dataType == DataType.OTHER){
             this.customNameType = customNameType;
@@ -83,13 +149,17 @@ public class UMLDataField {
         }
     }
 
-    //getter for the name of DataField instance
+    /** getter for the name of DataField instance
+     * @return name of UMLDataField
+     */
     public String getName(){
         return this.name;
     }
 
-    //getter for the customNameType of DataField instance
-    //should return null if dataType is not equal to OTHER
+    /** getter for the customNameType of DataField instance
+     *should return null if dataType is not equal to OTHER
+     * @return customNameType of UMLDataField
+     */
     public String getCustomNameType(){
         if(this.dataType == DataType.OTHER) {
             return this.customNameType;
@@ -99,45 +169,59 @@ public class UMLDataField {
         }
     }
 
-    //getter method for visibility of DataField instance
+    /** getter method for visibility of DataField instance
+     * @return Visibility of UMLDataField
+     */
     public Visibility getVisibility(){
         return this.visibility;
     }
 
 
-    //getter method for dataType of DataField instance
+    /** getter method for dataType of DataField instance
+     * @return DataType of UMLDataField
+     */
     public DataType getDataType(){
         return this.dataType;
     }
 
-    //toString() method for easy testing
+    /** toString() method for easy testing
+     * @return string representation of DataField
+     */
+    @Override
     public String toString(){
         String data = "name: " + this.name + ", dataType: " + this.dataType +", " + "Visibility: " + this.visibility +
-                      ", customeNameType: " + this.customNameType;
+                ", customeNameType: " + this.customNameType;
         return data;
     }
 
+    /** equals method for checking if two DataFields are equal
+     * @param obj   the reference object with which to compare.
+     * @return boolean representing whether both objects are equal
+     */
+    @Override
+    public boolean equals(Object  obj)
+    {
+        if(this == obj)
+            return true;
+        if(obj == null || getClass() != obj.getClass())
+            return false;
 
-    public static void main(String[] args){
-
-        UMLDataField dataField1 = new UMLDataField();
-        String name = dataField1.getName();
-        String customType = dataField1.getCustomNameType();
-        Visibility vis = dataField1.getVisibility();
-        DataType dataT = dataField1.getDataType();
-
-        System.out.println(dataField1.toString());
-
-        dataField1.setDataType(DataType.OTHER);
-
-        System.out.println(dataField1.toString());
-
-        dataField1.setName("dog");
-        dataField1.setVisibility(Visibility.PRIVATE);
-        System.out.println(dataField1.toString());
-
-
+        UMLDataField castedObject = (UMLDataField)obj;
+        //Bare bones implementation.
+        //TODO: When you add more to the class, maintain this equals function.
+        return castedObject.name.equals(this.name);
     }
+
+    /**
+     * hashCode method for DataField class
+     * @return returns hash code for DataField
+     */
+    @Override
+    public int hashCode() {
+        return this.name.hashCode();
+    }
+
+
 
 
 
