@@ -1,4 +1,4 @@
-
+package org.umlproject;
 //enum to set the visibility of methods and data fields
 public enum Visibility {
 
