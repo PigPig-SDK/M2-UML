@@ -65,9 +65,8 @@ public abstract class BaseCommand
     protected static <T> T promptUserSelectionFromList(T[] objects, InputStream inputSteam)
     {
         int output = promptUserSelectionIndex(objects,inputSteam);
-        if(output == -1)
+        if(output == EXIT || output == INVALID_ENTRY)
             return null;
-        
         return objects[output];
     }
     protected static <T> int promptUserSelectionIndex(T[] objects, InputStream inputSteam)
