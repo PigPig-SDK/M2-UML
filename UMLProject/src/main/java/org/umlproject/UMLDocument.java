@@ -14,12 +14,43 @@ import java.io.IOException;
 
 public class UMLDocument
 {
+    private static UMLDocument instance;
+    
     private String fileLocation = null;
     private Map<String, UMLClass> classSet = new HashMap<>();
     private Map<String,ArrayList<UMLRelationship>> relationshipList = new HashMap<>();
+    
+    private static final String FILEEXTENT_STRING = ".json";
+    private static final String DEFAULT_FILENAME = "NewDocument";
+
+    
+    /**
+     * Returns the current singleton, else creates it
+     * @return The current singleton
+     */
+    public static synchronized UMLDocument getInstance()
+    {
+        if(instance == null)
+        {
+            instance = new UMLDocument(DEFAULT_FILENAME);
+        }
+        return instance;
+    }
+    /**
+     * Creates a new UMLDocument
+     * 
+     * @param fileLocation The file location it should be saved. Note: Do not include the file extension!
+     */
     public UMLDocument(String fileLocation)
     {
-        this.fileLocation = fileLocation;
+        if(fileLocation == null || fileLocation.isEmpty())
+        {
+            this.fileLocation = DEFAULT_FILENAME + FILEEXTENT_STRING;
+        }
+        else
+        {
+            this.fileLocation = fileLocation + FILEEXTENT_STRING;
+        }
     }
     public String getFileLocation()
     {
