@@ -1,0 +1,51 @@
+<component name="libraryTable">
+  <library name="firstbird.backbone.gson_2.12" type="repository">
+    <properties maven-id="com.firstbird:backbone-gson_2.12:3.0.0-RC7" />
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/firstbird/backbone-gson_2.12/3.0.0-RC7/backbone-gson_2.12-3.0.0-RC7.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/scala-lang/scala-library/2.12.15/scala-library-2.12.15.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/com/firstbird/backbone-core_2.12/3.0.0-RC7/backbone-core_2.12-3.0.0-RC7.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/com/typesafe/akka/akka-actor_2.12/2.6.17/akka-actor_2.12-2.6.17.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/com/typesafe/config/1.4.0/config-1.4.0.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/com/typesafe/akka/akka-stream_2.12/2.6.17/akka-stream_2.12-2.6.17.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/com/typesafe/akka/akka-protobuf-v3_2.12/2.6.17/akka-protobuf-v3_2.12-2.6.17.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/reactivestreams/reactive-streams/1.0.3/reactive-streams-1.0.3.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/com/typesafe/ssl-config-core_2.12/0.4.2/ssl-config-core_2.12-0.4.2.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/scala-lang/modules/scala-parser-combinators_2.12/1.1.2/scala-parser-combinators_2.12-1.1.2.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/com/lightbend/akka/akka-stream-alpakka-sqs_2.12/3.0.4/akka-stream-alpakka-sqs_2.12-3.0.4.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/com/github/matsluni/aws-spi-akka-http_2.12/0.0.11/aws-spi-akka-http_2.12-0.0.11.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/software/amazon/awssdk/http-client-spi/2.11.4/http-client-spi-2.11.4.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/software/amazon/awssdk/sqs/2.11.14/sqs-2.11.14.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/software/amazon/awssdk/aws-query-protocol/2.11.14/aws-query-protocol-2.11.14.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/software/amazon/awssdk/protocol-core/2.11.14/protocol-core-2.11.14.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/software/amazon/awssdk/sdk-core/2.11.14/sdk-core-2.11.14.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/software/amazon/awssdk/profiles/2.11.14/profiles-2.11.14.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/software/amazon/awssdk/auth/2.11.14/auth-2.11.14.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/software/amazon/eventstream/eventstream/1.0.1/eventstream-1.0.1.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/software/amazon/awssdk/regions/2.11.14/regions-2.11.14.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/software/amazon/awssdk/annotations/2.11.14/annotations-2.11.14.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/software/amazon/awssdk/utils/2.11.14/utils-2.11.14.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/software/amazon/awssdk/aws-core/2.11.14/aws-core-2.11.14.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/com/typesafe/akka/akka-http_2.12/10.1.11/akka-http_2.12-10.1.11.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/com/typesafe/akka/akka-http-core_2.12/10.1.11/akka-http-core_2.12-10.1.11.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/com/typesafe/akka/akka-parsing_2.12/10.1.11/akka-parsing_2.12-10.1.11.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/com/fasterxml/jackson/core/jackson-core/2.11.4/jackson-core-2.11.4.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/com/fasterxml/jackson/core/jackson-databind/2.11.4/jackson-databind-2.11.4.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/com/fasterxml/jackson/core/jackson-annotations/2.11.4/jackson-annotations-2.11.4.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/com/lightbend/akka/akka-stream-alpakka-sns_2.12/3.0.4/akka-stream-alpakka-sns_2.12-3.0.4.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/software/amazon/awssdk/sns/2.11.14/sns-2.11.14.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/typelevel/cats-core_2.12/2.7.0/cats-core_2.12-2.7.0.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/typelevel/cats-kernel_2.12/2.7.0/cats-kernel_2.12-2.7.0.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/typelevel/simulacrum-scalafix-annotations_2.12/0.5.4/simulacrum-scalafix-annotations_2.12-0.5.4.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/scala-lang/modules/scala-collection-compat_2.12/2.6.0/scala-collection-compat_2.12-2.6.0.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/scala-lang/modules/scala-java8-compat_2.12/1.0.2/scala-java8-compat_2.12-1.0.2.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/slf4j/slf4j-api/1.7.32/slf4j-api-1.7.32.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/com/google/code/gson/gson/2.8.9/gson-2.8.9.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/software/amazon/awssdk/http-client-spi/2.11.4/http-client-spi-2.11.4-sources.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/scala-lang/modules/scala-collection-compat_2.12/2.3.1/scala-collection-compat_2.12-2.3.1-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

@@ -307,7 +307,13 @@ public class UMLDocument
         UMLDocument castedObject = (UMLDocument)obj;
         //Bare bones implementation.
         //TODO: When you add more to the class, maintain this equals function.
-        return castedObject.fileLocation.equals(this.fileLocation);
+        if(castedObject.fileLocation.equals(this.fileLocation)){
+            if(castedObject.classSet.equals(this.classSet)){
+                return castedObject.relationshipList.equals(this.relationshipList);
+            }
+            return false;
+        }
+        return false;
     }
     @Override
     public int hashCode() {

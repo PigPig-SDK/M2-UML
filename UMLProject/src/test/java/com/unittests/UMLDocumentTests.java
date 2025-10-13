@@ -217,9 +217,8 @@ public class UMLDocumentTests
         public void save_load_UMLDocument_Success()
     {
         // Arrange
-        String fileString = "test.json";
-        UMLDocument umldocument = new UMLDocument(fileString);
-        UMLDocument umldocument2 = new UMLDocument(fileString);
+        UMLDocument umldocument = new UMLDocument("test1");
+        UMLDocument umldocument2 = new UMLDocument("test2");
         umldocument.addClass("a");
         umldocument.addClass("b");
         umldocument.addClass("c");
@@ -227,6 +226,7 @@ public class UMLDocumentTests
         umldocument2.load();
         // Act/Assert
         assertNotNull(umldocument2.getAllRelationships("a"));
+        assertEquals(umldocument, umldocument2);
     }
         @Test 
         public void isFileLocationValid_Success()

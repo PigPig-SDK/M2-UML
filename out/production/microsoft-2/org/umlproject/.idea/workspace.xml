@@ -4,7 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="2c23d98f-bcb8-4776-b701-4c18fcf78419" name="Changes" comment="" />
+    <list default="true" id="2c23d98f-bcb8-4776-b701-4c18fcf78419" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/../../../../../../.idea/microsoft-2.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../../../.idea/microsoft-2.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/UMLClass.java" beforeDir="false" afterPath="$PROJECT_DIR$/UMLClass.java" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -28,7 +31,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "UMLDocument2",
+    "git-widget-placeholder": "UMLClass",
     "ignore.virus.scanning.warn.message": "true",
     "last_opened_file_path": "D:/Documents/GitHub/microsoft-2",
     "node.js.detected.package.eslint": "true",
