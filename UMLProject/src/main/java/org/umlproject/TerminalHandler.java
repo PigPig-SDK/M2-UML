@@ -17,6 +17,12 @@ public class TerminalHandler
         TerminalHandler.registerCommand(new CommandHelp());
         TerminalHandler.registerCommand(new CommandAdd());
         TerminalHandler.registerCommand(new CommandQuit());
+        TerminalHandler.registerCommand(new CommandRemove());
+        TerminalHandler.registerCommand(new CommandRename());
+        TerminalHandler.registerCommand(new CommandLoad());
+        TerminalHandler.registerCommand(new CommandList());
+        TerminalHandler.registerCommand(new CommandSave());
+
     }
     
     private static final String delimiter = " ";

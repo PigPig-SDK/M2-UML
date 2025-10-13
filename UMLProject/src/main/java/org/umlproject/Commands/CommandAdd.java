@@ -10,7 +10,7 @@ public class CommandAdd extends BaseCommand
     @Override
     public void act(String[] args)
     {
-        System.out.println("Add command has been called");
+        System.out.println("Please implement ADD method");
     }
     @Override
     public String description()
