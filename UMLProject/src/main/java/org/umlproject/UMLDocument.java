@@ -3,6 +3,13 @@ package org.umlproject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 
 
 public class UMLDocument
@@ -59,16 +66,13 @@ public class UMLDocument
         }
 
         ArrayList<UMLRelationship> tempRelationships = getAllRelationships(originClassName);
-        UMLClass tempClass = classSet.get(originClassName);
-        tempClass.renameField(originClassName, newName);
 
         if(classSet.containsKey(newName) || relationshipList.containsKey(newName) ||
-                getAllRelationships(originClassName) == null || !deleteClass(originClassName)){
+                !deleteClass(originClassName)){
             return false;
         }
 
-        //placeholder line until rename method is added to UMLClass
-        classSet.put(newName, tempClass);
+        classSet.put(newName, new UMLClass(newName));
         relationshipList.put(newName, tempRelationships);
 
         return true;
@@ -202,11 +206,41 @@ public class UMLDocument
     }
     public boolean isFileLocationValid()
     {
-        throw new UnsupportedOperationException("No feature exists!");
+        if (this.fileLocation == null || this.fileLocation.trim().isEmpty()) {
+            return false;
+        }
+        File file = new File(this.fileLocation);
+        try {
+            file.createNewFile();
+        } catch (IOException ex) {
+            System.getLogger(UMLDocument.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
+        return file.exists();
     }
     public void save()
     {
-        throw new UnsupportedOperationException("No feature exists!");
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        String jsonString = gson.toJson(this);
+            try (FileWriter writer = new FileWriter("UMLDocument.json")) {
+            writer.write(jsonString);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public void load()
+    {
+        Gson gson = new Gson();
+        try (BufferedReader reader = new BufferedReader(new FileReader("UMLDocument.json"))) {
+        // Deserialize the JSON into your Java object
+        var data = gson.fromJson(reader, UMLDocument.class);
+        this.classSet=data.classSet;
+        this.fileLocation=data.fileLocation;
+        this.relationshipList=data.relationshipList;
+        } catch (IOException e) {
+                System.err.println("Error reading JSON file: " + e.getMessage());
+            }
+        
     }
 
     /**
@@ -220,6 +254,8 @@ public class UMLDocument
         if (classSet.containsKey(className)) return null;
         UMLClass umlclass = new UMLClass(className);
         classSet.put(className, umlclass);
+        ArrayList<UMLRelationship> newList = new ArrayList<>();
+        relationshipList.put(className, newList);
         return umlclass;
     }
 

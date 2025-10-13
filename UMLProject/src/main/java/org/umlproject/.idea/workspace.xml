@@ -5,15 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2c23d98f-bcb8-4776-b701-4c18fcf78419" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UMLDocument.java" beforeDir="false" afterPath="$PROJECT_DIR$/UMLDocument.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../../../../out/production/microsoft-2/org/umlproject/Main.class" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../../../out/production/microsoft-2/org/umlproject/Main.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../../../../out/production/microsoft-2/org/umlproject/TerminalHandler.class" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../../../out/production/microsoft-2/org/umlproject/TerminalHandler.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../../../../out/production/microsoft-2/org/umlproject/UMLClass.class" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../../../out/production/microsoft-2/org/umlproject/UMLClass.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../../../../out/production/microsoft-2/org/umlproject/UMLDataField.class" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../../../out/production/microsoft-2/org/umlproject/UMLDataField.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../../../../out/production/microsoft-2/org/umlproject/UMLDocument.class" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../../../out/production/microsoft-2/org/umlproject/UMLDocument.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../../../../out/production/microsoft-2/org/umlproject/UMLMethod.class" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../../../out/production/microsoft-2/org/umlproject/UMLMethod.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../../../../out/test/microsoft-2/com/unittests/UMLDocumentTests.class" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../../../out/test/microsoft-2/com/unittests/UMLDocumentTests.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../../../../.idea/microsoft-2.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../../../.idea/microsoft-2.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/UMLClass.java" beforeDir="false" afterPath="$PROJECT_DIR$/UMLClass.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,7 +31,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "UMLDocument2",
+    "git-widget-placeholder": "UMLClass",
     "ignore.virus.scanning.warn.message": "true",
     "last_opened_file_path": "D:/Documents/GitHub/microsoft-2",
     "node.js.detected.package.eslint": "true",
