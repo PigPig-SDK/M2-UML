@@ -76,7 +76,8 @@ public class UMLParameter {
      */
     @Override
     public String toString(){
-        return this.name + ", " + this.dataType + ", " + this.customNameType;
+        if(this.dataType.equals(DataType.OTHER)) return this.customNameType + " "+ this.name;
+        return this.dataType + " " + this.name;
     }
 
     /** equals method will return true if both objects share a memory location, or if their

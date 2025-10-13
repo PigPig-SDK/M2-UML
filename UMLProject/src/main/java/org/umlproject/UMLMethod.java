@@ -54,7 +54,7 @@ public class UMLMethod
      */
     public boolean addParameter(UMLParameter param){
         for(UMLParameter p: parameters){
-            if(p.getName().equals(param.getName()) && p.getDataType() == param.getDataType()){
+            if(p.getName().equals(param.getName()) && p.getDataType() == param.getDataType()){//TODO: update equals method. this should use .equals()
                 return false;
             }
 
@@ -155,7 +155,7 @@ public class UMLMethod
      */
     @Override
     public String toString() {
-        return String.format("UML method print info: %s", methodName);
+        return String.format("%s : %s", methodName, parameters);
     }
 
 
