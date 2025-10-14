@@ -3,16 +3,54 @@ package org.umlproject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 
 
 public class UMLDocument
 {
+    private static UMLDocument instance;
+    
     private String fileLocation = null;
     private Map<String, UMLClass> classSet = new HashMap<>();
     private Map<String,ArrayList<UMLRelationship>> relationshipList = new HashMap<>();
+    
+    private static final String FILEEXTENT_STRING = ".json";
+    private static final String DEFAULT_FILENAME = "NewDocument";
+
+    
+    /**
+     * Returns the current singleton, else creates it
+     * @return The current singleton
+     */
+    public static synchronized UMLDocument getInstance()
+    {
+        if(instance == null)
+        {
+            instance = new UMLDocument(DEFAULT_FILENAME);
+        }
+        return instance;
+    }
+    /**
+     * Creates a new UMLDocument
+     * 
+     * @param fileLocation The file location it should be saved. Note: Do not include the file extension!
+     */
     public UMLDocument(String fileLocation)
     {
-        this.fileLocation = fileLocation;
+        if(fileLocation == null || fileLocation.isEmpty())
+        {
+            this.fileLocation = DEFAULT_FILENAME + FILEEXTENT_STRING;
+        }
+        else
+        {
+            this.fileLocation = fileLocation + FILEEXTENT_STRING;
+        }
     }
     public String getFileLocation()
     {
@@ -61,11 +99,10 @@ public class UMLDocument
         ArrayList<UMLRelationship> tempRelationships = getAllRelationships(originClassName);
 
         if(classSet.containsKey(newName) || relationshipList.containsKey(newName) ||
-                getAllRelationships(originClassName) == null || !deleteClass(originClassName)){
+                !deleteClass(originClassName)){
             return false;
         }
 
-        //placeholder line until rename method is added to UMLClass
         classSet.put(newName, new UMLClass(newName));
         relationshipList.put(newName, tempRelationships);
 
@@ -128,6 +165,15 @@ public class UMLDocument
         if(!relationshipList.containsKey(className))
             return false;
         relationshipList.remove(className);
+        for(String source : new ArrayList<>(relationshipList.keySet())){
+            ArrayList<UMLRelationship> relationships = relationshipList.get(source);
+            if(relationships != null){
+                relationships.removeIf(relationship -> relationship.getDestinationName().equals(className));
+                if(relationships.isEmpty()){
+                    relationshipList.remove(source);
+                }
+            }
+        }
         return true;
     }
     /**
@@ -200,11 +246,41 @@ public class UMLDocument
     }
     public boolean isFileLocationValid()
     {
-        throw new UnsupportedOperationException("No feature exists!");
+        if (this.fileLocation == null || this.fileLocation.trim().isEmpty()) {
+            return false;
+        }
+        File file = new File(this.fileLocation);
+        try {
+            file.createNewFile();
+        } catch (IOException ex) {
+            System.getLogger(UMLDocument.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
+        return file.exists();
     }
     public void save()
     {
-        throw new UnsupportedOperationException("No feature exists!");
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        String jsonString = gson.toJson(this);
+            try (FileWriter writer = new FileWriter("UMLDocument.json")) {
+            writer.write(jsonString);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public void load()
+    {
+        Gson gson = new Gson();
+        try (BufferedReader reader = new BufferedReader(new FileReader("UMLDocument.json"))) {
+        // Deserialize the JSON into your Java object
+        var data = gson.fromJson(reader, UMLDocument.class);
+        this.classSet=data.classSet;
+        this.fileLocation=data.fileLocation;
+        this.relationshipList=data.relationshipList;
+        } catch (IOException e) {
+                System.err.println("Error reading JSON file: " + e.getMessage());
+            }
+        
     }
 
     /**
@@ -218,6 +294,8 @@ public class UMLDocument
         if (classSet.containsKey(className)) return null;
         UMLClass umlclass = new UMLClass(className);
         classSet.put(className, umlclass);
+        ArrayList<UMLRelationship> newList = new ArrayList<>();
+        relationshipList.put(className, newList);
         return umlclass;
     }
 
@@ -228,6 +306,25 @@ public class UMLDocument
     {
         return classSet.size();
     }
+
+    /**
+     * Getter method for classSet
+     *
+     * @return Map - classSet
+     */
+    public Map<String, UMLClass> getClassSet() {
+        return this.classSet;
+    }
+
+    /**
+     * Getter method for relationshipList
+     *
+     * @return Map - relationshipList
+     */
+    public Map<String, ArrayList<UMLRelationship>> getRelationshipList() {
+        return this.relationshipList;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if(this == obj)
@@ -238,7 +335,13 @@ public class UMLDocument
         UMLDocument castedObject = (UMLDocument)obj;
         //Bare bones implementation.
         //TODO: When you add more to the class, maintain this equals function.
-        return castedObject.fileLocation.equals(this.fileLocation);
+        if(castedObject.fileLocation.equals(this.fileLocation)){
+            if(castedObject.classSet.equals(this.classSet)){
+                return castedObject.relationshipList.equals(this.relationshipList);
+            }
+            return false;
+        }
+        return false;
     }
     @Override
     public int hashCode() {

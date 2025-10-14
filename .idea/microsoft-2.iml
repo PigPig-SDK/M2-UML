@@ -40,5 +40,6 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="firstbird.backbone.gson_2.12" level="project" />
   </component>
 </module>

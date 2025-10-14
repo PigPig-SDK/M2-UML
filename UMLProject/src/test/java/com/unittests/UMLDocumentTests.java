@@ -213,4 +213,28 @@ public class UMLDocumentTests
         assertFalse(umldocument.addRelationship("a", "b"));
         assertEquals(1,umldocument.getAllRelationships("a").size());
     }
+       @Test 
+        public void save_load_UMLDocument_Success()
+    {
+        // Arrange
+        UMLDocument umldocument = new UMLDocument("test1");
+        UMLDocument umldocument2 = new UMLDocument("test2");
+        umldocument.addClass("a");
+        umldocument.addClass("b");
+        umldocument.addClass("c");
+        umldocument.save();
+        umldocument2.load();
+        // Act/Assert
+        assertNotNull(umldocument2.getAllRelationships("a"));
+        assertEquals(umldocument, umldocument2);
+    }
+        @Test 
+        public void isFileLocationValid_Success()
+    {
+        // Arrange
+        String fileString = "test.json";
+        UMLDocument umldocument = new UMLDocument(fileString);
+        // Act/Assert
+        assertTrue(umldocument.isFileLocationValid());
+    }
 }
