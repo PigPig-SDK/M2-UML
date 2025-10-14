@@ -31,7 +31,7 @@ public class UMLClass {
     }
 
     /**
-     * getter method for fields
+     * getter method for a single field
      *
      * @return fields hashMap
      */
@@ -40,12 +40,30 @@ public class UMLClass {
     }
 
     /**
-     * getter method for methods
+     * getter method for a single method
      *
      * @return methods hashmap
      */
     public ArrayList<UMLMethod> getMethods(String methodName) {
         return this.methods.get(methodName);
+    }
+
+    /**
+     * getter method for fields
+     *
+     * @return fields hashMap
+     */
+    public HashMap<String, UMLDataField> getFieldsAll() {
+        return this.fields;
+    }
+
+    /**
+     * getter method for methods
+     *
+     * @return methods hashmap
+     */
+    public HashMap<String, ArrayList<UMLMethod>> getMethodsAll() {
+        return this.methods;
     }
 
     /**

@@ -190,7 +190,7 @@ public class CommandAdd extends BaseCommand
                     return;
                 }
                 //Bad api. Should not be getting the map then sifting through it manually. Oh well.
-                ArrayList<UMLMethod> methodList = umlClass.getMethods().get(methodName);
+                ArrayList<UMLMethod> methodList = umlClass.getMethodsAll().get(methodName);
                 UMLMethod[] methodArray = methodList.toArray(UMLMethod[]::new);
                 if(methodArray == null || methodArray.length == 0)
                 {
