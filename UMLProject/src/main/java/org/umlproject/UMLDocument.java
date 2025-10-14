@@ -297,6 +297,25 @@ public class UMLDocument
     {
         return classSet.size();
     }
+
+    /**
+     * Getter method for classSet
+     *
+     * @return Map - classSet
+     */
+    public Map<String, UMLClass> getClassSet() {
+        return this.classSet;
+    }
+
+    /**
+     * Getter method for relationshipList
+     *
+     * @return Map - relationshipList
+     */
+    public Map<String, ArrayList<UMLRelationship>> getRelationshipList() {
+        return this.relationshipList;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if(this == obj)
