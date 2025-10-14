@@ -35,8 +35,8 @@ public class UMLClass {
      *
      * @return fields hashMap
      */
-    public HashMap<String, UMLDataField> getFields() {
-        return this.fields;
+    public UMLDataField getFields(String fieldName) {
+        return this.fields.get(fieldName);
     }
 
     /**
@@ -44,8 +44,8 @@ public class UMLClass {
      *
      * @return methods hashmap
      */
-    public HashMap<String, ArrayList<UMLMethod>> getMethods() {
-        return this.methods;
+    public ArrayList<UMLMethod> getMethods(String methodName) {
+        return this.methods.get(methodName);
     }
 
     /**
