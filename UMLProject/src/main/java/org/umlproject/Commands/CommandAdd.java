@@ -87,7 +87,7 @@ public class CommandAdd extends BaseCommand
                     UMLMethod method = new UMLMethod();
                     method.setMethodName(methodName);
                     List<String> remainingArgsList = new ArrayList<>(Arrays.asList(args));
-                    System.out.println(remainingArgsList);
+                    //System.out.println(remainingArgsList);
                     remainingArgsList.remove(2);//"methodname"
                     remainingArgsList.remove(1);//"classname"
                     remainingArgsList.remove(0);//"method"
