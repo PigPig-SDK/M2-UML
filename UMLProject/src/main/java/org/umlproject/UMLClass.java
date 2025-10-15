@@ -100,12 +100,12 @@ public class UMLClass {
     }
 
     /**
-     * The removeField method requires a unique Field name as input (note the hashMap
-     * ensures all DataFields are uniquely named atm). If name can be located in fields hashmap,
-     * then it will be removed and true will be returned. If name is not in hashMap, then false will be
+     * The removeField method requires a String fieldName as input (note the hashMap
+     * ensures all DataFields are uniquely named atm). If a matching name can be located in fields hashmap,
+     * then it will be removed and true will be returned. If fieldName is not in hashMap, then false will be
      * returned.
      *
-     * @param fieldName unique name of the UMLDataField object to be removed
+     * @param fieldName  unique name of the UMLDataField object to be removed
      * @return boolean value representing success of removal
      */
     public boolean removeField(String fieldName) {
