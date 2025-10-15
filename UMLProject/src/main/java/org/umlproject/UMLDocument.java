@@ -268,11 +268,35 @@ public class UMLDocument
             e.printStackTrace();
         }
     }
+    public void save(String filename)
+    {
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        String jsonString = gson.toJson(this);
+            try (FileWriter writer = new FileWriter(filename + FILEEXTENT_STRING)) {
+            writer.write(jsonString);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
     
     public void load()
     {
         Gson gson = new Gson();
         try (BufferedReader reader = new BufferedReader(new FileReader(DEFAULT_FILENAME))) {
+        // Deserialize the JSON into your Java object
+        var data = gson.fromJson(reader, UMLDocument.class);
+        this.classSet=data.classSet;
+        this.fileLocation=data.fileLocation;
+        this.relationshipList=data.relationshipList;
+        } catch (IOException e) {
+                System.err.println("Error reading JSON file: " + e.getMessage());
+            }
+        
+    }
+        public void load(String filename)
+    {
+        Gson gson = new Gson();
+        try (BufferedReader reader = new BufferedReader(new FileReader(filename + FILEEXTENT_STRING))) {
         // Deserialize the JSON into your Java object
         var data = gson.fromJson(reader, UMLDocument.class);
         this.classSet=data.classSet;
