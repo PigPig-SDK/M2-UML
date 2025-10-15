@@ -171,9 +171,9 @@ public class UMLDataField {
      */
     @Override
     public String toString(){
-        String data = "name: " + this.name + ", dataType: " + this.dataType +", " + "Visibility: " + this.visibility +
-                ", customeNameType: " + this.customNameType;
-        return data;
+        if(this.visibility == null)
+            return String.format("%s %s %s", "NULL" , (this.dataType == DataType.OTHER)? this.customNameType : this.dataType, this.name);
+        return String.format("%s %s %s", this.visibility.toString(), (this.dataType == DataType.OTHER)? this.customNameType : this.dataType, this.name);
     }
 
     /** equals method for checking if two DataFields are equal
