@@ -155,7 +155,7 @@ public class UMLMethod
      */
     @Override
     public String toString() {
-        return String.format("%s : %s", methodName, parameters);
+        return String.format("%s %s", methodName, parameters);
     }
 
 
