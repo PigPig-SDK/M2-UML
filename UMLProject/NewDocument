@@ -1,0 +1,25 @@
+{
+  "fileLocation": "NewDocument.json",
+  "classSet": {
+    "a": {
+      "className": "a",
+      "fields": {},
+      "methods": {}
+    },
+    "b": {
+      "className": "b",
+      "fields": {},
+      "methods": {}
+    },
+    "c": {
+      "className": "c",
+      "fields": {},
+      "methods": {}
+    }
+  },
+  "relationshipList": {
+    "a": [],
+    "b": [],
+    "c": []
+  }
+}
