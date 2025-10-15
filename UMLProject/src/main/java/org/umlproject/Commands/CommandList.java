@@ -1,7 +1,6 @@
 package org.umlproject.Commands;
 
 import org.umlproject.*;
-import scala.Array;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
