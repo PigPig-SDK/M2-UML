@@ -165,6 +165,7 @@ public class UMLDocument
         if(!relationshipList.containsKey(className))
             return false;
         relationshipList.remove(className);
+        //need to ensure className is removed as a destination value in all other relationships
         for(String source : new ArrayList<>(relationshipList.keySet())){
             ArrayList<UMLRelationship> relationships = relationshipList.get(source);
             if(relationships != null){
