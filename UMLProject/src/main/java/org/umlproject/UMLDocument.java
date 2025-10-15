@@ -262,7 +262,7 @@ public class UMLDocument
     {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String jsonString = gson.toJson(this);
-            try (FileWriter writer = new FileWriter("UMLDocument.json")) {
+            try (FileWriter writer = new FileWriter(DEFAULT_FILENAME)) {
             writer.write(jsonString);
         } catch (IOException e) {
             e.printStackTrace();
@@ -272,7 +272,7 @@ public class UMLDocument
     public void load()
     {
         Gson gson = new Gson();
-        try (BufferedReader reader = new BufferedReader(new FileReader("UMLDocument.json"))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(DEFAULT_FILENAME))) {
         // Deserialize the JSON into your Java object
         var data = gson.fromJson(reader, UMLDocument.class);
         this.classSet=data.classSet;

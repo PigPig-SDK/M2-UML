@@ -12,7 +12,7 @@ public class CommandSave extends BaseCommand {
     @Override
     public void act(String[] args) {
         UMLDocument.getInstance().save();
-        System.out.println("Document loaded.");
+        System.out.println("Document saved.");
     }
 
     @Override
