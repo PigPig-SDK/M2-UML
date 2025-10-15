@@ -13,12 +13,23 @@ public class CommandSave extends BaseCommand {
     public void act(String[] args) {
         switch (args.length) {
             case 0 -> {
-                UMLDocument.getInstance().save();
-                System.out.println("Document saved.");
+                boolean saveCompleted = UMLDocument.getInstance().save();
+                if(saveCompleted)
+                    System.out.println(String.format("Document saved to %s",UMLDocument.getInstance().getFileLocation()));
+                else
+                    System.out.println("Document failed to save!");
+
             }
             case 1 -> {
-                UMLDocument.getInstance().save(args[0]);
-                System.out.println("Document saved as " + args[0] + ".");
+                String fileLocation = args[0];
+                boolean saveCompleted = UMLDocument.getInstance().save(fileLocation);
+                if(saveCompleted)
+                {
+                    UMLDocument.getInstance().setFileLocation(fileLocation);
+                    System.out.println(String.format("Document saved to %s",fileLocation));
+                }
+                else
+                    System.out.println("Document failed to save!");
             }
             default -> System.out.println("Please provide a valid filename.");
         }

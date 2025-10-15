@@ -16,12 +16,12 @@ public class UMLDocument
 {
     private static UMLDocument instance;
     
-    private String fileLocation = null;
+    transient String fileLocation = null;
     private Map<String, UMLClass> classSet = new HashMap<>();
     private Map<String,ArrayList<UMLRelationship>> relationshipList = new HashMap<>();
     
     private static final String FILEEXTENT_STRING = ".json";
-    private static final String DEFAULT_FILENAME = "NewDocument";
+    private static final String DEFAULT_FILEDIRECTORY = "Documents/NewUMLDocument";
 
     
     /**
@@ -32,7 +32,7 @@ public class UMLDocument
     {
         if(instance == null)
         {
-            instance = new UMLDocument(DEFAULT_FILENAME);
+            instance = new UMLDocument(DEFAULT_FILEDIRECTORY);
         }
         return instance;
     }
@@ -45,11 +45,11 @@ public class UMLDocument
     {
         if(fileLocation == null || fileLocation.isEmpty())
         {
-            this.fileLocation = DEFAULT_FILENAME + FILEEXTENT_STRING;
+            this.fileLocation = DEFAULT_FILEDIRECTORY;
         }
         else
         {
-            this.fileLocation = fileLocation + FILEEXTENT_STRING;
+            this.fileLocation = fileLocation;
         }
     }
     public String getFileLocation()
@@ -258,54 +258,47 @@ public class UMLDocument
         }
         return file.exists();
     }
-    public void save()
+    /**
+     * Calls save on the
+     * @return True if the save was preformed
+     */
+    public boolean save()
     {
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        String jsonString = gson.toJson(this);
-            try (FileWriter writer = new FileWriter(DEFAULT_FILENAME)) {
-            writer.write(jsonString);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        return save(fileLocation);
     }
-    public void save(String filename)
+    public boolean save(String filename)
     {
+        if(fileLocation == null)
+            return false;
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String jsonString = gson.toJson(this);
-            try (FileWriter writer = new FileWriter(filename + FILEEXTENT_STRING)) {
+        try (FileWriter writer = new FileWriter(filename + FILEEXTENT_STRING)) {
             writer.write(jsonString);
-        } catch (IOException e) {
-            e.printStackTrace();
+        } 
+        catch (IOException e) {
+            return false;
         }
+        return true;
     }
     
-    public void load()
+    public boolean load()
     {
-        Gson gson = new Gson();
-        try (BufferedReader reader = new BufferedReader(new FileReader(DEFAULT_FILENAME))) {
-        // Deserialize the JSON into your Java object
-        var data = gson.fromJson(reader, UMLDocument.class);
-        this.classSet=data.classSet;
-        this.fileLocation=data.fileLocation;
-        this.relationshipList=data.relationshipList;
-        } catch (IOException e) {
-                System.err.println("Error reading JSON file: " + e.getMessage());
-            }
-        
+        return load(fileLocation);
     }
-        public void load(String filename)
+    public boolean load(String filename)
     {
         Gson gson = new Gson();
         try (BufferedReader reader = new BufferedReader(new FileReader(filename + FILEEXTENT_STRING))) {
-        // Deserialize the JSON into your Java object
-        var data = gson.fromJson(reader, UMLDocument.class);
-        this.classSet=data.classSet;
-        this.fileLocation=data.fileLocation;
-        this.relationshipList=data.relationshipList;
-        } catch (IOException e) {
-                System.err.println("Error reading JSON file: " + e.getMessage());
-            }
-        
+            // Deserialize the JSON into your Java object
+            var data = gson.fromJson(reader, UMLDocument.class);
+            this.classSet=data.classSet;
+            this.fileLocation=data.fileLocation;
+            this.relationshipList=data.relationshipList;
+        } 
+        catch (IOException e) {
+            return false;
+        }
+        return true;
     }
 
     /**

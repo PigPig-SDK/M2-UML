@@ -12,14 +12,23 @@ public class CommandLoad extends BaseCommand{
 
     @Override
     public void act(String[] args) {
-                switch (args.length) {
+        switch (args.length) {
             case 0 -> {
-                UMLDocument.getInstance().load();
-                System.out.println("Document loaded.");
+                boolean isLoadSuccessful = UMLDocument.getInstance().load();
+                if(isLoadSuccessful)
+                    System.out.println("Document loaded.");
+                else
+                    System.err.println("DOCUMENT FAILED TO LOAD! No default document exists!");
             }
             case 1 -> {
-                UMLDocument.getInstance().load(args[0]);
-                System.out.println("Document " + args[0] + " loaded.");
+                String fileLocation = args[0];
+                boolean isLoadSuccessful = UMLDocument.getInstance().load(fileLocation);
+                if(isLoadSuccessful)
+                    System.out.println("Document " + fileLocation + " loaded.");
+                else
+                {
+                    System.err.println("Document " + fileLocation + " FAILED to load.");
+                }
             }
             default -> System.out.println("Please provide a valid filename.");
         }
