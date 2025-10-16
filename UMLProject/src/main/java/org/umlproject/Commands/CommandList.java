@@ -49,7 +49,7 @@ public class CommandList extends BaseCommand{
                             .get(currentClass.getClassName())){
                         System.out.println("    " + currentRelationship);
                     }
-
+                    System.out.println();
                 }
             }
 

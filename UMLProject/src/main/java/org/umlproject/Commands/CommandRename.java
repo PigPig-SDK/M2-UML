@@ -1,6 +1,5 @@
 package org.umlproject.Commands;
 
-import com.fasterxml.jackson.databind.ser.Serializers;
 import org.umlproject.*;
 
 import java.util.ArrayList;
@@ -15,7 +14,7 @@ public class CommandRename extends BaseCommand{
     @Override
     public void act(String[] args) {
 
-        if(args == null || args.length != 3)
+        if(args == null || (args.length != 3 && args.length != 4))
         {
             System.out.println(description());
             return;
@@ -24,65 +23,80 @@ public class CommandRename extends BaseCommand{
         String choice = args[0];
 
         TerminalHandler.printLineBreak();
+
+        String className = args[1];
+        UMLClass umlclass = UMLDocument.getInstance().getClass(className);
+        if (umlclass == null) {
+            System.out.println("Class " + className+ " doesnt exist\n" + description());
+            return;
+        }
+
         switch(choice){
 
             case "class" -> {
-                if (args.length == 3) {
-                    String oldClassName = args[1];
-                    String newClassName = args[2];
-                    UMLClass umlclass = UMLDocument.getInstance().getClass(oldClassName);
-
-                    if (umlclass == null) {
-                        System.out.println("Class " + oldClassName+ " doesnt exist");
-                        return;
-                    } else {
-                        System.out.println("Class already renamed");
-                    }
-
-                    boolean classRenamed = UMLDocument.getInstance().renameClass(oldClassName, newClassName);
-                    if (classRenamed) {
-                        System.out.println("Class successfully renamed");
-                    }
-
+                if(args.length != 3){
+                    System.out.println("Incorrect amount of arguments\n" + description());
+                    return;
                 }
+
+                String newClassName = args[2];
+
+
+                boolean classRenamed = UMLDocument.getInstance().renameClass(className, newClassName);
+                if (classRenamed) {
+                    System.out.println("Class successfully renamed");
+                } else{
+                    System.out.println("Class rename failed");
+                }
+
             }
 
             case "method" -> {
-                if (args.length == 4) {
-
-                    String className = args[1];
-                    String oldMethodName = args[2];
-                    String newMethodName = args[3];
-                    UMLClass umlclass = UMLDocument.getInstance().getClass(className); // search if the class exists
-                    if (umlclass == null) {
-                        System.out.println("Class " + className+ " doesnt exist");
-                    }
-
-                    boolean methodRenamed = umlclass.renameMethod(oldMethodName, newMethodName, promptUserSelectionFromList() );
+                if(args.length != 4){
+                    System.out.println("Incorrect amount of arguments\n" + description());
+                    return;
                 }
+
+                String oldMethodName = args[2];
+                String newMethodName = args[3];
+
+                ArrayList<UMLMethod> OldMethodOverloaded = umlclass.getMethods(oldMethodName);
+
+                //get proper oldMethod
+                UMLMethod index =
+                        promptUserSelectionFromList(OldMethodOverloaded.toArray(UMLMethod[]::new));
+
+                //remove old method, add new one
+                boolean methodRemoved = OldMethodOverloaded.remove(index);
+                if(OldMethodOverloaded.isEmpty()){
+                    umlclass.getMethodsAll().remove(oldMethodName);
+                }
+                index.setMethodName(newMethodName);
+                boolean methodAdded = umlclass.addMethod(index);
+                if(methodRemoved && methodAdded){
+                    System.out.println("Method successfully renamed");
+                } else{
+                    System.out.println("Method rename failed");
+                }
+
 
             }
 
             case "field" -> {
-                if (args.length == 4) {
-                    String className = args[1];
-                    String oldFieldName = args[2];
-                    String newFieldName = args[3];
+                if(args.length != 4){
+                    System.out.println("Incorrect amount of arguments\n" + description());
+                    return;
+                }
 
-                    UMLClass umlclass = UMLDocument.getInstance().getClass(className);
+                String oldFieldName = args[2];
+                String newFieldName = args[3];
 
-                    if (umlclass == null) {
-                        System.out.println("Class " + className + " doesnt exist");
-                        return;
-                    }
 
-                    boolean renamedField = umlclass.renameField(oldFieldName, newFieldName);
-                    if (renamedField) {
-                        System.out.println("Field successfully renamed");
-                    } else {
-                        System.out.println("");
-                    }
-
+                boolean renamedField = umlclass.renameField(oldFieldName, newFieldName);
+                if (renamedField) {
+                    System.out.println("Field successfully renamed");
+                } else {
+                    System.out.println("Field rename failed");
                 }
 
             }
@@ -93,9 +107,9 @@ public class CommandRename extends BaseCommand{
     public String description() {
         return """
                Possible parameters for rename:
-                        rename class <classname> <newname> : Renames a class
-                        rename method <classname> <methodname> : Renames a method, chosen from a list for overloaded methods
-                        rename field <classname> <fieldname> : Renames a field""";
+                        rename class <class name> <new name> : Renames a class
+                        rename method <class name> <old method name> <new method name>: Renames a method, chosen from a list for overloaded methods
+                        rename field <class name> <old field name> <new field name>: Renames a field""";
     }
 
 }
