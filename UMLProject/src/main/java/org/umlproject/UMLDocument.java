@@ -170,9 +170,6 @@ public class UMLDocument
             ArrayList<UMLRelationship> relationships = relationshipList.get(source);
             if(relationships != null){
                 relationships.removeIf(relationship -> relationship.getDestinationName().equals(className));
-                if(relationships.isEmpty()){
-                    relationshipList.remove(source);
-                }
             }
         }
         return true;

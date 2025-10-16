@@ -5,8 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2c23d98f-bcb8-4776-b701-4c18fcf78419" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/../../../../../../.idea/microsoft-2.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../../../.idea/microsoft-2.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UMLClass.java" beforeDir="false" afterPath="$PROJECT_DIR$/UMLClass.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../../../../.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../../../.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -31,7 +31,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "UMLClass",
+    "git-widget-placeholder": "dev",
     "ignore.virus.scanning.warn.message": "true",
     "last_opened_file_path": "D:/Documents/GitHub/microsoft-2",
     "node.js.detected.package.eslint": "true",
@@ -75,6 +75,8 @@
       <workItem from="1760058079658" duration="152000" />
       <workItem from="1760213484766" duration="48000" />
       <workItem from="1760213612710" duration="627000" />
+      <workItem from="1760494869079" duration="13000" />
+      <workItem from="1760647221338" duration="16000" />
     </task>
     <servers />
   </component>
