@@ -87,7 +87,7 @@ public class CommandAdd extends BaseCommand
                     UMLMethod method = new UMLMethod();
                     method.setMethodName(methodName);
                     List<String> remainingArgsList = new ArrayList<>(Arrays.asList(args));
-                    System.out.println(remainingArgsList);
+                    //System.out.println(remainingArgsList);
                     remainingArgsList.remove(2);//"methodname"
                     remainingArgsList.remove(1);//"classname"
                     remainingArgsList.remove(0);//"method"
@@ -156,7 +156,7 @@ public class CommandAdd extends BaseCommand
                         field.setVisibility(visibility);//Api could be better for UMLDataField constructor.
                         boolean success = umlClass.addField(field);
                         if(success)
-                            System.out.println(String.format("add field | The field has been added to '%s' : %s %s %s",args[1],visibility.toString(), dataType.toString(), fieldName));
+                            System.out.println(String.format("add field | The field has been added to '%s' : %s",args[1], field.toString()));
                         else
                             System.out.println("add field | The field already exists.");
                     }
@@ -226,7 +226,7 @@ public class CommandAdd extends BaseCommand
                         class <classname> : Adds a class with a given classname
                         relationship <source> <destination> : Adds a relationship between two classes
                         method <target class> <method name> <type1> <name1> ... <type10> <name10>: Adds a method to the target class
-                        field <target class> <type> <visibility> <name> : Adds a field to the target class
+                        field <target class> <visibility> <type> <name> : Adds a field to the target class
                         param <target class> <method name> : Starts the process for adding a param to a classes method""";
     }
 }
