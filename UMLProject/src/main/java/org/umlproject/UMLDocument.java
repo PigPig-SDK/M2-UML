@@ -21,7 +21,7 @@ public class UMLDocument
     private Map<String,ArrayList<UMLRelationship>> relationshipList = new HashMap<>();
     
     private static final String FILEEXTENT_STRING = ".json";
-    private static final String DEFAULT_FILEDIRECTORY = "Documents/NewUMLDocument";
+    private static final String DEFAULT_FILEDIRECTORY = "Documents" + File.separator + "NewUMLDocument";
 
     
     /**
@@ -264,7 +264,7 @@ public class UMLDocument
      */
     public boolean save()
     {
-        return save(fileLocation);
+        return save(this.getFileLocation());
     }
     public boolean save(String filename)
     {
@@ -278,12 +278,13 @@ public class UMLDocument
         catch (IOException e) {
             return false;
         }
+        this.fileLocation = filename;
         return true;
     }
     
-    public boolean load()
+    public boolean quickLoad()
     {
-        return load(fileLocation);
+        return load(this.getFileLocation());
     }
     public boolean load(String filename)
     {
@@ -298,6 +299,7 @@ public class UMLDocument
         catch (IOException e) {
             return false;
         }
+        this.fileLocation=filename;
         return true;
     }
 

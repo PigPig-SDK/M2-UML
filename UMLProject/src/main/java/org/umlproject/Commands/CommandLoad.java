@@ -14,9 +14,9 @@ public class CommandLoad extends BaseCommand{
     public void act(String[] args) {
         switch (args.length) {
             case 0 -> {
-                boolean isLoadSuccessful = UMLDocument.getInstance().load();
+                boolean isLoadSuccessful = UMLDocument.getInstance().quickLoad();
                 if(isLoadSuccessful)
-                    System.out.println("Document loaded.");
+                    System.out.println("Document " + UMLDocument.getInstance().getFileLocation() + " loaded.");
                 else
                     System.err.println("DOCUMENT FAILED TO LOAD! No default document exists!");
             }
