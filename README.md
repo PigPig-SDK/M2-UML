@@ -16,7 +16,19 @@ save <'file directory',_>
 quit
 ```
 # Running the program
-0. If you are not on windows, format your hard drive and install windows, then return to this guide.
 1. Download and install the java development kit: https://www.oracle.com/java/technologies/downloads/
-2. Clone this respository
-3. Download Maven from https://maven.apache.org/download.cgi
+2. Install Maven
+##### For windows
+Download Maven from https://maven.apache.org/download.cgi (Specifically the binary zip archive)  
+Unzip the maven folder to 'C:/' directory. You should now have a directory called 'C:\apache-maven-3.9.11'.  
+Then press 'win + r', in the newly opened diologue box, type 'sysdm.cpl' and click 'ok'.  
+A 'System Properties' diologue box should open. Navigate to the 'Advanced' tab. Click 'Environment Variables...'  
+Select the 'path' option and select 'edit'.  
+Inside of 'Edit environment variable' diologue box, click 'new' and write the following text  
+'C:\apache-maven-3.9.11\bin'  
+This should reflect the directory you made previously.  
+Maven should now be setup.  
+##### For linux  
+In your terminal write 'sudo apt install maven'  
+Maven should now be setup.  
+3. Clone this respository  
