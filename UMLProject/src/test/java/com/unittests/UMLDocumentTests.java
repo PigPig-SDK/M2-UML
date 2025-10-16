@@ -16,7 +16,7 @@ public class UMLDocumentTests
         UMLDocument umldocument = new UMLDocument(fileString);
         // Act
         // Assert
-        assertEquals(fileString + ".json", umldocument.getFileLocation());
+        assertEquals(fileString, umldocument.getFileLocation());
     }
     @Test
     public void addClass_multiclass_success()
