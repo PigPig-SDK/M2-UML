@@ -41,10 +41,12 @@ public class CommandTests
     @Test
     public void rename_class_success()
     {
+        //Arrange
         UMLDocument doc = UMLDocument.getInstance();
-
         doc.addClass("a");
+        //Act
         TerminalHandler.runCommand("rename class a b");
+        //Assert
         assertNull(doc.getClass("a"));
         assertNotNull(doc.getClass("b"));
 
@@ -54,15 +56,15 @@ public class CommandTests
     @Test
     public void rename_class_duplicate_exists()
     {
-
+        //Arrange
         ByteArrayOutputStream caught = new ByteArrayOutputStream();
         System.setOut(new PrintStream(caught));
-
         UMLDocument doc = UMLDocument.getInstance();
-
         doc.addClass("a");
         doc.addClass("b");
+        //Act
         TerminalHandler.runCommand("rename class a b");
+        //Assert
         assertEquals( "---------------------\r\nClass rename failed".trim(), caught.toString().trim());
 
 
@@ -71,29 +73,29 @@ public class CommandTests
     @Test
     public void rename_method_success()
     {
-
+        //Arrange
         UMLDocument doc = UMLDocument.getInstance();
-
         ArrayList<UMLParameter> temp= new ArrayList<UMLParameter>();
         temp.add(new UMLParameter("temp", DataType.INT, "other"));
-
         doc.addClass("a");
         doc.getClass("a").addMethod(new UMLMethod("Burger", temp));
+        //Act
         TerminalHandler.runCommand("rename method a Burger Sandwich");
         assertNull(doc.getClass("a").getMethods("Burger"));
         assertNotNull(doc.getClass("a").getMethods("Sandwich"));
-
-
+        //Assert
     }
     @Test
     public void rename_field_success()
     {
 
+        //Arrange
         UMLDocument doc = UMLDocument.getInstance();
-
         doc.addClass("a");
         doc.getClass("a").addField(new UMLDataField("Burger", DataType.INT));
+        //Act
         TerminalHandler.runCommand("rename field a Burger Sandwich");
+        //Assert
         assertNull(doc.getClass("a").getFields("Burger"));
         assertNotNull(doc.getClass("a").getFields("Sandwich"));
 
