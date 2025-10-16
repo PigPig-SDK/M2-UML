@@ -222,8 +222,10 @@ public class UMLDocumentTests
         umldocument.addClass("a");
         umldocument.addClass("b");
         umldocument.addClass("c");
-        umldocument.save();
-        umldocument2.load();
+        umldocument.save("ello");
+        umldocument2.load("ello");
+        umldocument2.addClass("d");
+        umldocument2.quickLoad();
         // Act/Assert
         assertNotNull(umldocument2.getAllRelationships("a"));
         assertEquals(umldocument, umldocument2);
