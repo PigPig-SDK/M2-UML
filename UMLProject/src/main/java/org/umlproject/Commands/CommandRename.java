@@ -14,7 +14,7 @@ public class CommandRename extends BaseCommand{
     @Override
     public void act(String[] args) {
 
-        if(args == null || (args.length != 3 && args.length != 4))
+        if(args == null)
         {
             System.out.println(description());
             return;
@@ -24,12 +24,7 @@ public class CommandRename extends BaseCommand{
 
         TerminalHandler.printLineBreak();
 
-        String className = args[1];
-        UMLClass umlclass = UMLDocument.getInstance().getClass(className);
-        if (umlclass == null) {
-            System.out.println("Class " + className+ " doesnt exist\n" + description());
-            return;
-        }
+
 
         switch(choice){
 
@@ -39,10 +34,17 @@ public class CommandRename extends BaseCommand{
                     return;
                 }
 
+                String oldClassName = args[1];
+                UMLClass umlclass = UMLDocument.getInstance().getClass(oldClassName);
+                if (umlclass == null) {
+                    System.out.println("Class " + oldClassName+ " doesnt exist\n" + description());
+                    return;
+                }
+
                 String newClassName = args[2];
 
 
-                boolean classRenamed = UMLDocument.getInstance().renameClass(className, newClassName);
+                boolean classRenamed = UMLDocument.getInstance().renameClass(oldClassName, newClassName);
                 if (classRenamed) {
                     System.out.println("Class successfully renamed");
                 } else{
@@ -57,18 +59,28 @@ public class CommandRename extends BaseCommand{
                     return;
                 }
 
+                String className = args[1];
+                UMLClass umlclass = UMLDocument.getInstance().getClass(className);
+                if (umlclass == null) {
+                    System.out.println("Class " + className+ " doesnt exist\n" + description());
+                    return;
+                }
+
                 String oldMethodName = args[2];
+                ArrayList<UMLMethod> oldMethodOverloaded = umlclass.getMethods(oldMethodName);
+                if(oldMethodOverloaded == null){
+                    System.out.println("Method " + oldMethodName+ " doesnt exist\n" + description());
+                    return;
+                }
+
                 String newMethodName = args[3];
-
-                ArrayList<UMLMethod> OldMethodOverloaded = umlclass.getMethods(oldMethodName);
-
                 //get proper oldMethod
                 UMLMethod index =
-                        promptUserSelectionFromList(OldMethodOverloaded.toArray(UMLMethod[]::new));
+                        promptUserSelectionFromList(oldMethodOverloaded.toArray(UMLMethod[]::new));
 
                 //remove old method, add new one
-                boolean methodRemoved = OldMethodOverloaded.remove(index);
-                if(OldMethodOverloaded.isEmpty()){
+                boolean methodRemoved = oldMethodOverloaded.remove(index);
+                if(oldMethodOverloaded.isEmpty()){
                     umlclass.getMethodsAll().remove(oldMethodName);
                 }
                 index.setMethodName(newMethodName);
@@ -88,6 +100,13 @@ public class CommandRename extends BaseCommand{
                     return;
                 }
 
+                String className = args[1];
+                UMLClass umlclass = UMLDocument.getInstance().getClass(className);
+                if (umlclass == null) {
+                    System.out.println("Class " + className+ " doesnt exist\n" + description());
+                    return;
+                }
+
                 String oldFieldName = args[2];
                 String newFieldName = args[3];
 
@@ -99,6 +118,10 @@ public class CommandRename extends BaseCommand{
                     System.out.println("Field rename failed");
                 }
 
+            }
+
+            default -> {
+                System.out.println(description());
             }
         }
     }
