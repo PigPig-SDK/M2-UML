@@ -19,7 +19,7 @@ Adam, Aidan, Keetyn, Michelle, Sean
 1. Download and install the java development kit: https://www.oracle.com/java/technologies/downloads/
 3. Clone this respository
 4. In the cloned respository, open your terminal and type ```.\mvnw package```
-5. Now that the app is built, go to 'target' and open your terminal
+5. Now that the app is built, go to the 'target' subdirectory and open your terminal from this directory
 6. Inside your terminal write 
 ```java -jar UMLProject-1.0-SNAPSHOT.jar```
 7. Verify that this process didn’t totally blow your socks off.
