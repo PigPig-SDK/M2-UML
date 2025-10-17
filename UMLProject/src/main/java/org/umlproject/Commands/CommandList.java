@@ -1,7 +1,10 @@
 package org.umlproject.Commands;
 
 import org.umlproject.*;
+import scala.Array;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 
 
@@ -22,14 +25,34 @@ public class CommandList extends BaseCommand{
         }
 
         String choice = args[0];
+
         TerminalHandler.printLineBreak();
         switch(choice){
 
             case "classes" -> {
-                for(String classString : UMLDocument.getInstance().getClassSet().keySet()){
-                    printClass(classString);
+                for(UMLClass currentClass : UMLDocument.getInstance().getClassSet().values()){
+                    //Print class name
+                    System.out.println("Class name: " + currentClass.getClassName());
+                    //Print class fields
+                    System.out.println("Fields: ");
+                    for(UMLDataField currentField : currentClass.getFieldsAll().values()){
+                        System.out.println("    " + currentField);
+                    }
+                    //Print class methods
+                    System.out.println("Methods: ");
+                    for(ArrayList<UMLMethod> currentMethod : currentClass.getMethodsAll().values()){
+                        System.out.println("    " + currentMethod);
+                    }
+                    //Print class relationships
+                    System.out.println("Relationships: ");
+                    for(UMLRelationship currentRelationship : UMLDocument.getInstance().getRelationshipList()
+                            .get(currentClass.getClassName())){
+                        System.out.println("    " + currentRelationship);
+                    }
+                    System.out.println();
                 }
             }
+
             case "relationships" -> {
                 //Prints all relationships
                 for(String relationshipSource : UMLDocument.getInstance().getRelationshipList().keySet()){
@@ -41,41 +64,39 @@ public class CommandList extends BaseCommand{
 
                 }
             }
+
             default -> {
-                printClass(choice);
+
+                UMLClass tempClass = UMLDocument.getInstance().getClass(choice);
+                if(tempClass == null){
+                    System.out.println("Class: " + choice + " does not exist");
+                    System.out.println(description());
+                    return;
+                }
+
+                //Print class name
+                System.out.println("Class name: " + choice + "\nFields: ");
+                //Print class fields
+                for(UMLDataField currentField : tempClass.getFieldsAll().values()){
+                    System.out.println("    " + currentField);
+                }
+                //Print class methods
+                System.out.println("Methods: ");
+                for(ArrayList<UMLMethod> currentMethod : tempClass.getMethodsAll().values()){
+                    System.out.println("    " + currentMethod);
+                }
+                //Print class relationships
+                System.out.println("Relationships: ");
+                for(UMLRelationship currentRelationship : UMLDocument.getInstance().getRelationshipList()
+                        .get(tempClass.getClassName())){
+                    System.out.println("    " + currentRelationship);
+                }
             }
+
         }
     }
-    private void printClass(String className)
-    {
-        UMLClass tempClass =  UMLDocument.getInstance().getClass(className);
-        
-        if(tempClass == null){
-            System.out.println("Class: " + className + " does not exist");
-            System.out.println(description());
-            return;
-        }
-        //Print class name
-        System.out.println("Class name: " + className + "\nFields: ");
-        //Print class fields
-        for(UMLDataField currentField : tempClass.getFieldsAll().values()){
-            System.out.println("    " + currentField);
-        }
-        //Print class methods
-        System.out.println("Methods: ");
-        for(ArrayList<UMLMethod> currentMethods : tempClass.getMethodsAll().values()){
-            for(UMLMethod imethod : currentMethods)
-            {
-                System.out.println("    " + imethod.toString());
-            }
-        }
-        //Print class relationships
-        System.out.println("Relationships: ");
-        for(UMLRelationship currentRelationship : UMLDocument.getInstance().getRelationshipList()
-                .get(tempClass.getClassName())){
-            System.out.println("    " + currentRelationship);
-        }
-    }
+
+
 
     @Override
     public String description() {
