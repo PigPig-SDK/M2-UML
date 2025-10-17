@@ -75,6 +75,9 @@ public class CommandRename extends BaseCommand{
                 //get proper oldMethod
                 UMLMethod index =
                         promptUserSelectionFromList(oldMethodOverloaded.toArray(UMLMethod[]::new));
+                if(index == null){
+                    return;
+                }
                 //call method rename
                 boolean methodRenamed =
                         umlclass.renameMethod(index.getMethodName(), newMethodName, index.getParameters());
