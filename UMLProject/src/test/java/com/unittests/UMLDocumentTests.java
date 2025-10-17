@@ -12,17 +12,17 @@ public class UMLDocumentTests
     public void getFileLocation_constructor_success()
     {
         // Arrange
-        String fileString = "test.json";
+        String fileString = "test";
         UMLDocument umldocument = new UMLDocument(fileString);
         // Act
         // Assert
-        assertEquals(fileString, umldocument.getFileLocation());
+        assertEquals(fileString + ".json", umldocument.getFileLocation());
     }
     @Test
     public void addClass_multiclass_success()
     {
         // Arrange
-        UMLDocument umldocument = new UMLDocument("test.json");
+        UMLDocument umldocument = new UMLDocument("test");
         // Act
         umldocument.addClass("test class");
         umldocument.addClass("test class 2!!!!!!!!");
@@ -33,7 +33,7 @@ public class UMLDocumentTests
     public void addClass_dupeclass_success()
     {
         // Arrange
-        UMLDocument umldocument = new UMLDocument("test.json");
+        UMLDocument umldocument = new UMLDocument("test");
         // Act
         umldocument.addClass("test class");
         UMLClass testclass = umldocument.addClass("test class");
@@ -46,7 +46,7 @@ public class UMLDocumentTests
     public void deleteClass_successfulDeletion_success()
     {
         // Arrange
-        UMLDocument umldocument = new UMLDocument("test.json");
+        UMLDocument umldocument = new UMLDocument("test");
         // Act
         umldocument.addClass("test class 1");
         // Assert
@@ -57,7 +57,7 @@ public class UMLDocumentTests
     public void deleteClass_classDoesntExist_success()
     {
         // Arrange
-        UMLDocument umldocument = new UMLDocument("test.json");
+        UMLDocument umldocument = new UMLDocument("test");
         // Act
         umldocument.addClass("test class 1");
         // Assert
@@ -67,7 +67,7 @@ public class UMLDocumentTests
     public void renameClass_newNameAlreadyExists_success()
     {
         // Arrange
-        UMLDocument umldocument = new UMLDocument("test.json");
+        UMLDocument umldocument = new UMLDocument("test");
         // Act
         umldocument.addClass("test class 1");
         umldocument.addClass("test class 2");
@@ -78,7 +78,7 @@ public class UMLDocumentTests
     public void renameClass_originalNameDoesntExist_success()
     {
         // Arrange
-        UMLDocument umldocument = new UMLDocument("test.json");
+        UMLDocument umldocument = new UMLDocument("test");
         // Act
         umldocument.addClass("test class 1");
         // Assert
@@ -89,7 +89,7 @@ public class UMLDocumentTests
     public void renameClass_successfulRename_success()
     {
         // Arrange
-        UMLDocument umldocument = new UMLDocument("test.json");
+        UMLDocument umldocument = new UMLDocument("test");
         // Act
         umldocument.addClass("test class 1");
         umldocument.renameClass("test class 1", "test class 2");
@@ -103,7 +103,7 @@ public class UMLDocumentTests
     public void getClass_doesntExist_success()
     {
         // Arrange
-        UMLDocument umldocument = new UMLDocument("test.json");
+        UMLDocument umldocument = new UMLDocument("test");
         // Act
         UMLClass testclass1 = umldocument.addClass("test class");
         UMLClass testclass2 = umldocument.getClass("test class");
@@ -128,7 +128,7 @@ public class UMLDocumentTests
     public void addRelationship_multiple_success()
     {
         // Arrange
-        String fileString = "test.json";
+        String fileString = "test";
         UMLDocument umldocument = new UMLDocument(fileString);
         umldocument.addClass("a");
         umldocument.addClass("b");
@@ -147,7 +147,7 @@ public class UMLDocumentTests
     public void removeRelationship_multiple_success()
     {
         // Arrange
-        String fileString = "test.json";
+        String fileString = "test";
         UMLDocument umldocument = new UMLDocument(fileString);
         umldocument.addClass("a");
         umldocument.addClass("b");
@@ -186,7 +186,7 @@ public class UMLDocumentTests
     public void deleteAllRelationships_multiple_success()
     {
         // Arrange
-        String fileString = "test.json";
+        String fileString = "test";
         UMLDocument umldocument = new UMLDocument(fileString);
         umldocument.addClass("a");
         umldocument.addClass("b");
@@ -222,8 +222,10 @@ public class UMLDocumentTests
         umldocument.addClass("a");
         umldocument.addClass("b");
         umldocument.addClass("c");
-        umldocument.save();
-        umldocument2.load();
+        umldocument.save("ello");
+        umldocument2.load("ello");
+        umldocument2.addClass("d");
+        umldocument2.quickLoad();
         // Act/Assert
         assertNotNull(umldocument2.getAllRelationships("a"));
         assertEquals(umldocument, umldocument2);
@@ -232,7 +234,7 @@ public class UMLDocumentTests
         public void isFileLocationValid_Success()
     {
         // Arrange
-        String fileString = "test.json";
+        String fileString = "test";
         UMLDocument umldocument = new UMLDocument(fileString);
         // Act/Assert
         assertTrue(umldocument.isFileLocationValid());

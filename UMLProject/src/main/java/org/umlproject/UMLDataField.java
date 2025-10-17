@@ -34,7 +34,20 @@ public class UMLDataField {
         this.name = name;
         this.customNameType = customNameType;
     }
-
+    /**
+     * This constructor is the holy trinity of UMLDataField... because customNameType may or may not be used.
+     * @param name of UMLDataField
+     * @param customNameType of UMLDataField
+     * @param dataType of UMLDataField
+     * @param visibility of UMLDataField
+     */
+    public UMLDataField(String name, String customNameType, DataType dataType, Visibility visibility){
+        this.visibility = visibility;
+        this.dataType = dataType;
+        this.name = name;
+        if(dataType.equals(DataType.OTHER)) this.customNameType = customNameType;
+    }
+    
     /**
      * UMLDataFIeld constructor that takes a name and a dataType as parameter. If this constructor is mistakenly
      * called with OTHER as the DataType argument, an exception will be thrown and it will be left to the caller to resolve
@@ -171,9 +184,9 @@ public class UMLDataField {
      */
     @Override
     public String toString(){
-        String data = "name: " + this.name + ", dataType: " + this.dataType +", " + "Visibility: " + this.visibility +
-                ", customeNameType: " + this.customNameType;
-        return data;
+        if(this.visibility == null)
+            return String.format("%s %s %s", "NULL" , (this.dataType == DataType.OTHER)? this.customNameType : this.dataType, this.name);
+        return String.format("%s %s %s", this.visibility.toString(), (this.dataType == DataType.OTHER)? this.customNameType : this.dataType, this.name);
     }
 
     /** equals method for checking if two DataFields are equal
