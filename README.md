@@ -15,7 +15,7 @@ load <'file directory',_>
 save <'file directory',_>
 quit
 ```
-# Running the program
+# Compiling & Running the program
 1. Download and install the java development kit: https://www.oracle.com/java/technologies/downloads/
 2. Install Maven
 ##### For windows
@@ -32,3 +32,12 @@ Maven should now be setup.
 In your terminal write 'sudo apt install maven'  
 Maven should now be setup.  
 3. Clone this respository  
+4. In the cloned respository, execute 'mvnw' inside the UMLProject directory. This will effectively build the application
+5. Now that the app is built, go to 'target' and open your terminal
+6. Inside your terminal write 'java -jar blahblah.jar'
+
+Success! You should have the terminal app opened. 
+If there was a build error and you would like to use the wihhout the convoluted steps, check releases down below.
+
+#Releases
+> Something about the released .jar here.
