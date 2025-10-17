@@ -24,8 +24,6 @@ public class CommandRename extends BaseCommand{
 
         TerminalHandler.printLineBreak();
 
-
-
         switch(choice){
 
             case "class" -> {
@@ -77,20 +75,15 @@ public class CommandRename extends BaseCommand{
                 //get proper oldMethod
                 UMLMethod index =
                         promptUserSelectionFromList(oldMethodOverloaded.toArray(UMLMethod[]::new));
+                //call method rename
+                boolean methodRenamed =
+                        umlclass.renameMethod(index.getMethodName(), newMethodName, index.getParameters());
 
-                //remove old method, add new one
-                boolean methodRemoved = oldMethodOverloaded.remove(index);
-                if(oldMethodOverloaded.isEmpty()){
-                    umlclass.getMethodsAll().remove(oldMethodName);
-                }
-                index.setMethodName(newMethodName);
-                boolean methodAdded = umlclass.addMethod(index);
-                if(methodRemoved && methodAdded){
+                if(methodRenamed){
                     System.out.println("Method successfully renamed");
                 } else{
                     System.out.println("Method rename failed");
                 }
-
 
             }
 
@@ -109,7 +102,6 @@ public class CommandRename extends BaseCommand{
 
                 String oldFieldName = args[2];
                 String newFieldName = args[3];
-
 
                 boolean renamedField = umlclass.renameField(oldFieldName, newFieldName);
                 if (renamedField) {
