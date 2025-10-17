@@ -32,9 +32,9 @@ public class UMLClass {
 
     /**
      * UMLClass Constructor that takes a className, fields HashMap and methods HashMap all as parameters.
-     * @param className
-     * @param fields
-     * @param methods
+     * @param className, String representing the new Class name
+     * @param fields, hashMap representing the DataFields of the class
+     * @param methods, hashMap representing the methods of the class.
      */
     public UMLClass(String className, HashMap<String, UMLDataField> fields, HashMap<String, ArrayList<UMLMethod>> methods){
         if(className == null || className.isEmpty() || fields == null || methods == null){
@@ -45,65 +45,6 @@ public class UMLClass {
         this.methods = methods;
     }
 
-
-
-    /**  setter for an individual method. Will check to see if newMethod is null, if not then will attempt to
-     * add newMethod to the class if it isn't a duplicate of an existing method.
-     * @param newMethod
-     * @return a boolean representing success or failure of the set.
-     */
-    public boolean setMethod(UMLMethod newMethod){
-        if(newMethod == null){
-            System.out.println("null argument passed!");
-            return false;
-        }
-        //retrieve current overloaded method list associated with name of argument, if it exists.
-        ArrayList<UMLMethod> methods = this.methods.get(newMethod.getMethodName());
-
-        //if methods ArrayList is null, then add a new key value pair to methods hashMap of class.
-        if(methods == null){
-            ArrayList<UMLMethod> newMethodList = new ArrayList<UMLMethod>();
-            newMethodList.add(newMethod);
-            this.methods.put(newMethod.getMethodName(), newMethodList);
-            return true;
-        }
-
-        //If an overloaded list of methods already exists,
-        //search list to see if method to be added is a duplicate. If it is return false, if not,
-        // add and return true.
-        for(int i = 0; i < methods.size(); i++){
-            if(methods.get(i).equals(newMethod)){
-                System.out.println("method already exists in class!");
-                return false;
-            }
-        }
-        methods.add(newMethod);
-        return true;
-    }
-
-    /**  setter method to add a new DataField to the class.
-     * Method will check to make sure argument isn't null. Then the keys of the current class fields
-     * hash map will be converted into an ArrayList and searched for any duplicate keys. If a duplicate is found
-     * false will be returned, otherwise newField will be added to hashMap and true will be returned.
-     * @param newField
-     * @return a boolean representing success or failure of the set.
-     */
-    public boolean setField(UMLDataField newField){
-        if(newField == null){
-            System.out.println("input is null!");
-            return false;
-        }
-        ArrayList<String> fieldKeys = new ArrayList<String>(this.fields.keySet());
-        for(int i = 0; i < fieldKeys.size(); i++){
-            if(newField.getName().equals(fieldKeys.get(i))){
-                System.out.println("Field you're trying to add is a duplicate of an existing Field!");
-                return false;
-            }
-        }
-        this.fields.put(newField.getName(), newField);
-        return true;
-
-    }
 
     /**
      * getter method for a single field
