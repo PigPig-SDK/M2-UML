@@ -32,11 +32,11 @@ public class UMLDocument
     {
         if(instance == null)
         {
-            instance = new UMLDocument(DEFAULT_FILEDIRECTORY);
+            setupInstance();
         }
         return instance;
     }
-    public static synchronized UMLDocument resetInstance()
+    public static synchronized UMLDocument setupInstance()
     {
         return instance = new UMLDocument(DEFAULT_FILEDIRECTORY);
     }
