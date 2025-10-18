@@ -19,6 +19,14 @@ public class UMLRelationship
     {
         return this.destinationName;
     }
+    public void setDestinationName(String newName)
+    {
+        this.destinationName = newName;
+    }
+    public void setSourceName(String newName)
+    {
+        this.sourceName = newName;
+    }
     @Override
     public String toString() {
         return String.format("%s -> %s", sourceName, destinationName);

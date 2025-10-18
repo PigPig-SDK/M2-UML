@@ -44,8 +44,6 @@ public class UMLClass {
         this.fields = fields;
         this.methods = methods;
     }
-
-
     /**
      * getter method for a single field
      *
@@ -56,9 +54,9 @@ public class UMLClass {
     }
 
     /**
-     * getter method for a single method
+     * getter method for a single method.
      *
-     * @return methods hashmap
+     * @return methods an ArrayList of overloaded UMLMethods
      */
     public ArrayList<UMLMethod> getMethods(String methodName) {
         return this.methods.get(methodName);
@@ -91,6 +89,14 @@ public class UMLClass {
         return this.className;
     }
 
+    /**
+     * getClassName returns the className
+     *
+     * @param name to set className
+     */
+    public void setClassName(String name) {
+        this.className = name;
+    }
     /**
      * addField method will add a new UMLDataField object to the fields hashMap under the
      * condition that its name is unique and valid(i.e. not null), upon success a boolean value
