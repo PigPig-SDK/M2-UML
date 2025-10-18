@@ -99,24 +99,14 @@ public class CommandRemove extends BaseCommand{
                     remainingArgsList.remove(0);//"method"
 
                     //generate the parameter list for the UMLMethod object.
-                    ArrayList<UMLParameter> paramList = new ArrayList<>();
-                    if (!remainingArgsList.isEmpty())//If there is something to format
-                    {
-                        if (remainingArgsList.size() % 2 == 0)//There are an equal pair of "type, param1"
-                        {
-                            for (int i = 0; i < remainingArgsList.size(); i += 2) {
-                                String dataTypeString = remainingArgsList.get(i);
-                                DataType dataType = DataType.stringToDatatype(dataTypeString);
-                                String paramName = remainingArgsList.get(i + 1);
 
-                                UMLParameter iParam = new UMLParameter(paramName, dataType, (dataType == DataType.OTHER) ? dataTypeString : null);
-                                paramList.add(iParam);
-                            }
-                        } else {
-                            System.out.println("ERROR! Please ensure the command is of the form: \n remove method classname methodname type param1Name type param2Name ... so on ... type param10Name");
-                            return;
-                        }
+                    ArrayList<UMLParameter> paramList = formatInputParameters(remainingArgsList);
+                    if(paramList == null){
+                        System.out.println("ERROR! Please ensure the command is of the form: \n remove method classname methodname type param1Name type param2Name ... so on ... type param10Name");
+                        return;
                     }
+
+
                     method.setListParameters(paramList);
                     //compare newly constructed method with the overloaded list of umlClass. If a match is found, return its
                     //index within the list and call removeMethod() from the UMLClass

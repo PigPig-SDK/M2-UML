@@ -188,27 +188,12 @@ public class CommandAdd extends BaseCommand
             method.setMethodName(methodName);
             List<String> remainingArgsList = Arrays.asList(args).subList(3, args.length);//Exclude the first 3 arguments, they were consumed earlier
 
-            ArrayList<UMLParameter> paramList = new ArrayList<>();
-            if(!remainingArgsList.isEmpty())//If there is something to format
-            {
-                if(remainingArgsList.size() % 2 == 0)//There are an equal pair of "type, param1"
-                {
-                    for(int i = 0; i < remainingArgsList.size(); i += 2)
-                    {
-                        String dataTypeString = remainingArgsList.get(i);
-                        DataType dataType = DataType.stringToDatatype(dataTypeString);
-                        String paramName = remainingArgsList.get(i+1);
-
-                        UMLParameter iParam = new UMLParameter(paramName, dataType, (dataType == DataType.OTHER)? dataTypeString : null);
-                        paramList.add(iParam);
-                    }
-                }
-                else
-                {
-                    System.out.println("ERROR! Please ensure the command is of the form: \n add method classname methodname type param1 type param2 ... so on ... type param10");
-                    return;
-                }
+            ArrayList<UMLParameter> paramList = formatInputParameters(remainingArgsList);
+            if(paramList == null){
+                System.out.println("ERROR! Please ensure the command is of the form: \n add method classname methodname type param1 type param2 ... so on ... type param10");
+                return;
             }
+
             method.setListParameters(paramList);
             boolean isMethodAdditionValid = umlClass.addMethod(method);
             //Report back to the user

@@ -3,6 +3,8 @@ package org.umlproject.Commands;
 import org.umlproject.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class CommandRename extends BaseCommand{
 
@@ -14,7 +16,7 @@ public class CommandRename extends BaseCommand{
     @Override
     public void act(String[] args) {
 
-        if(args == null)
+        if(args == null || args.length == 0)
         {
             System.out.println(description());
             return;
@@ -115,6 +117,79 @@ public class CommandRename extends BaseCommand{
 
             }
 
+            case "parameter","parameters" -> {
+                //Check correct argument length
+                if(args.length <= 4){
+                    System.out.println("Incorrect amount of arguments\n" + description());
+                    return;
+                }
+                //Assign arguments
+                String className = args[1];
+                String methodName = args[2];
+                UMLClass umlClass = UMLDocument.getInstance().getClass(className);
+                if (umlClass == null) {
+                    System.out.println("Class " + className+ " doesnt exist\n" + description());
+                    return;
+                }
+
+                //Exclude the first 3 arguments, they were consumed earlier
+                List<String> remainingArgsList = Arrays.asList(args).subList(3, args.length);
+                ArrayList<UMLParameter> paramList = formatInputParameters(remainingArgsList);
+                if(paramList == null || paramList.isEmpty()){
+                    System.out.println("ERROR! Please ensure the command is of the form: \n rename parameter" +
+                            " classname methodname type param1 type param2 ... so on ... type param10");
+                    return;
+                }
+
+                ArrayList<UMLMethod> methodList = umlClass.getMethodsAll().get(methodName);
+                UMLMethod[] methodArray = methodList.toArray(UMLMethod[]::new);
+                if(methodArray == null || methodArray.length == 0)
+                {
+                    System.out.println("No method exists!");
+                    return;
+                }
+
+                //Prompt user to select method
+                if(methodArray.length != 1) System.out.println("Please select which method you need to edit:");
+                UMLMethod selectedMethod = promptUserSelectionFromList(methodArray);
+                if(selectedMethod == null) return;//User changes their mind.
+
+                //Check that renamed method doesn't already exist
+                for(UMLMethod checker: methodList){
+                    if(checker.getParameters().equals(paramList)){
+                        System.out.println("ERROR: Existing Method Already Exists!");
+                        return;
+                    }
+                }
+
+                //If user wants to replace only one parameter, prompt for selection and replace
+                if(args[0].equals("parameter")){
+
+                    ArrayList<UMLParameter> parameters = selectedMethod.getParameters();
+                    UMLParameter[] parametersArray = parameters.toArray(UMLParameter[]::new);
+
+                    if(parametersArray == null || parametersArray.length == 0)
+                    {
+                        System.out.println("No parameters exists!");
+                        return;
+                    }
+                    if(parametersArray.length != 1) System.out.println("Please select which parameter you need to edit:");
+
+                    UMLParameter selectedParameter = promptUserSelectionFromList(parametersArray);
+                    if(selectedParameter == null) return;//User changes their mind.
+
+                    selectedMethod.changeParameter(selectedParameter, paramList);
+                    System.out.println("Parameter Change Success");
+                    return;
+                }
+
+                //Else, replace all parameters in method
+                System.out.println("Parameter Change Success");
+                selectedMethod.setListParameters(paramList);
+                return;
+
+            }
+
             default -> {
                 System.out.println(description());
             }
@@ -127,7 +202,9 @@ public class CommandRename extends BaseCommand{
                Possible parameters for rename:
                         rename class <class name> <new name> : Renames a class
                         rename method <class name> <old method name> <new method name>: Renames a method, chosen from a list for overloaded methods
-                        rename field <class name> <old field name> <new field name>: Renames a field""";
+                        rename field <class name> <old field name> <new field name>: Renames a field
+                        rename parameter <class name> <method name> <type1> <name1> ... <type10> <name10>: Replaces an existing parameter with a list of new parameters
+                        rename parameters <class name> <method name> <type1> <name1> ... <type10> <name10>: Replaces all parameters with a list of new parameters""";
     }
 
 }
