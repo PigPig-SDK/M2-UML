@@ -117,7 +117,7 @@ public class CommandRename extends BaseCommand{
 
             }
 
-            case "parameter","parameters" -> {
+            case "param","params" -> {
                 //Check correct argument length
                 if(args.length <= 4){
                     System.out.println("Incorrect amount of arguments\n" + description());
@@ -163,7 +163,7 @@ public class CommandRename extends BaseCommand{
                 }
 
                 //If user wants to replace only one parameter, prompt for selection and replace
-                if(args[0].equals("parameter")){
+                if(args[0].equals("param")){
 
                     ArrayList<UMLParameter> parameters = selectedMethod.getParameters();
                     UMLParameter[] parametersArray = parameters.toArray(UMLParameter[]::new);
@@ -203,8 +203,8 @@ public class CommandRename extends BaseCommand{
                         rename class <class name> <new name> : Renames a class
                         rename method <class name> <old method name> <new method name>: Renames a method, chosen from a list for overloaded methods
                         rename field <class name> <old field name> <new field name>: Renames a field
-                        rename parameter <class name> <method name> <type1> <name1> ... <type10> <name10>: Replaces an existing parameter with a list of new parameters
-                        rename parameters <class name> <method name> <type1> <name1> ... <type10> <name10>: Replaces all parameters with a list of new parameters""";
+                        rename param <class name> <method name> <type1> <name1> ... <type10> <name10>: Replaces an existing parameter with a list of new parameters
+                        rename params <class name> <method name> <type1> <name1> ... <type10> <name10>: Replaces all parameters with a list of new parameters""";
     }
 
 }
