@@ -27,7 +27,7 @@ public class CommandRemove extends BaseCommand{
             //Removes a class by name.
             case "class" -> {
                 if(args.length == 2) {
-                   boolean wasClassRemoved = (UMLDocument.getInstance().removeClass(args[1]) == null);
+                   boolean wasClassRemoved = (UMLDocument.getInstance().removeClass(args[1]) != null);
                     if(wasClassRemoved == false) {
                         System.out.println("ACTION BLOCKED! Class does not exist!");
                     }
