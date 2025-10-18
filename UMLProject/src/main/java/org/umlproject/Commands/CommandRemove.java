@@ -119,6 +119,10 @@ public class CommandRemove extends BaseCommand{
 
                     //Retrieve methodList and make sure it isn't null or empty.
                     UMLClass umlClass = UMLDocument.getInstance().getClass(args[1]);
+                    if (umlClass == null) {
+                        System.out.println("ERROR! Class does not exist!");
+                        return;
+                    }
                     ArrayList<UMLMethod> methodList = umlClass.getMethods(args[2]);
                     if(methodList == null || methodList.isEmpty()){
                         System.out.println("No method by that name exists!");
