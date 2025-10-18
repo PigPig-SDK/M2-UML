@@ -1,0 +1,30 @@
+10/16/25 : 
+My discussion about maven compilation with ChatGPT.
+
+Me: 
+How do i build a maven console application as a jar file. Something that i can run in a terminal.
+
+ChatGPT: 
+Something long and winded about executing 'mvn package' on the .pom, and then running the jar in the 'target' directory.
+
+Me:
+*Pastes current maven .pom*
+can you organize this please.
+
+ChatGPT:
+*Gives adjusted .pom file*
+
+Me:
+This dosnt work, *Pastes absurdly long console error*
+
+ChatGPT:
+Explains how I'm still accessing the file directory, and that the errors are a cascading effect.
+
+Me: 
+Compile worked, but now googles gson library isn't detected. How do I make gson pack into the .JAR file.
+
+ChatGPT:
+Gives long explanation about maven-shade-plugin and what I should do to my .pom to make it pack the gson library automatically.
+
+
+Gson is now packed into the projects .jar file
