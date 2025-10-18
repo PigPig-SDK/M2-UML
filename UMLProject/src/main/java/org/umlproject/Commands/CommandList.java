@@ -71,9 +71,12 @@ public class CommandList extends BaseCommand{
         }
         //Print class relationships
         System.out.println("Relationships: ");
-        for(UMLRelationship currentRelationship : UMLDocument.getInstance().getRelationshipList().get(tempClass.getClassName()))
-        {
-            System.out.println("    " + currentRelationship);
+        ArrayList<UMLRelationship> relationships = UMLDocument.getInstance().getRelationshipList().get(tempClass.getClassName());
+
+        if(relationships != null) {
+            for (UMLRelationship currentRelationship : relationships) {
+                System.out.println("    " + currentRelationship);
+            }
         }
         System.out.println();
     }
