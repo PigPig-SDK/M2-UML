@@ -20,7 +20,7 @@
    Download and install the latest JDK from [Oracle Java Downloads](https://www.oracle.com/java/technologies/downloads/).
 2. **Clone the Repository**  
 3. **Build the Project** 
-In the cloned repository, Run the Maven wrapper depending on your operating system:
+In the cloned repository, Run the following command on your terminal.
 
 | Operating System | Command |
 |-----------------|---------------------|
