@@ -1,6 +1,6 @@
 # Welcome to the Microsoft2 UML Editor
 ##### Team members: 
-Adam, Aidan, Keetyn, Michelle, Sean
+Adam, Aidan, Keetyn, Michelle, Sean, Ty Greene
 # Basic commands
 > _ means blank space
 
