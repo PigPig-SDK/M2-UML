@@ -1,30 +1,44 @@
 # Welcome to the Microsoft2 UML Editor
-##### Team members: 
-Adam, Aidan, Keetyn, Michelle, Sean, Ty Greene
+**Team Members:** Adam, Aidan, Keetyn, Michelle, Sean, Ty Greene
 # Basic commands
-> _ means blank space
+> **Note:** `_` represents a blank space.  
+> Items in quotation marks, e.g., `'item'`, indicate runtime identifiers.
 
-> items in quotation, such as 'item' implies a runtime identifier
-
-```help``` Prints helpful information  
-```add <class/relationship/method/field/param>``` Adds specified items to your UML Document  
-```remove <class/relationship/method/field/param>``` Removes specified items from your UML Document  
-```rename <class/relationship/method/field/param>``` Renames specified items in your UML Document   
-```list <'classname'/class/relationships>``` Lists information about your UML Document  
-```load <'file directory',_>``` Loads a saved UML Document  
-```save <'file directory',_>``` Saves a UML Document  
-```quit``` Closes the program  
+| Command | Description |
+|---------|-------------|
+| `help` | Prints helpful information about available commands. |
+| `add <class/relationship/method/field/param>` | Adds a new item to your UML document. |
+| `remove <class/relationship/method/field/param>` | Removes an existing item from your UML document. |
+| `rename <class/relationship/method/field/param>` | Renames an existing item in your UML document. |
+| `list <'classname'/class/relationships>` | Lists information about a class or all relationships. |
+| `load <'file directory',_>` | Loads a previously saved UML document. |
+| `save <'file directory',_>` | Saves the current UML document to disk. |
+| `quit` | Exits the UML editor application. |
 
 # Compiling & Running the program
-1. Download and install the java development kit: https://www.oracle.com/java/technologies/downloads/
-3. Clone this respository
-4. In the cloned respository, open your terminal and type ```.\mvnw package```
-5. Now that the app is built, go to the 'target' subdirectory and open your terminal from this directory
-6. Inside your terminal write 
-```java -jar UMLProject-1.0-SNAPSHOT.jar```
-7. Verify that this process didn’t totally blow your socks off.
+1. **Install Java Development Kit (JDK)**  
+   Download and install the latest JDK from [Oracle Java Downloads](https://www.oracle.com/java/technologies/downloads/).
+2. **Clone the Repository**  
+   ```bash
+   git clone <repository-url>
+   cd <repository-directory>
+   ```
+3. **Build the Project** 
+In the cloned repository, Run the Maven wrapper depending on your operating system:
+
+| Operating System | Command |
+|-----------------|---------------------|
+| Windows         | `.\mvnw package`     |
+| Mac / Linux     | `./mvnw package`     |
+
+6. **Navigate to the 'Target' Sub-directory**
+```bash
+cd target
+```
+7. **Run the application**
+```bash
+java -jar UMLProject-1.0-SNAPSHOT.jar
+```
+8.**Verify that this process didn’t totally blow your socks off.**
 
 Success! You should have compiled the app and successfully opened it in your terminal
-
-#Releases
-Put release here when its ready.
