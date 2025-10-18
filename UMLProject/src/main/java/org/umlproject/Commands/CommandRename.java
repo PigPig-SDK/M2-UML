@@ -14,7 +14,7 @@ public class CommandRename extends BaseCommand{
     @Override
     public void act(String[] args) {
 
-        if(args == null)
+        if(args == null || args.length == 0)
         {
             System.out.println(description());
             return;

@@ -90,6 +90,14 @@ public class UMLClass {
     }
 
     /**
+     * getClassName returns the className
+     *
+     * @param name to set className
+     */
+    public void setClassName(String name) {
+        this.className = name;
+    }
+    /**
      * addField method will add a new UMLDataField object to the fields hashMap under the
      * condition that its name is unique and valid(i.e. not null), upon success a boolean value
      * of true will be returned, otherwise false.

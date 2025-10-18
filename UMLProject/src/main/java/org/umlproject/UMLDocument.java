@@ -36,6 +36,10 @@ public class UMLDocument
         }
         return instance;
     }
+    public static synchronized UMLDocument resetInstance()
+    {
+        return instance = new UMLDocument(DEFAULT_FILEDIRECTORY);
+    }
     /**
      * Creates a new UMLDocument
      * 
@@ -66,21 +70,23 @@ public class UMLDocument
      * Returns false if class does not exist.
      *
      * @param className The class to be removed.
+     * @param removeRelationships Decides if the relationships should be removed.
      *
      * @return boolean - True if the class was successfully deleted
      * */
-    public boolean deleteClass(String className)
+    public UMLClass removeClass(String className, boolean removeRelationships)
     {
-
-        if (getClass(className) == null){
-            return false;
-        }
-        removeClassKeyFromRelationships(className);
+        UMLClass removed = getClass(className);
+        if (removed == null) return null;
+        if(removeRelationships)
+            removeClassKeyFromRelationships(className);
         classSet.remove(className);
-        return true;
-
+        return removed;
     }
-
+    public UMLClass removeClass(String className)
+    {
+        return removeClass(className,true);
+    }
 
     /**
      * Renames a class in classSet and relationshipList. First stores the relevant data of the old class name,
@@ -94,23 +100,40 @@ public class UMLDocument
      * */
     public boolean renameClass(String originClassName, String newName)
     {
-        if(getAllRelationships(originClassName) == null){
-            return false;
+        //Ensure the newname location isnt taken.
+        if(classSet.containsKey(newName) || relationshipList.containsKey(newName)) return false;
+        
+        //Validation
+        ArrayList<UMLRelationship> tempRelationshipsPointer = getAllRelationships(originClassName);
+        if (tempRelationshipsPointer == null) return false;//Impossible state unless originClassName DNE
+        ArrayList<UMLRelationship> tempRelationships = new ArrayList<>(tempRelationshipsPointer);//I fear that java will delete tempRelationshipsPointer when the class is deleted. 
+        
+        UMLClass removedClass = removeClass(originClassName, false);
+        //Full send. Cannot retract at any point past here.
+        if(removedClass == null) return false;//Check incase something weird has happened.
+        relationshipList.remove(originClassName);//Kill duplicate.
+        
+        //Rename outgoing relationships
+        for(UMLRelationship relationship : tempRelationships)
+        {
+            relationship.setSourceName(newName);
         }
-
-        ArrayList<UMLRelationship> tempRelationships = getAllRelationships(originClassName);
-
-        if(classSet.containsKey(newName) || relationshipList.containsKey(newName) ||
-                !deleteClass(originClassName)){
-            return false;
+        //Rename destination relationships
+        for(String classString : relationshipList.keySet())
+        {
+            if(relationshipList.get(classString) == null) continue;
+            for(UMLRelationship relationship : relationshipList.get(classString))
+            {
+                if(relationship.getDestinationName().trim().equals(originClassName.trim()))
+                {
+                    relationship.setDestinationName(newName);//Replace with new name.
+                }
+            }
         }
-
-        UMLClass tempUMLClass = new UMLClass(newName, getClass(originClassName).getFieldsAll(),
-                getClass(originClassName).getMethodsAll());
-
-        classSet.put(newName, tempUMLClass);
+        
+        removedClass.setClassName(newName);
+        classSet.put(newName, removedClass);
         relationshipList.put(newName, tempRelationships);
-
         return true;
     }
     /**

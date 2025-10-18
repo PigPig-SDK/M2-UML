@@ -16,7 +16,7 @@ public class UMLDocumentTests
         UMLDocument umldocument = new UMLDocument(fileString);
         // Act
         // Assert
-        assertEquals(fileString + ".json", umldocument.getFileLocation());
+        assertEquals(fileString, umldocument.getFileLocation());
     }
     @Test
     public void addClass_multiclass_success()
@@ -50,7 +50,7 @@ public class UMLDocumentTests
         // Act
         umldocument.addClass("test class 1");
         // Assert
-        assertTrue(umldocument.deleteClass("test class 1"));
+        assertNotNull(umldocument.removeClass("test class 1"));
         assertNull(umldocument.getClass("test class 1"));
     }
     @Test
@@ -61,7 +61,7 @@ public class UMLDocumentTests
         // Act
         umldocument.addClass("test class 1");
         // Assert
-        assertFalse(umldocument.deleteClass("test class 2"));
+        assertNull(umldocument.removeClass("test class 2"));
     }
     @Test
     public void renameClass_newNameAlreadyExists_success()

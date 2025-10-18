@@ -1,10 +1,7 @@
 package org.umlproject.Commands;
 
 import org.umlproject.*;
-import scala.Array;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
 import java.util.ArrayList;
 
 
@@ -73,8 +70,8 @@ public class CommandList extends BaseCommand{
         }
         //Print class relationships
         System.out.println("Relationships: ");
-        for(UMLRelationship currentRelationship : UMLDocument.getInstance().getRelationshipList()
-                .get(tempClass.getClassName())){
+        for(UMLRelationship currentRelationship : UMLDocument.getInstance().getRelationshipList().get(tempClass.getClassName()))
+        {
             System.out.println("    " + currentRelationship);
         }
         System.out.println();

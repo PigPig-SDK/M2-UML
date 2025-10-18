@@ -27,7 +27,7 @@ public class CommandRemove extends BaseCommand{
             //Removes a class by name.
             case "class" -> {
                 if(args.length == 2) {
-                   boolean wasClassRemoved = UMLDocument.getInstance().deleteClass(args[1]);
+                   boolean wasClassRemoved = (UMLDocument.getInstance().removeClass(args[1]) == null);
                     if(wasClassRemoved == false) {
                         System.out.println("ACTION BLOCKED! Class does not exist!");
                     }
@@ -55,8 +55,6 @@ public class CommandRemove extends BaseCommand{
                     else{
                         System.out.println("ACTION Blocked! Relationship does not exist or is invalid");
                     }
-                    return;
-
                 }
                 //Case when user wishes to pick a relationship from a list to remove.
                 else if(args.length == 2){
