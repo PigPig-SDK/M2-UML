@@ -57,21 +57,28 @@ public class CommandRemove extends BaseCommand{
                     else{
                         System.out.println("ACTION Blocked! Relationship does not exist or is invalid");
                     }
+                    return;
 
                 }
                 //case when all relationships involving a given class name need to be removed
-                if(args.length == 2){
-                    boolean removeSuccessful = UMLDocument.getInstance().removeClassKeyFromRelationships(args[1]);
+                else if(args.length == 2){
+                    boolean removeSuccessful = UMLDocument.getInstance().resetRelationshipsOfKey(args[1]);
                     if(removeSuccessful){
                         System.out.println(String.format("remove relationship | All relationships involving %s have been removed!", args[1]));
                     }
                     else{
-                        System.out.println("""
+                        System.out.println("ACTION Blocked! Relationship does not exist or is invalid");
+                    }
+                    return;
+                }
+                else{
+                    System.out.println("Invalid input!");
+                    System.out.println("""
                                 remove relationship | Please specify two extra arguments to remove a single relationship.
                                 Ex: remove relationship class1 class2
                                 Or specify a single extra argument to remove all relationships associated with a class name.
                                 Ex: remove relationship class1""");
-                    }
+
                 }
             }
             case "method" -> {
@@ -80,7 +87,42 @@ public class CommandRemove extends BaseCommand{
                             add method | Please specify a class and methhod name
                                                EX: remove method classname methodname
                                                EX: remove method classname methodname type param1Name type param2Name ... so on ... type param10Name""");
-                } else {
+                }
+                //case where methods are listed and user specifies index to remove.
+                else if(args.length == 3){
+                    UMLClass umlClass = UMLDocument.getInstance().getClass(args[1]);
+                    ArrayList<UMLMethod> methodList = umlClass.getMethods(args[2]);
+                    if(methodList == null || methodList.isEmpty()){
+                        System.out.println("No method by that name exists!");
+                        return;
+                    }
+                    UMLMethod[] methodArray = methodList.toArray(UMLMethod[]::new);
+
+                    //when there is only one method in overloaded list
+                    if(methodArray.length == 1){
+
+                        umlClass.removeMethod(args[2], 0);
+                        System.out.println(String.format("The method %s has been removed!", args[2]));
+                        return;
+                    }
+
+                    //when selecting from list with more than 1 element
+                    if(methodArray.length >= 1) System.out.println("Please select which instance you need to edit:");
+
+                    int selectedMethod = promptUserSelectionIndex(methodArray);
+                    if(selectedMethod < 0){
+                        System.out.println("invalid index from method list.");
+                        return;//User changes their mind.
+                    }
+                    else {
+                        umlClass.removeMethod(args[2], selectedMethod);
+                        System.out.println(String.format("The selected overloaded method %s has been removed.", args[2]));
+                        return;
+                    }
+
+                }
+                //case where user supplies the method name and a list of parameters.
+                else {
                     String className = args[1];
                     UMLClass umlClass = UMLDocument.getInstance().getClass(className);
                     if (umlClass == null) {
@@ -90,8 +132,10 @@ public class CommandRemove extends BaseCommand{
                     String methodName = args[2];
                     UMLMethod method = new UMLMethod();
                     method.setMethodName(methodName);
+
                     //Arrays.asList(args) converts the argument array into a List which is a kind of Collection.
                     //The array list constructor requires a Collection data structure.
+
                     List<String> remainingArgsList = new ArrayList<>(Arrays.asList(args));
                     System.out.println(remainingArgsList);
                     remainingArgsList.remove(2);//"methodname"
@@ -134,6 +178,8 @@ public class CommandRemove extends BaseCommand{
                             return;
                         }
                     }
+
+
                     System.out.println("Method does not exist within class or input is invalid");
                     return;
                 }
@@ -144,7 +190,14 @@ public class CommandRemove extends BaseCommand{
             //to be <String dataFieldName, ArrayList<DataFields>, similarly the addField and removeField methods will need to
             //be updated. Also, the CommandAdd class will need to be updated in its section that deals with adding a new field.
             case "field" -> {
-                if(args.length == 3)
+                if(args.length != 3){
+                    System.out.println("Invalid inputs.");
+                    System.out.println("""
+                                          remove field | Please input a class name and a field name to remove a field.
+                                                         Ex: remove field className fieldName.""");
+                    return;
+                }
+                else
                 {
                     UMLClass umlClass = UMLDocument.getInstance().getClass(args[1]);
                     if(umlClass == null)
@@ -162,10 +215,9 @@ public class CommandRemove extends BaseCommand{
                     }
                 }
                 return;
-
             }
             case "param" -> {
-                if(args.length <= 4)
+                if(args.length != 5)
                 {
                     System.out.println("""
                         remove param | Please specify a class name, method name, type and param name.
@@ -225,6 +277,7 @@ public class CommandRemove extends BaseCommand{
                         relationship <source> <destination> : removes a relationship between two classes
                         relationship <source> : removes all relationships where given argument appears as the source name or destination name within the relationship.
                         method <target class> <method name> <type1> <name1> ... <type10> <name10>: removes a method from the target class
+                        method <target class> <method name>: lets user select a method to remove from a list.
                         field <target class> <data Field Name> : removes a field from the target class
                         param <target class> <method name> <type> <param name> : removes a parameter from the method of the specified class""";
     }

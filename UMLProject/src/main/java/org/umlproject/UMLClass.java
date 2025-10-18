@@ -31,6 +31,20 @@ public class UMLClass {
     }
 
     /**
+     * UMLClass Constructor that takes a className, fields HashMap and methods HashMap all as parameters.
+     * @param className, String representing the new Class name
+     * @param fields, hashMap representing the DataFields of the class
+     * @param methods, hashMap representing the methods of the class.
+     */
+    public UMLClass(String className, HashMap<String, UMLDataField> fields, HashMap<String, ArrayList<UMLMethod>> methods){
+        if(className == null || className.isEmpty() || fields == null || methods == null){
+            throw new IllegalArgumentException("The arguments provided are invalid!");
+        }
+        this.className = className;
+        this.fields = fields;
+        this.methods = methods;
+    }
+    /**
      * getter method for a single field
      *
      * @return fields hashMap
@@ -40,9 +54,9 @@ public class UMLClass {
     }
 
     /**
-     * getter method for a single method
+     * getter method for a single method.
      *
-     * @return methods hashmap
+     * @return methods an ArrayList of overloaded UMLMethods
      */
     public ArrayList<UMLMethod> getMethods(String methodName) {
         return this.methods.get(methodName);
