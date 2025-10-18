@@ -40,6 +40,7 @@ public class CommandList extends BaseCommand{
 
                 }
             }
+            case "commands" -> TerminalHandler.runCommand("help");
             default -> {
                 printClass(choice);
             }
@@ -85,5 +86,6 @@ public class CommandList extends BaseCommand{
                         list <class name> : Lists information of the class provided
                         list relationships : Lists information of all saved relationships
                         list classes : Lists information of all saved classes""";
+        
     }
 }
