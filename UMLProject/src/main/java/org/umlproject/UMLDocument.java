@@ -16,12 +16,12 @@ public class UMLDocument
 {
     private static UMLDocument instance;
     
-    private String fileLocation = null;
+    transient String fileLocation = null;
     private Map<String, UMLClass> classSet = new HashMap<>();
     private Map<String,ArrayList<UMLRelationship>> relationshipList = new HashMap<>();
     
     private static final String FILEEXTENT_STRING = ".json";
-    private static final String DEFAULT_FILENAME = "NewDocument";
+    private static final String DEFAULT_FILEDIRECTORY = "Documents" + File.separator + "NewUMLDocument";
 
     
     /**
@@ -32,7 +32,7 @@ public class UMLDocument
     {
         if(instance == null)
         {
-            instance = new UMLDocument(DEFAULT_FILENAME);
+            instance = new UMLDocument(DEFAULT_FILEDIRECTORY);
         }
         return instance;
     }
@@ -45,11 +45,11 @@ public class UMLDocument
     {
         if(fileLocation == null || fileLocation.isEmpty())
         {
-            this.fileLocation = DEFAULT_FILENAME + FILEEXTENT_STRING;
+            this.fileLocation = DEFAULT_FILEDIRECTORY;
         }
         else
         {
-            this.fileLocation = fileLocation + FILEEXTENT_STRING;
+            this.fileLocation = fileLocation;
         }
     }
     public String getFileLocation()
@@ -170,9 +170,6 @@ public class UMLDocument
             ArrayList<UMLRelationship> relationships = relationshipList.get(source);
             if(relationships != null){
                 relationships.removeIf(relationship -> relationship.getDestinationName().equals(className));
-                if(relationships.isEmpty()){
-                    relationshipList.remove(source);
-                }
             }
         }
         return true;
@@ -258,30 +255,49 @@ public class UMLDocument
         }
         return file.exists();
     }
-    public void save()
+    /**
+     * Calls save on the
+     * @return True if the save was preformed
+     */
+    public boolean save()
     {
+        return save(this.getFileLocation());
+    }
+    public boolean save(String filename)
+    {
+        if(fileLocation == null)
+            return false;
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String jsonString = gson.toJson(this);
-            try (FileWriter writer = new FileWriter("UMLDocument.json")) {
+        try (FileWriter writer = new FileWriter(filename + FILEEXTENT_STRING)) {
             writer.write(jsonString);
-        } catch (IOException e) {
-            e.printStackTrace();
+        } 
+        catch (IOException e) {
+            return false;
         }
+        this.fileLocation = filename;
+        return true;
     }
     
-    public void load()
+    public boolean quickLoad()
+    {
+        return load(this.getFileLocation());
+    }
+    public boolean load(String filename)
     {
         Gson gson = new Gson();
-        try (BufferedReader reader = new BufferedReader(new FileReader("UMLDocument.json"))) {
-        // Deserialize the JSON into your Java object
-        var data = gson.fromJson(reader, UMLDocument.class);
-        this.classSet=data.classSet;
-        this.fileLocation=data.fileLocation;
-        this.relationshipList=data.relationshipList;
-        } catch (IOException e) {
-                System.err.println("Error reading JSON file: " + e.getMessage());
-            }
-        
+        try (BufferedReader reader = new BufferedReader(new FileReader(filename + FILEEXTENT_STRING))) {
+            // Deserialize the JSON into your Java object
+            var data = gson.fromJson(reader, UMLDocument.class);
+            this.classSet=data.classSet;
+            this.fileLocation=data.fileLocation;
+            this.relationshipList=data.relationshipList;
+        } 
+        catch (IOException e) {
+            return false;
+        }
+        this.fileLocation=filename;
+        return true;
     }
 
     /**

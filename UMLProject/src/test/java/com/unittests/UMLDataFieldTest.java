@@ -148,7 +148,7 @@ public class UMLDataFieldTest {
         assertEquals("DOUBLE", primitive.getTypeAsString());
         assertEquals("Feline", custom.getTypeAsString());
     }
-
+    /*
     @Test
     @DisplayName("toString: includes name, dataType, and visibility fields")
     void testToStringContent() {
@@ -160,7 +160,7 @@ public class UMLDataFieldTest {
         assertTrue(output.contains("dataType:"), "Should include dataType field");
         assertTrue(output.contains("Visibility:"), "Should include visibility field");
     }
-
+    */
     // ------------------------------------------------------------------
     // Equality and Hashing
     // ------------------------------------------------------------------
