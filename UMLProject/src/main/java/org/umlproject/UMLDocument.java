@@ -161,30 +161,6 @@ public class UMLDocument
 
 
     /**
-     * Method will delete all relationships associated with the given className. That is all relationships where
-     * the source is the given className will be deleted and all relationships where the destination is the given
-     * className will be deleted. Note, this method will not remove className from the key set. The list of
-     * relationships associated with the key className will be replaced with an empty list.
-     * @param className, the name of the class whose relationships need to be removed.
-     * @return boolean indicating whether or not all relationships are removed successfully or not.
-     */
-    public boolean resetRelationshipsOfKey(String className){
-        if(!relationshipList.containsKey(className)){
-            return false;
-        }
-        relationshipList.put(className, new ArrayList<UMLRelationship>());
-        //need to ensure className is removed as a destination value in all other relationships
-        for(String source : new ArrayList<>(relationshipList.keySet())){
-            ArrayList<UMLRelationship> relationships = relationshipList.get(source);
-            if(relationships != null){
-                relationships.removeIf(relationship -> relationship.getDestinationName().equals(className));
-            }
-        }
-
-        return true;
-    }
-
-    /**
      * Removes a class key from the relationship list
      *
      * @param className The class which relationships will be 'cleared out'
