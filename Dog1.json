@@ -1,0 +1,12 @@
+{
+  "classSet": {
+    "Dog1": {
+      "className": "Dog1",
+      "fields": {},
+      "methods": {}
+    }
+  },
+  "relationshipList": {
+    "Dog1": []
+  }
+}

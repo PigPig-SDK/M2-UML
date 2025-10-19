@@ -173,7 +173,6 @@ public class CommandRemove extends BaseCommand{
                     //The array list constructor requires a Collection data structure.
 
                     List<String> remainingArgsList = new ArrayList<>(Arrays.asList(args));
-                    System.out.println(remainingArgsList);
                     remainingArgsList.remove(2);//"methodname"
                     remainingArgsList.remove(1);//"classname"
                     remainingArgsList.remove(0);//"method"
