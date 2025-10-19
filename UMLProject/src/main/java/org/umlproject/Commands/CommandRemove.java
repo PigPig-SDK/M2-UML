@@ -110,7 +110,7 @@ public class CommandRemove extends BaseCommand{
             case "method" -> {
                 if (args.length <= 2) {
                     System.out.println("""
-                            add method | Please specify a class and methhod name
+                            remove method | Please specify a class and method name
                                                EX: remove method classname methodname
                                                EX: remove method classname methodname type param1Name type param2Name ... so on ... type param10Name""");
                 }
