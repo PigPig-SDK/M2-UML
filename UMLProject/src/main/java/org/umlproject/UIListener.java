@@ -1,6 +1,6 @@
 package org.umlproject;
 
-public interface UIListener {
+public interface UIListener {  
     /** 
      * The GUI listener should catch the update and draw its required bullshit.
      */
