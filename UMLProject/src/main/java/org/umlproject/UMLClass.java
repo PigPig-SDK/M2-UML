@@ -2,8 +2,10 @@ package org.umlproject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import javafx.geometry.Point2D;
+import javafx.geometry.Rectangle2D;
 
-public class UMLClass {
+public class UMLClass extends UMLDiagramElement implements UIPositional{
     private String className;
     /**
      * use hashmap for UMLDataFields where a unique DataField name is the key
@@ -14,7 +16,33 @@ public class UMLClass {
      */
     private HashMap<String, ArrayList<UMLMethod>> methods;
 
-
+    /**
+     * This has to be contained within UMLClass because the document layout must be retained between saves.
+     */
+    private Point2D location;
+    
+    //-------------------------------- UMLSelectable Interface -----------------------------------
+    @Override
+    public boolean contains(Point2D selectionPoint) {
+        //TODO :Implement bounds check for user cursor
+        //This will depend on the GUIListener. Sean will implement this.
+        return false;
+    }
+    @Override
+    public boolean intersects(Rectangle2D selectionRectangle) {
+        //TODO :Implement box select check for user selection
+        //This will depend on the GUIListener. Sean will implement this.
+        return false;
+    }
+    //-------------------------------- UIPositional Interface -----------------------------------
+    @Override
+    public Point2D getLocation() { return this.location; }
+    @Override
+    public void setLocation(Point2D location) { 
+        this.location = location;
+        updateGUILocation();
+    }
+    //-------------------------------- Main Class -----------------------------------
     /**
      * UMLClass constructor that takes a class name as input. Assigns empty hashMaps for
      * UMLDataFields and UMLMethods
@@ -96,6 +124,7 @@ public class UMLClass {
      */
     public void setClassName(String name) {
         this.className = name;
+        updateGUI();
     }
     /**
      * addField method will add a new UMLDataField object to the fields hashMap under the
@@ -118,6 +147,7 @@ public class UMLClass {
         }
 
         fields.put(name, field);
+        updateGUI();
         return true;
     }
 
@@ -137,8 +167,10 @@ public class UMLClass {
         //The remove function removes the value associated with the given key parameter.
         //Normally, remove() returns the removed value and if it didn't exist, null is returned.
         //The != null ensures a boolean value is returned
-        return fields.remove(fieldName) != null;
-
+        boolean isRemoved = fields.remove(fieldName) != null;
+        if(isRemoved)//Update our GUI listener.
+            updateGUI();
+        return isRemoved;
     }
 
     /**
@@ -163,6 +195,7 @@ public class UMLClass {
         //update field name
         field.setName(newName);
         fields.put(newName, field);
+        updateGUI();
         return true;
     }
 
@@ -235,6 +268,7 @@ public class UMLClass {
         target.setMethodName(newName);
         newList.add(target);
         methods.put(newName, newList);
+        updateGUI();
         return true;
     }
 
@@ -283,6 +317,7 @@ public class UMLClass {
         //no duplicates found. Safe to add to list.
         list.add(method);
         methods.put(name, list);
+        updateGUI();
         return true;
     }
 
@@ -306,8 +341,10 @@ public class UMLClass {
 
         if(!methods.containsKey(methodName))
             return  false;
-
-        return methods.get(methodName).remove(index) != null;
+        boolean isRemoved = methods.get(methodName).remove(index) != null;
+        if(isRemoved)
+            updateGUI();
+        return isRemoved;
     }
 
     /**
@@ -344,6 +381,7 @@ public class UMLClass {
         for (UMLMethod method : list) {
             if (method.getParameters().equals(parameters)) {
                 method.addParameter(newParameter);
+                updateGUI();
                 return true;
             }
         }
@@ -379,6 +417,7 @@ public class UMLClass {
         for (UMLMethod method : overloads) {
             if (method.getParameters().equals(parameters)) {
                 boolean removed = method.removeParameter(paramToRemove);
+                if(removed) updateGUI();
                 return removed;
             }
         }
@@ -413,6 +452,7 @@ public class UMLClass {
             if (method.getParameters().equals(oldParameters)) {
                 //match found, so swap parameter with parameter list
                 method.changeParameter(paramToRemove, newParameters);
+                updateGUI();
                 return true;
             }
         }
@@ -448,6 +488,7 @@ public class UMLClass {
             if (method.getParameters().equals(oldParameters)) {
                 //match found, so swap parameter with parameter list
                 method.setListParameters(newParameters);
+                updateGUI();
                 return true;
             }
         }
@@ -481,5 +522,4 @@ public class UMLClass {
     public int hashCode() {
         return this.className.hashCode();
     }
-
 }
