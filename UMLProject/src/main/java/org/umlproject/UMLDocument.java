@@ -144,12 +144,14 @@ public class UMLDocument
      *
      * @return boolean - True if the class was added
      * */
-    public boolean addRelationship(String className, String destinationName){
+    public boolean addRelationship(String className, String destinationName, String relationshipTypeString){
         if(!relationshipList.containsKey(className))
             relationshipList.put(className, new ArrayList<UMLRelationship>());
         if(hasRelationship(className,destinationName))
             return  false;
-        relationshipList.get(className).add(new UMLRelationship(className, destinationName));
+        RelationshipType relationshipType = RelationshipType.stringToRelationshipType(relationshipTypeString);
+        relationshipList.get(className).add(new UMLRelationship(className, destinationName, relationshipType,
+                (relationshipType == RelationshipType.OTHER) ? relationshipTypeString : null));
         return true;
     }
     /**
