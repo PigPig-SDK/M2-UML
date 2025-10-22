@@ -169,7 +169,7 @@ public class CommandAdd extends BaseCommand
         if(args.length <= 2)
         {
             System.out.println("""
-                 add method | Please specify a class and methhod name
+                 add method | Please specify a class and method name
                                     EX: add method classname methodname
                                     EX: add method classname methodname type param1 type param2 ... so on ... type param10"""); 
         }
@@ -188,27 +188,12 @@ public class CommandAdd extends BaseCommand
             method.setMethodName(methodName);
             List<String> remainingArgsList = Arrays.asList(args).subList(3, args.length);//Exclude the first 3 arguments, they were consumed earlier
 
-            ArrayList<UMLParameter> paramList = new ArrayList<>();
-            if(!remainingArgsList.isEmpty())//If there is something to format
-            {
-                if(remainingArgsList.size() % 2 == 0)//There are an equal pair of "type, param1"
-                {
-                    for(int i = 0; i < remainingArgsList.size(); i += 2)
-                    {
-                        String dataTypeString = remainingArgsList.get(i);
-                        DataType dataType = DataType.stringToDatatype(dataTypeString);
-                        String paramName = remainingArgsList.get(i+1);
-
-                        UMLParameter iParam = new UMLParameter(paramName, dataType, (dataType == DataType.OTHER)? dataTypeString : null);
-                        paramList.add(iParam);
-                    }
-                }
-                else
-                {
-                    System.out.println("ERROR! Please ensure the command is of the form: \n add method classname methodname type param1 type param2 ... so on ... type param10");
-                    return;
-                }
+            ArrayList<UMLParameter> paramList = formatInputParameters(remainingArgsList);
+            if(paramList == null){
+                System.out.println("ERROR! Please ensure the command is of the form: \n add method classname methodname type param1 type param2 ... so on ... type param10");
+                return;
             }
+
             method.setListParameters(paramList);
             boolean isMethodAdditionValid = umlClass.addMethod(method);
             //Report back to the user
@@ -246,6 +231,6 @@ public class CommandAdd extends BaseCommand
                         relationship <source> <destination> : Adds a relationship between two classes
                         method <target class> <method name> <type1> <name1> ... <type10> <name10>: Adds a method to the target class
                         field <target class> <visibility> <type> <name> : Adds a field to the target class
-                        param <target class> <method name> : Starts the process for adding a param to a classes method""";
+                        param <target class> <method name> <type> <paramName> : Starts the process for adding a param to a classes method""";
     }
 }

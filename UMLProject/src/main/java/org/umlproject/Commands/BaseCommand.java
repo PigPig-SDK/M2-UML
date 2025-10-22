@@ -1,6 +1,11 @@
 package org.umlproject.Commands;
 
+import org.umlproject.DataType;
+import org.umlproject.UMLParameter;
+
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 
@@ -109,4 +114,27 @@ public abstract class BaseCommand
             return (selection - 1);
         }
     }
+
+    protected static ArrayList<UMLParameter> formatInputParameters(List<String> remainingArgsList) {
+
+        ArrayList<UMLParameter> paramList = new ArrayList<>();
+        if (!remainingArgsList.isEmpty())//If there is something to format
+        {
+            if (remainingArgsList.size() % 2 == 0)//There are an equal pair of "type, param1"
+            {
+                for (int i = 0; i < remainingArgsList.size(); i += 2) {
+                    String dataTypeString = remainingArgsList.get(i);
+                    DataType dataType = DataType.stringToDatatype(dataTypeString);
+                    String paramName = remainingArgsList.get(i + 1);
+
+                    UMLParameter iParam = new UMLParameter(paramName, dataType, (dataType == DataType.OTHER) ? dataTypeString : null);
+                    paramList.add(iParam);
+                }
+                return paramList;
+            }
+            return null;
+        }
+        return paramList;
+    }
+
 }

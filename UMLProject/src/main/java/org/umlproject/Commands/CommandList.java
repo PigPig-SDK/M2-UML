@@ -1,10 +1,7 @@
 package org.umlproject.Commands;
 
 import org.umlproject.*;
-import scala.Array;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
 import java.util.ArrayList;
 
 
@@ -43,6 +40,7 @@ public class CommandList extends BaseCommand{
 
                 }
             }
+            case "commands" -> TerminalHandler.runCommand("help");
             default -> {
                 printClass(choice);
             }
@@ -73,9 +71,12 @@ public class CommandList extends BaseCommand{
         }
         //Print class relationships
         System.out.println("Relationships: ");
-        for(UMLRelationship currentRelationship : UMLDocument.getInstance().getRelationshipList()
-                .get(tempClass.getClassName())){
-            System.out.println("    " + currentRelationship);
+        ArrayList<UMLRelationship> relationships = UMLDocument.getInstance().getRelationshipList().get(tempClass.getClassName());
+
+        if(relationships != null) {
+            for (UMLRelationship currentRelationship : relationships) {
+                System.out.println("    " + currentRelationship);
+            }
         }
         System.out.println();
     }
@@ -88,5 +89,6 @@ public class CommandList extends BaseCommand{
                         list <class name> : Lists information of the class provided
                         list relationships : Lists information of all saved relationships
                         list classes : Lists information of all saved classes""";
+        
     }
 }
