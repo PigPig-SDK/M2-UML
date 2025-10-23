@@ -30,8 +30,8 @@ public class CommandTests
                 new ArrayList<UMLParameter>()));
         UMLDocument.getInstance().getClass("a").addMethod(new UMLMethod("method 2",
                 new ArrayList<UMLParameter>()));
-        UMLDocument.getInstance().addRelationship("a", "b", null);
-        UMLDocument.getInstance().addRelationship("a", "c", null);
+        UMLDocument.getInstance().addRelationship("a", "b", "aggregation");
+        UMLDocument.getInstance().addRelationship("a", "c", "aggregation");
         TerminalHandler.runCommand("list classes");
         TerminalHandler.runCommand("list relationships");
         TerminalHandler.runCommand("list a");

@@ -120,7 +120,7 @@ public class UMLDocumentTests
         umldocument.addClass("test");
         umldocument.addClass("endpoint");
         // Act
-        umldocument.addRelationship("test", "endpoint", null);
+        umldocument.addRelationship("test", "endpoint", "aggregation");
         // Assert
         assertTrue(umldocument.hasRelationship("test","endpoint"));
     }
@@ -134,8 +134,8 @@ public class UMLDocumentTests
         umldocument.addClass("b");
         umldocument.addClass("c");
         // Act
-        umldocument.addRelationship("a", "b", null);
-        umldocument.addRelationship("a", "c", null);
+        umldocument.addRelationship("a", "b", "aggregation");
+        umldocument.addRelationship("a", "c", "aggregation");
         // Assert
         assertTrue(umldocument.hasRelationship("a","b"));
         assertTrue(umldocument.hasRelationship("a","c"));
@@ -153,8 +153,8 @@ public class UMLDocumentTests
         umldocument.addClass("b");
         umldocument.addClass("c");
         // Act
-        umldocument.addRelationship("a", "b", null);
-        umldocument.addRelationship("a", "c", null);
+        umldocument.addRelationship("a", "b", "aggregation");
+        umldocument.addRelationship("a", "c", "aggregation");
         // Assert
         assertEquals(2,umldocument.getAllRelationships("a").size());
 
@@ -177,8 +177,8 @@ public class UMLDocumentTests
         umldocument.addClass("b");
         umldocument.addClass("c");
         // Act
-        umldocument.addRelationship("a", "b", null);
-        umldocument.addRelationship("a", "c", null);
+        umldocument.addRelationship("a", "b", "aggregation");
+        umldocument.addRelationship("a", "c", "aggregation");
         // Assert
         assertEquals(2,umldocument.getAllRelationships("a").size());
     }
@@ -192,8 +192,8 @@ public class UMLDocumentTests
         umldocument.addClass("b");
         umldocument.addClass("c");
         // Act
-        umldocument.addRelationship("a", "b", null);
-        umldocument.addRelationship("a", "c", null);
+        umldocument.addRelationship("a", "b", "aggregation");
+        umldocument.addRelationship("a", "c", "aggregation");
         // Assert
         assertEquals(2,umldocument.getAllRelationships("a").size());
         assertTrue(umldocument.removeClassKeyFromRelationships("a"));
@@ -209,8 +209,8 @@ public class UMLDocumentTests
         umldocument.addClass("b");
         umldocument.addClass("c");
         // Act/Assert
-        assertTrue(umldocument.addRelationship("a", "b", null));
-        assertFalse(umldocument.addRelationship("a", "b", null));
+        assertTrue(umldocument.addRelationship("a", "b", "aggregation"));
+        assertFalse(umldocument.addRelationship("a", "b", "aggregation"));
         assertEquals(1,umldocument.getAllRelationships("a").size());
     }
        @Test 
