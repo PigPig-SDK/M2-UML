@@ -41,6 +41,8 @@ public class GuiController implements UMLGuiController {
         UMLDocument.guiController = this;
         System.out.println("Setup GUI!");
         singleton = this;
+        menubar.setViewOrder(-100);
+        console.setViewOrder(-100);
     }
     /**
      * This is called after initialize. 
