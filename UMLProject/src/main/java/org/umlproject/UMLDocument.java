@@ -231,7 +231,13 @@ public class UMLDocument
         for(String source : new ArrayList<>(relationshipList.keySet())){
             ArrayList<UMLRelationship> relationships = relationshipList.get(source);
             if(relationships != null){
-                relationships.removeIf(relationship -> relationship.getDestinationName().equals(className));
+                for(UMLRelationship relationship : relationships)
+                {
+                    if(!relationship.getDestinationName().equals(className))
+                        continue;
+                    relationship.disposeOfGuiListener();
+                    relationships.remove(relationship);
+                }
             }
         }
         return true;
