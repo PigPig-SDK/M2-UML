@@ -61,13 +61,21 @@ public class UMLRelationship  extends UMLDiagramElement
     public void setSourceName(String newName)
     {
         this.sourceName = newName;
+        updateGUI();
     }
     public void setDestinationName(String newName)
     {
         this.destinationName = newName;
+        updateGUI();
     }
-    public void setRelationshipType(RelationshipType newType){this.relationshipType = newType;}
-    public void setCustomNameType(String newTypeCustom){this.customNameType = newTypeCustom;}
+    public void setRelationshipType(RelationshipType newType){
+        this.relationshipType = newType;
+        updateGUI();
+    }
+    public void setCustomNameType(String newTypeCustom){
+        this.customNameType = newTypeCustom;
+        updateGUI();
+    }
     @Override
     public String toString() {
         if(this.relationshipType.equals(RelationshipType.OTHER)) return String.format("%s -> %s : %s", sourceName, destinationName, this.customNameType);
