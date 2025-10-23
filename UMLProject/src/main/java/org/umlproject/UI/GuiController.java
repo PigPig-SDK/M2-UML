@@ -9,6 +9,8 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.Pane;
+import org.umlproject.Main;
 import org.umlproject.TerminalHandler;
 import org.umlproject.UMLClass;
 import org.umlproject.UMLDocument;
@@ -17,17 +19,37 @@ import org.umlproject.UMLRelationship;
 
 public class GuiController implements UMLGuiController {
     
+    public static GuiController singleton;
+    
     @FXML
     private Group world;//'World' is where all UI objects should live.
     @FXML
     private TextField console;
+    @FXML
+    private MenuBar menubar;
+    @FXML
+    private Pane viewpane;
     
+    public Group getWorld(){return this.world;}
+    public TextField getTerminal(){return this.console;}
+    public MenuBar getMenuBar(){return this.menubar;}
+    public Pane getViewPane(){return this.viewpane;}
     
     @FXML
     private void initialize() {
         //Bind to umldocument
         UMLDocument.guiController = this;
         System.out.println("Setup GUI!");
+        singleton = this;
+    }
+    /**
+     * This is called after initialize. 
+     * This is because some things are not fully initialized during the call of 'initialize'.
+     */
+    public void lateInitialization()
+    {
+        GuiResizeManager.bindToSizeUpdates();
+        GuiCamera.setupCamera();
     }
     //----------------- Menu bar callbacks -----------------
     @FXML

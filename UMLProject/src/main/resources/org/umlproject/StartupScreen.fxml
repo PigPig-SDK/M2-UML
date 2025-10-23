@@ -15,8 +15,8 @@
                   <Font size="20.0" />
                </font>
             </Text>
-            <Button fx:id="buttonGUI" layoutX="64.0" layoutY="36.0" mnemonicParsing="false" onAction="#onButtonPressed" prefHeight="44.0" prefWidth="86.0" stylesheets="@stylesheet.css" text="GUI" />
-            <Button fx:id="buttonTerminal" layoutX="150.0" layoutY="36.0" mnemonicParsing="false" onAction="#onButtonPressed" prefHeight="44.0" prefWidth="86.0" stylesheets="@stylesheet.css" text="Terminal" />
+            <Button fx:id="buttonGUI" layoutX="14.0" layoutY="27.0" mnemonicParsing="false" onAction="#onButtonPressed" prefHeight="44.0" prefWidth="130.0" stylesheets="@stylesheet.css" text="GUI" />
+            <Button fx:id="buttonTerminal" layoutX="156.0" layoutY="27.0" mnemonicParsing="false" onAction="#onButtonPressed" prefHeight="44.0" prefWidth="130.0" stylesheets="@stylesheet.css" text="Terminal" />
          </children>
       </AnchorPane>
    </children>

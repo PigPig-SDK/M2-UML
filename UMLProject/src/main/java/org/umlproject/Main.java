@@ -8,11 +8,14 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
+import org.umlproject.UI.GuiController;
 
 public class Main extends Application
 {
     private static final String terminalLaunchString = "-terminal";
     public static Stage mainStage;
+    public static Scene currentScene;
     
     @FXML
     private Button buttonTerminal;
@@ -31,8 +34,11 @@ public class Main extends Application
                 //MainScreen.fxml BINDS TO GuiClass!
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("MainScreen.fxml"));
                 Scene scene = new Scene(loader.load());
+                currentScene = scene;
                 mainStage.setScene(scene);
+                mainStage.setResizable(true);
                 mainStage.setTitle("UML editor");
+                GuiController.singleton.lateInitialization();
             }
             catch(Exception e){}
         }
@@ -66,9 +72,12 @@ public class Main extends Application
         //StartupScreen.fxml BINDS TO THIS CLASS!
         FXMLLoader loader = new FXMLLoader(getClass().getResource("StartupScreen.fxml"));
         Scene scene = new Scene(loader.load());
+        currentScene = scene;
         stage.setScene(scene);
         stage.setTitle("Setup");
         stage.getIcons().add(new Image(getClass().getResourceAsStream("appicon.png")));
+        mainStage.setResizable(false);
+        //mainStage.initStyle(StageStyle.UNDECORATED);
         stage.show();
     }
 }
