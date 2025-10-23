@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.List;
 
 
 public class UMLDocument
@@ -23,6 +24,32 @@ public class UMLDocument
     private static final String FILEEXTENT_STRING = ".json";
     private static final String DEFAULT_FILEDIRECTORY = "Documents" + File.separator + "NewUMLDocument";
 
+    public static UMLGuiController guiController = null;
+    
+    /**
+     * Used to return all selectable objects
+     * To be used by a 'UMLGuiController' when requested
+     * @return all UMLSelectables from both the classSet and relationshipList
+     */
+    public List<UMLSelectable> getAllSelectables()
+    {
+        List<UMLSelectable> allSelectables = new ArrayList();
+        for(UMLClass umlclass : classSet.values())
+        {
+            if(umlclass == null) continue;//pointless, idc.
+            allSelectables.add(umlclass);
+        }
+        for(ArrayList<UMLRelationship> allRealtionshipLists : relationshipList.values())
+        {
+            if(allRealtionshipLists == null) continue;
+            for(UMLRelationship relationship : allRealtionshipLists)
+            {
+                if(relationship == null) continue;
+                allSelectables.add(relationship);
+            }
+        }
+        return allSelectables;
+    }
     
     /**
      * Returns the current singleton, else creates it
@@ -81,6 +108,7 @@ public class UMLDocument
         if(removeRelationships)
             removeClassKeyFromRelationships(className);
         classSet.remove(className);
+        removed.disposeOfGuiListener();
         return removed;
     }
     public UMLClass removeClass(String className)
@@ -150,8 +178,10 @@ public class UMLDocument
         if(hasRelationship(className,destinationName))
             return  false;
         RelationshipType relationshipType = RelationshipType.stringToRelationshipType(relationshipTypeString);
-        relationshipList.get(className).add(new UMLRelationship(className, destinationName, relationshipType,
-                (relationshipType == RelationshipType.OTHER) ? relationshipTypeString : null));
+        UMLRelationship relationship = new UMLRelationship(className, destinationName, relationshipType, (relationshipType == RelationshipType.OTHER) ? relationshipTypeString : null);
+        relationshipList.get(className).add(relationship);
+        if(guiController != null)
+            guiController.addRelationship(relationship);
         return true;
     }
     /**
@@ -180,7 +210,8 @@ public class UMLDocument
         int index = getRelationshipIndex(className, destinationName);
         if(index == -1)
             return false;
-        relationshipList.get(className).remove(index);
+        UMLRelationship relationship = relationshipList.get(className).remove(index);
+        relationship.disposeOfGuiListener();
         return true;
     }
 
@@ -201,7 +232,13 @@ public class UMLDocument
         for(String source : new ArrayList<>(relationshipList.keySet())){
             ArrayList<UMLRelationship> relationships = relationshipList.get(source);
             if(relationships != null){
-                relationships.removeIf(relationship -> relationship.getDestinationName().equals(className));
+                for(UMLRelationship relationship : relationships)
+                {
+                    if(!relationship.getDestinationName().equals(className))
+                        continue;
+                    relationship.disposeOfGuiListener();
+                    relationships.remove(relationship);
+                }
             }
         }
         return true;
@@ -329,6 +366,8 @@ public class UMLDocument
             return false;
         }
         this.fileLocation=filename;
+        if(guiController != null)
+            guiController.redrawScreen(this);
         return true;
     }
 
@@ -345,6 +384,8 @@ public class UMLDocument
         classSet.put(className, umlclass);
         ArrayList<UMLRelationship> newList = new ArrayList<>();
         relationshipList.put(className, newList);
+        if(guiController != null)
+            guiController.addClass(umlclass);
         return umlclass;
     }
 
