@@ -172,12 +172,13 @@ public class UMLDocument
      *
      * @return boolean - True if the class was added
      * */
-    public boolean addRelationship(String className, String destinationName){
+    public boolean addRelationship(String className, String destinationName, String relationshipTypeString){
         if(!relationshipList.containsKey(className))
             relationshipList.put(className, new ArrayList<UMLRelationship>());
         if(hasRelationship(className,destinationName))
             return  false;
-        UMLRelationship relationship = new UMLRelationship(className, destinationName);
+        RelationshipType relationshipType = RelationshipType.stringToRelationshipType(relationshipTypeString);
+        UMLRelationship relationship = new UMLRelationship(className, destinationName, relationshipType, (relationshipType == RelationshipType.OTHER) ? relationshipTypeString : null);
         relationshipList.get(className).add(relationship);
         if(guiController != null)
             guiController.addRelationship(relationship);

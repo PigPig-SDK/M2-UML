@@ -8,6 +8,8 @@ public class UMLRelationship  extends UMLDiagramElement
 {
     private String sourceName;
     private String destinationName;
+    private RelationshipType relationshipType;
+    private String customNameType;
     
     //-------------------------------- UMLSelectable Interface -----------------------------------
     /**
@@ -31,10 +33,20 @@ public class UMLRelationship  extends UMLDiagramElement
         return false;
     }
     //-------------------------------- Main class -----------------------------------
-    public UMLRelationship(String sourceName, String destinationName)
+    public UMLRelationship(String sourceName, String destinationName, RelationshipType relationshipType, String customNameType)
     {
         this.sourceName = sourceName;
         this.destinationName = destinationName;
+        this.relationshipType = relationshipType;
+        if (this.relationshipType == RelationshipType.OTHER) {
+            if(customNameType == null || customNameType.isEmpty()){
+                throw new IllegalArgumentException("Custom name is required for OTHER data type");
+            }
+            this.customNameType = customNameType;
+        }
+        else{
+            this.customNameType = null;
+        }
     }
     public String getSourceName()
     {
@@ -44,17 +56,22 @@ public class UMLRelationship  extends UMLDiagramElement
     {
         return this.destinationName;
     }
-    public void setDestinationName(String newName)
-    {
-        this.destinationName = newName;
-    }
+    public RelationshipType getRelationshipType(){return this.relationshipType;}
+    public String getCustomNameType(){return this.customNameType;}
     public void setSourceName(String newName)
     {
         this.sourceName = newName;
     }
+    public void setDestinationName(String newName)
+    {
+        this.destinationName = newName;
+    }
+    public void setRelationshipType(RelationshipType newType){this.relationshipType = newType;}
+    public void setCustomNameType(String newTypeCustom){this.customNameType = newTypeCustom;}
     @Override
     public String toString() {
-        return String.format("%s -> %s", sourceName, destinationName);
+        if(this.relationshipType.equals(RelationshipType.OTHER)) return String.format("%s -> %s : %s", sourceName, destinationName, this.customNameType);
+        return String.format("%s -> %s : %s", sourceName, destinationName, this.relationshipType);
     }
     @Override
     public boolean equals(Object  obj) 
@@ -67,7 +84,8 @@ public class UMLRelationship  extends UMLDiagramElement
         UMLRelationship castedObject = (UMLRelationship)obj;
         //Bare bones implementation.
         //TODO: When you add more to the class, maintain this equals function.
-        return castedObject.sourceName.equals(this.sourceName) && castedObject.destinationName.equals(this.destinationName);
+        return castedObject.sourceName.equals(this.sourceName) && castedObject.destinationName.equals(this.destinationName)
+                && castedObject.customNameType.equals(this.customNameType);
     }
 
     @Override
@@ -76,6 +94,7 @@ public class UMLRelationship  extends UMLDiagramElement
         int hash = 7;
         hash = 29 * hash + Objects.hashCode(this.sourceName);
         hash = 29 * hash + Objects.hashCode(this.destinationName);
+        hash = 29 * hash + Objects.hashCode(this.customNameType);
         return hash;
     }
 }
