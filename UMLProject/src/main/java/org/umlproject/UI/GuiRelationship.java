@@ -5,7 +5,7 @@ import org.umlproject.UIListener;
 import org.umlproject.UMLDiagramElement;
 import org.umlproject.UMLRelationship;
 
-public class GuiRelationship implements UIListener{
+public class GuiRelationship implements UIListener<UMLRelationship>{
 
     public GuiRelationship(Group world, UMLRelationship umlRelationship)
     {
@@ -13,15 +13,15 @@ public class GuiRelationship implements UIListener{
     }
     
     @Override
-    public void update(UMLDiagramElement desiredElement) {
+    public void update(UMLRelationship desiredElement) {
     }
 
     @Override
-    public void updateSelected(UMLDiagramElement desiredElement) {
+    public void updateSelected(UMLRelationship desiredElement) {
     }
 
     @Override
-    public void updateLocation(UMLDiagramElement desiredElement) {
+    public void updateLocation(UMLRelationship desiredElement) {
     }
 
     @Override

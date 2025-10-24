@@ -3,9 +3,8 @@ package org.umlproject.UI;
 import javafx.scene.Group;
 import org.umlproject.UIListener;
 import org.umlproject.UMLClass;
-import org.umlproject.UMLDiagramElement;
 
-public class GuiClass implements UIListener {
+public class GuiClass implements UIListener<UMLClass> {
     
     public GuiClass(Group world, UMLClass parentClass)
     {
@@ -13,15 +12,15 @@ public class GuiClass implements UIListener {
     }
     
     @Override
-    public void update(UMLDiagramElement desiredElement) {
+    public void update(UMLClass desiredElement) {
     }
 
     @Override
-    public void updateSelected(UMLDiagramElement desiredElement) {
+    public void updateSelected(UMLClass desiredElement) {
     }
 
     @Override
-    public void updateLocation(UMLDiagramElement desiredElement) {
+    public void updateLocation(UMLClass desiredElement) {
     }
 
     @Override
