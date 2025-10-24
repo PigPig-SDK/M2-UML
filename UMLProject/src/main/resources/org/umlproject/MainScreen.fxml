@@ -88,7 +88,7 @@
                   </Text>
                </children></Group>
             <Button defaultButton="true" focusTraversable="false" layoutX="14.0" layoutY="80.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="50.0" text="+R" textAlignment="CENTER" />
-            <Button defaultButton="true" focusTraversable="false" layoutX="14.0" layoutY="14.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="50.0" text="+C" textAlignment="CENTER" />
+            <Button defaultButton="true" focusTraversable="false" layoutX="14.0" layoutY="14.0" mnemonicParsing="false" onAction="#addClassButtonPushed" prefHeight="50.0" prefWidth="50.0" text="+C" textAlignment="CENTER" />
          </children>
       </Pane>
       <AnchorPane prefHeight="29.0" prefWidth="666.0" style="-fx-background-color: #2D2D30;" stylesheets="@stylesheet.css">

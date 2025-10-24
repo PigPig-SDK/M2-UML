@@ -115,6 +115,19 @@ public class GuiController implements UMLGuiController {
         console.setText("");
     }
     //----------------- UMLGuiController Interface -----------------
+
+    /** This method will listen for when +C is pushed inside gui. It then retrieves the
+     * UMLDocument instance and calls addClass(with the argument "newClass change name".
+     * Not, we don't have a default constructor for UMLClass().
+     *
+      */
+    @FXML
+    public void addClassButtonPushed(){
+        UMLDocument.getInstance().addClass("newClass change name");
+
+    }
+
+    //This method will bind a guiClass listener to the new umlClass
     @Override
     public void addClass(UMLClass umlClass) {
         GuiClass guiClass = new GuiClass(world, umlClass);
