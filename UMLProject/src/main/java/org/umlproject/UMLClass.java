@@ -5,7 +5,7 @@ import java.util.HashMap;
 import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
 
-public class UMLClass extends UMLDiagramElement implements UIPositional{
+public class UMLClass extends UMLDiagramElement {
     private String className;
     /**
      * use hashmap for UMLDataFields where a unique DataField name is the key
@@ -21,28 +21,13 @@ public class UMLClass extends UMLDiagramElement implements UIPositional{
      */
     private Point2D location;
     
-    //-------------------------------- UMLSelectable Interface -----------------------------------
-    @Override
-    public boolean contains(Point2D selectionPoint) {
-        //TODO :Implement bounds check for user cursor
-        //This will depend on the GUIListener. Sean will implement this.
-        return false;
-    }
-    @Override
-    public boolean intersects(Rectangle2D selectionRectangle) {
-        //TODO :Implement box select check for user selection
-        //This will depend on the GUIListener. Sean will implement this.
-        return false;
-    }
-    //-------------------------------- UIPositional Interface -----------------------------------
-    @Override
     public Point2D getLocation() { return this.location; }
-    @Override
+    
     public void setLocation(Point2D location) { 
         this.location = location;
         updateGUILocation();
     }
-    //-------------------------------- Main Class -----------------------------------
+    
     /**
      * UMLClass constructor that takes a class name as input. Assigns empty hashMaps for
      * UMLDataFields and UMLMethods

@@ -31,21 +31,21 @@ public class UMLDocument
      * To be used by a 'UMLGuiController' when requested
      * @return all UMLSelectables from both the classSet and relationshipList
      */
-    public List<UMLSelectable> getAllSelectables()
+    public List<UIListener> getUIListeners()
     {
-        List<UMLSelectable> allSelectables = new ArrayList();
+        List<UIListener> allSelectables = new ArrayList();
         for(UMLClass umlclass : classSet.values())
         {
-            if(umlclass == null) continue;//pointless, idc.
-            allSelectables.add(umlclass);
+            if(umlclass == null || umlclass.listener == null) continue;
+            allSelectables.add(umlclass.listener);
         }
         for(ArrayList<UMLRelationship> allRealtionshipLists : relationshipList.values())
         {
             if(allRealtionshipLists == null) continue;
             for(UMLRelationship relationship : allRealtionshipLists)
             {
-                if(relationship == null) continue;
-                allSelectables.add(relationship);
+                if(relationship == null || relationship.listener == null) continue;
+                allSelectables.add(relationship.listener);
             }
         }
         return allSelectables;

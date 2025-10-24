@@ -3,18 +3,9 @@ package org.umlproject;
  * This is an abstract base class for UML Document elements that will interface with the GUI.
  * Every GUI object should maintain a 'selectable' state.
  */
-public abstract class UMLDiagramElement implements UMLSelectable
+public abstract class UMLDiagramElement
 {
-    transient protected boolean selected;
     transient protected UIListener listener;
-    
-    @Override
-    public void setSelected(boolean isSelected) { 
-        this.selected = isSelected;
-        updateGUISelectionState();
-    }
-    @Override
-    public boolean getSelected(){ return selected; }
     
     public void setListener(UIListener listener)
     {
