@@ -10,6 +10,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 
@@ -311,18 +314,16 @@ public class UMLDocument
     {
         return classSet.get(className);
     }
+    /**
+     * Gets if the file location is valid.
+     */
     public boolean isFileLocationValid()
     {
         if (this.fileLocation == null || this.fileLocation.trim().isEmpty()) {
             return false;
         }
-        File file = new File(this.fileLocation);
-        try {
-            file.createNewFile();
-        } catch (IOException ex) {
-            System.getLogger(UMLDocument.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
-        }
-        return file.exists();
+        Path path = Paths.get(this.fileLocation + FILEEXTENT_STRING);
+        return Files.exists(path);
     }
     /**
      * Calls save on the
