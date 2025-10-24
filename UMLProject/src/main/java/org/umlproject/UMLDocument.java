@@ -181,7 +181,7 @@ public class UMLDocument
         UMLRelationship relationship = new UMLRelationship(className, destinationName, relationshipType, (relationshipType == RelationshipType.OTHER) ? relationshipTypeString : null);
         relationshipList.get(className).add(relationship);
         if(guiController != null)
-            guiController.addRelationship(relationship);
+            guiController.onRelationshipAdded(relationship);
         return true;
     }
     /**
@@ -385,7 +385,7 @@ public class UMLDocument
         ArrayList<UMLRelationship> newList = new ArrayList<>();
         relationshipList.put(className, newList);
         if(guiController != null)
-            guiController.addClass(umlclass);
+            guiController.onClassAdded(umlclass);
         return umlclass;
     }
 

@@ -11,12 +11,12 @@ public interface UMLGuiController {
      * Suggests the GUI controller to create and bind a UMLObjectUpdateListener
      * @param umlClass we should bind to
      */
-    void addClass(UMLClass umlClass);
+    void onClassAdded(UMLClass umlClass);
     /**
      * Suggests the GUI controller to create and bind a UMLObjectUpdateListener
      * @param umlRelationship we should bind to
      */
-    void addRelationship(UMLRelationship umlRelationship);
+    void onRelationshipAdded(UMLRelationship umlRelationship);
     /**
      * @param umlDocument Calls addClass() and addRelationship() on all the umlDocuments.
      */
