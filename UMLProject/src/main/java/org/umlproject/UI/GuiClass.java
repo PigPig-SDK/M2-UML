@@ -9,8 +9,7 @@ import org.umlproject.UMLDocument;
 
 public class GuiClass implements UIListener {
 
-    private int dummyIncrement;
-
+    
     public GuiClass(Group world, UMLClass parentClass)
     {
         //Bind our UI elements to 'world'
