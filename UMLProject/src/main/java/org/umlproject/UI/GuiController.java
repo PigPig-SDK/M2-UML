@@ -5,10 +5,7 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Group;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuBar;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
 import org.umlproject.Main;
 import org.umlproject.TerminalHandler;
@@ -29,6 +26,9 @@ public class GuiController implements UMLGuiController {
     private MenuBar menubar;
     @FXML
     private Pane viewpane;
+
+    @FXML
+    private Button addClassButton;
     
     public Group getWorld(){return this.world;}
     public TextField getTerminal(){return this.console;}
@@ -41,6 +41,10 @@ public class GuiController implements UMLGuiController {
         UMLDocument.guiController = this;
         System.out.println("Setup GUI!");
         singleton = this;
+
+        //make sure addClassButton is not set to default so that way it doesn't
+        //trigger everytime enter is pressed
+        addClassButton.setDefaultButton(false);
         menubar.setViewOrder(-100);
         console.setViewOrder(-100);
     }
@@ -117,6 +121,26 @@ public class GuiController implements UMLGuiController {
         console.setText("");
     }
     //----------------- UMLGuiController Interface -----------------
+
+    /** This method will listen for when +C is pushed inside gui. It then retrieves the
+     * UMLDocument instance and calls addClass(with the argument "newClass change name".
+     * Not, we don't have a default constructor for UMLClass().
+     *
+      */
+    @FXML
+    public void addClassButtonPushed(){
+        UMLClass newClass = UMLDocument.getInstance().addClass("newClass change name");
+        if(newClass == null){
+            System.out.println("Class already Exists!");
+        }
+        else{
+            System.out.println("Class was added!");
+        }
+        System.out.println("+C was called");
+
+    }
+
+    //This method will bind a guiClass listener to the new umlClass
     @Override
     public void addClass(UMLClass umlClass) {
         GuiClass guiClass = new GuiClass(world, umlClass);

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
+import org.umlproject.UI.GuiClass;
 
 public class UMLClass extends UMLDiagramElement implements UIPositional{
     private String className;
@@ -20,7 +21,11 @@ public class UMLClass extends UMLDiagramElement implements UIPositional{
      * This has to be contained within UMLClass because the document layout must be retained between saves.
      */
     private Point2D location;
-    
+
+    /** This field stores the listener for a UMLClass instance. When an update to UMLClass occurs
+     * the update() method associated with this listener will be called.*/
+    private GuiClass listener;
+
     //-------------------------------- UMLSelectable Interface -----------------------------------
     @Override
     public boolean contains(Point2D selectionPoint) {
@@ -56,6 +61,9 @@ public class UMLClass extends UMLDiagramElement implements UIPositional{
         this.className = className;
         this.fields = new HashMap<>();
         this.methods = new HashMap<>();
+
+        //for testing location
+        this.location = new Point2D(0.0, 0.0);
     }
 
     /**
