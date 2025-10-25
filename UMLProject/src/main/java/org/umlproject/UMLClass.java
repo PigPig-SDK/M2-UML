@@ -19,12 +19,13 @@ public class UMLClass extends UMLDiagramElement {
     /**
      * This has to be contained within UMLClass because the document layout must be retained between saves.
      */
-    private Point2D location;
+    private double locationX, locationY = 0;
     
-    public Point2D getLocation() { return this.location; }
+    public Point2D getLocation() { return new Point2D(locationX, locationX); }
     
     public void setLocation(Point2D location) { 
-        this.location = location;
+        this.locationX = location.getX();
+        this.locationY = location.getY();
         updateGUILocation();
     }
     
