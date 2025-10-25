@@ -5,10 +5,7 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Group;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuBar;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
 import org.umlproject.Main;
 import org.umlproject.TerminalHandler;
@@ -29,6 +26,9 @@ public class GuiController implements UMLGuiController {
     private MenuBar menubar;
     @FXML
     private Pane viewpane;
+
+    @FXML
+    private Button addClassButton;
     
     public Group getWorld(){return this.world;}
     public TextField getTerminal(){return this.console;}
@@ -41,6 +41,10 @@ public class GuiController implements UMLGuiController {
         UMLDocument.guiController = this;
         System.out.println("Setup GUI!");
         singleton = this;
+
+        //make sure addClassButton is not set to default so that way it doesn't
+        //trigger everytime enter is pressed
+        addClassButton.setDefaultButton(false);
     }
     /**
      * This is called after initialize. 
@@ -124,6 +128,7 @@ public class GuiController implements UMLGuiController {
     @FXML
     public void addClassButtonPushed(){
         UMLDocument.getInstance().addClass("newClass change name");
+        System.out.println("+C was called");
 
     }
 

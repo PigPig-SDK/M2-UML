@@ -20,12 +20,14 @@ public abstract class UMLDiagramElement implements UMLSelectable
     {
         this.listener = listener;
     }
+
     public void updateGUI()
     {
         if(listener == null)
             return;
         listener.update(this);
     }
+
     public void updateGUILocation()
     {
         if(listener == null)
