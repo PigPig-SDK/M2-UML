@@ -21,7 +21,7 @@ public class UMLDocument
     private Map<String, UMLClass> classSet = new HashMap<>();
     private Map<String,ArrayList<UMLRelationship>> relationshipList = new HashMap<>();
     
-    private static final String FILEEXTENT_STRING = ".json";
+    public static final String FILEEXTENT_STRING = ".json";
     private static final String DEFAULT_FILEDIRECTORY = "Documents" + File.separator + "NewUMLDocument";
 
     public static UMLGuiController guiController = null;

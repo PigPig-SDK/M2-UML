@@ -1,5 +1,6 @@
 package org.umlproject.UI;
 
+import java.io.File;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -34,6 +35,7 @@ public class GuiController implements UMLGuiController {
     public TextField getTerminal(){return this.console;}
     public MenuBar getMenuBar(){return this.menubar;}
     public Pane getViewPane(){return this.viewpane;}
+    private boolean saveLocationSet = false;
     
     @FXML
     private void initialize() {
@@ -56,6 +58,7 @@ public class GuiController implements UMLGuiController {
     {
         GuiResizeManager.bindToSizeUpdates();
         GuiCamera.setupCamera();
+        GuiKeyBinds.setupKeyBinds();
     }
     //----------------- Menu bar callbacks -----------------
     @FXML
@@ -68,15 +71,32 @@ public class GuiController implements UMLGuiController {
     {
         System.out.println("Open file click");
     }
+    /**
+     * Handles the "Save" menu action.
+     * 
+     * If no save location is set, SaveAs will be executed
+     */
     @FXML
-    private void saveFileMenuAction()
+    public void saveFileMenuAction()
     {
-        System.out.println("Save file click");
+        if(saveLocationSet)
+            UMLDocument.getInstance().save();
+        else
+            saveAsFileMenuAction();
     }
+    /**
+     * Handles the "SaveAs" menu action.
+     */
     @FXML
-    private void saveAsFileMenuAction()
+    public void saveAsFileMenuAction()
     {
-        System.out.println("Save As file click");
+        File outputDirectory = GuiFileBrowser.promptForDiectory();
+        if(outputDirectory == null || outputDirectory.getAbsoluteFile() == null)
+            return;
+        UMLDocument.getInstance().setFileLocation(GuiFileBrowser.removeFileExtension(outputDirectory.getAbsolutePath()));
+        
+        if(UMLDocument.getInstance().save())
+            saveLocationSet = true;
     }
     @FXML
     private void quitFileMenuAction()
@@ -100,12 +120,12 @@ public class GuiController implements UMLGuiController {
         System.out.println("Delete edit click");
     }
     @FXML
-    private void selectAllEditMenuAction()
+    public void selectAllEditMenuAction()
     {
         System.out.println("SelectAll edit click");
     }
     @FXML
-    private void unSelectAllEditMenuAction()
+    public void unSelectAllEditMenuAction()
     {
         System.out.println("SelectAll but like backwards edit click");
     }
