@@ -127,7 +127,13 @@ public class GuiController implements UMLGuiController {
       */
     @FXML
     public void addClassButtonPushed(){
-        UMLDocument.getInstance().addClass("newClass change name");
+        UMLClass newClass = UMLDocument.getInstance().addClass("newClass change name");
+        if(newClass == null){
+            System.out.println("Class already Exists!");
+        }
+        else{
+            System.out.println("Class was added!");
+        }
         System.out.println("+C was called");
 
     }

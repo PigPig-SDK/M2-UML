@@ -57,7 +57,7 @@ public class GuiClass implements UIListener {
 
             String newName = classNameField.getText();
             String oldName = parentClass.getClassName();
-            parentClass.setClassName(newName);
+
             //update UMLDocument aswell to allow more classes to be made with +C
             UMLDocument.getInstance().renameClass(oldName, newName);
             parentClass.setListener(this);
