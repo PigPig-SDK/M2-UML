@@ -5,10 +5,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TextInputDialog;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
@@ -47,7 +44,7 @@ public class GuiClass implements UIListener {
         background.setStroke(Color.BLACK);
 
         //create modifiable className and put into VBox
-        TextField classNameField = new TextField("newClass");
+        TextField classNameField = new TextField(parentClass.getClassName());
         classNameField.setStyle("-fx-font-size: 16px; -fx-font-weight: bold");
         classNameField.setMaxWidth(180);
         classNameField.setFocusTraversable(false);
@@ -59,7 +56,10 @@ public class GuiClass implements UIListener {
             String oldName = parentClass.getClassName();
 
             //update UMLDocument aswell to allow more classes to be made with +C
-            UMLDocument.getInstance().renameClass(oldName, newName);
+            boolean updateSuccess = updateRename(oldName, newName);
+            if(!updateSuccess){
+                classNameField.setText(oldName);
+            }
             parentClass.setListener(this);
             e.consume();
             //move focus elsewhere. This is necessary to accept changes and remove
@@ -152,6 +152,36 @@ public class GuiClass implements UIListener {
         nodeBackground.setLayoutY(parentClass.getLocation().getY());
         System.out.println("stackpane layout is changed to:" + parentClass.getLocation());
         nodeBackground.getParent().requestLayout();
+    }
+
+    /**
+     * Runs after user input, removing the chosen class from the model
+     *
+     * @param input - Input class to be removed from model
+     */
+    public void updateRemove(UMLClass input){
+        UMLClass checkClass = UMLDocument.getInstance().removeClass(input.getClassName());
+        if(checkClass == null) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Unable To Remove Class Error");
+            alert.showAndWait();
+        }
+    }
+
+    /**
+     * Runs after user input, renaming the chosen class from the model
+     *
+     * @param oldName,newName - The name to be replaced and do the replacing
+     */
+    public boolean updateRename(String oldName, String newName){
+        boolean checkClass = UMLDocument.getInstance().renameClass(oldName, newName);
+        if(!checkClass){
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setContentText("Unable To Rename Class Error: Class Already Exists");
+            alert.showAndWait();
+            return false;
+        }
+        return true;
     }
 
     @Override
