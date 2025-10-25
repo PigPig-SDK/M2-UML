@@ -67,6 +67,11 @@ public class GuiController implements UMLGuiController {
     {
         System.out.println("Open file click");
     }
+    /**
+     * Handles the "Save" menu action.
+     * 
+     * If no save location is set, SaveAs will be executed
+     */
     @FXML
     public void saveFileMenuAction()
     {
@@ -75,6 +80,9 @@ public class GuiController implements UMLGuiController {
         else
             saveAsFileMenuAction();
     }
+    /**
+     * Handles the "SaveAs" menu action.
+     */
     @FXML
     public void saveAsFileMenuAction()
     {
