@@ -21,15 +21,20 @@ public class GuiFileBrowser {
         File selectedDirectory = fileChooser.showSaveDialog(Main.mainStage);
         return selectedDirectory;
     }
-    public static String removeFileExtension(String input)
+    /**
+     * Removes the file UMLDocument default file extension from the input pathString.
+     * @param pathString that is being referenced.
+     * @return pathString without the UMLDocument default file extension.
+     */
+    public static String removeFileExtension(String pathString)
     {
         String fileExtension = UMLDocument.FILEEXTENT_STRING;
         //Would cause issues... Throw it back at them..
-        if(input == null || input.length() <= fileExtension.length())
-            return input;
+        if(pathString == null || pathString.length() <= fileExtension.length())
+            return pathString;
         
-        if(input.endsWith(fileExtension))
-            return input.substring(0, input.length() - fileExtension.length());
-        return input;
+        if(pathString.endsWith(fileExtension))
+            return pathString.substring(0, pathString.length() - fileExtension.length());
+        return pathString;
     }
 }
