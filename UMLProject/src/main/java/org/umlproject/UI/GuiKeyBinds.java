@@ -9,6 +9,10 @@ import javafx.scene.input.KeyCombination;
 import org.umlproject.Main;
 
 public class GuiKeyBinds {
+    /**
+     * Call this after the main scene is setup.
+     * setupKeyBinds() will create listeners for applications basic keybinds.
+     */
     public static void setupKeyBinds()
     {
         //Setup CTRL+S for "Save"
@@ -75,6 +79,9 @@ public class GuiKeyBinds {
         }
         return null;
     }
+    /**
+     * Searches for a specific objectName in a Menu tree.
+     */
     private static MenuItem findMenuItem(Menu menu, String objectName)
     {
         for(MenuItem item : menu.getItems())
