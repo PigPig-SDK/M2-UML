@@ -415,6 +415,24 @@ public class UMLDocument
         return this.relationshipList;
     }
 
+    /**
+     * Returns the first available spot for a new class when added through GUI
+     *
+     * @return String - The first available name
+     */
+    public String findValidDummyName()
+    {
+        final String dummyName = "NewClass ";
+        int increment = 1;
+        while(true)
+        {
+            String testName = dummyName + increment;
+            if(!classSet.containsKey(testName))//Name is not taken
+                return testName;
+            increment++;
+        }
+    }
+
     @Override
     public boolean equals(Object obj) {
         if(this == obj)
