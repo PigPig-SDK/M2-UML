@@ -45,6 +45,8 @@ public class GuiController implements UMLGuiController {
         //make sure addClassButton is not set to default so that way it doesn't
         //trigger everytime enter is pressed
         addClassButton.setDefaultButton(false);
+        menubar.setViewOrder(-100);
+        console.setViewOrder(-100);
     }
     /**
      * This is called after initialize. 
