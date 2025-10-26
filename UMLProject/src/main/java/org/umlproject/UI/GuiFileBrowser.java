@@ -25,7 +25,7 @@ public class GuiFileBrowser {
      * This will open the users OS's load functionality.
      * @return The directory they have chosen to load.
      */
-    public static File promptForLoadDiectory()
+    public static File promptForLoadDirectory()
     {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Load UML File");

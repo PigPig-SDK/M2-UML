@@ -89,7 +89,7 @@ public class GuiController implements UMLGuiController {
     @FXML
     public void openFileMenuAction()
     {
-        File outputDirectory = GuiFileBrowser.promptForLoadDiectory();
+        File outputDirectory = GuiFileBrowser.promptForLoadDirectory();
         if(outputDirectory == null || outputDirectory.getAbsoluteFile() == null)
             return;
         String pathString = GuiFileBrowser.removeFileExtension(outputDirectory.getAbsolutePath());
