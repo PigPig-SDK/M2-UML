@@ -26,13 +26,8 @@ public enum Visibility {
      */
     public static boolean acceptableVisibility(String input){
         return switch(input.toLowerCase()) {
-            case "public","+" -> true;
-            case "private","-" -> true;
-            case "protected","#" -> true;
-            case "package","~" -> true;
+            case "public", "+", "private", "-", "protected", "#", "package", "~" -> true;
             default -> false;
-
         };
-
     }
 }
