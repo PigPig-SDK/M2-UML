@@ -166,13 +166,13 @@ public class GuiController implements UMLGuiController {
 
     //This method will bind a guiClass listener to the new umlClass
     @Override
-    public void addClass(UMLClass umlClass) {
+    public void onClassAdded(UMLClass umlClass) {
         GuiClass guiClass = new GuiClass(world, umlClass);
         umlClass.setListener(guiClass);
     }
 
     @Override
-    public void addRelationship(UMLRelationship umlRelationship) {
+    public void onRelationshipAdded(UMLRelationship umlRelationship) {
         GuiRelationship guiRelationship = new GuiRelationship(world, umlRelationship);
         umlRelationship.setListener(guiRelationship);
     }

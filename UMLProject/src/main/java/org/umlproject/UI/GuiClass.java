@@ -20,14 +20,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-public class GuiClass implements UIListener {
+public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositional {
     private Group world;
     private UMLClass parentClass;
 
     double mouseAnchorX;
     double mouseAnchorY;
     StackPane nodeBackground;
-
     public GuiClass(Group world, UMLClass parentClass)
     {
         this.world = world;
@@ -131,14 +130,12 @@ public class GuiClass implements UIListener {
 
     
     @Override
-    public void update(UMLDiagramElement desiredElement) {
+    public void update(UMLClass desiredElement) {
 
-
-        
     }
 
     @Override
-    public void updateSelected(UMLDiagramElement desiredElement) {
+    public void updateSelected(UMLClass desiredElement) {
     }
 
 
@@ -146,7 +143,7 @@ public class GuiClass implements UIListener {
     //the umlClass. That is, any calls to this function will visibly move
     //the class box on the screen.
     @Override
-    public void updateLocation(UMLDiagramElement desiredElement) {
+    public void updateLocation(UMLClass desiredElement) {
 
         nodeBackground.setLayoutX(parentClass.getLocation().getX());
         nodeBackground.setLayoutY(parentClass.getLocation().getY());
@@ -187,6 +184,33 @@ public class GuiClass implements UIListener {
     @Override
     public void cleanUp() {
     }
-    
-    
+
+    @Override
+    public void setSelected(boolean isSelected) {
+        
+    }
+
+    @Override
+    public boolean getSelected() {
+        return false; //TODO: Implement.
+    }
+
+    @Override
+    public boolean contains(Point2D selectionPoint) {
+        return false;
+    }
+
+    @Override
+    public boolean intersects(Rectangle2D selectionRectangle) {
+        return false;
+    }
+
+    @Override
+    public Point2D getLocation() {
+        return Point2D.ZERO;//TODO: Implement
+    }
+
+    @Override
+    public void setLocation(Point2D location) {
+    }
 }

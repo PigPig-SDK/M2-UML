@@ -1,5 +1,9 @@
 package com.unittests;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
@@ -115,7 +119,7 @@ public class UMLDocumentTests
     public void addRelationship_nonExisting_success()
     {
         // Arrange
-        String fileString = "test.json";
+        String fileString = "test";
         UMLDocument umldocument = new UMLDocument(fileString);
         umldocument.addClass("test");
         umldocument.addClass("endpoint");
@@ -171,7 +175,7 @@ public class UMLDocumentTests
     public void getAllRelationships_multiple_success()
     {
         // Arrange
-        String fileString = "test.json";
+        String fileString = "test";
         UMLDocument umldocument = new UMLDocument(fileString);
         umldocument.addClass("a");
         umldocument.addClass("b");
@@ -203,7 +207,7 @@ public class UMLDocumentTests
     public void addRelationship_duplicate_failure()
     {
         // Arrange
-        String fileString = "test.json";
+        String fileString = "test";
         UMLDocument umldocument = new UMLDocument(fileString);
         umldocument.addClass("a");
         umldocument.addClass("b");
@@ -230,13 +234,36 @@ public class UMLDocumentTests
         assertNotNull(umldocument2.getAllRelationships("a"));
         assertEquals(umldocument, umldocument2);
     }
-        @Test 
-        public void isFileLocationValid_Success()
+    @Test 
+    public void isFileLocationValid_IsValid_Success()
     {
         // Arrange
         String fileString = "test";
         UMLDocument umldocument = new UMLDocument(fileString);
-        // Act/Assert
+        // Act
+        umldocument.save();
+        // Assert
         assertTrue(umldocument.isFileLocationValid());
+    }
+    @Test 
+    public void isFileLocationValid_FileNotValid_False()
+    {
+        // Arrange
+        String fileString = "noFileCalledThisExists";
+        UMLDocument umldocument = new UMLDocument(fileString);
+        // Act
+        // Assert
+        assertFalse(umldocument.isFileLocationValid());
+    }
+    @AfterEach
+    public void killAnnoyingFiles() {
+        //God i hate these files. Die.
+        Path file1 = Paths.get("ello.json");
+        Path file2 = Paths.get("test.json");
+        try{
+            Files.deleteIfExists(file1);
+            Files.deleteIfExists(file2);
+        }
+        catch(Exception e){}
     }
 }
