@@ -5,9 +5,11 @@ import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -30,20 +32,38 @@ public class GuiClass implements UIListener {
     //VBox that holds className TextField and VBoxes for data fields and methods.
     VBox parentVBox;
 
+    /**
+     * Constructor for GuiClass responsible for building the initial class box and setting all the proper
+     * actions on its nodes. TextFields will be editable and those edits will be reflected in the underlying
+     * UMLDocument singleton. "Add Field Button" will create new TextFields in the Data Fields section of the class
+     * box. "Add Method Button" will create new TextFields in the Methods section of the class box.
+     * @param world, representing the group that holds all class boxes
+     * @param parentClass, the UMLClass which a given GuiClass instance listens to.
+     */
     public GuiClass(Group world, UMLClass parentClass)
     {
         this.world = world;
+
+
         world.setFocusTraversable(true);//lets world request focus.
         this.parentClass = parentClass;
         this.nodeBackground = new StackPane();
+        nodeBackground.setManaged(false);
 
+        parentVBox = new VBox();
+        parentVBox.setSpacing(10);
+        parentVBox.setPadding(new Insets(10, 10, 10, 10));
+        parentVBox.setMinWidth(200);
+        parentVBox.setPrefWidth(250);
+        dataFieldTextFields = new VBox(10);
+        methodTextFields = new VBox(10);
 
         //create a rectangle background for the class.
         Rectangle background = new Rectangle();
-        background.setHeight(300);
-        background.setWidth(200);
         background.setFill(Color.MINTCREAM);
         background.setStroke(Color.BLACK);
+        background.widthProperty().bind(parentVBox.widthProperty().add(20));
+        background.heightProperty().bind(parentVBox.heightProperty().add(20));
 
         //Create modifiable className and put into VBox
         TextField classNameField = new TextField(parentClass.getClassName());
@@ -56,7 +76,6 @@ public class GuiClass implements UIListener {
         //Create VBox for DataFields of class.
         Separator separator1 = new Separator();
         Label dataFieldsLabel = new Label("Data Fields:");
-        dataFieldTextFields = new VBox(10);
         Button addDataField = new Button("Add data field");
         //Set action on addDataField so you can create new data field Textfield after clicking.
         addDataFieldButtonClickable(addDataField);
@@ -65,11 +84,10 @@ public class GuiClass implements UIListener {
         Label methodsLabel = new Label("Methods:");
 
         //insert className textField
-        parentVBox = new VBox(classNameField);
-        parentVBox.setSpacing(10);
+        parentVBox.getChildren().add(classNameField);
         parentVBox.getChildren().addAll(separator1, dataFieldsLabel, dataFieldTextFields, addDataField, separator2, methodsLabel);
         parentVBox.setAlignment(Pos.TOP_CENTER);
-        parentVBox.setPadding(new Insets(10, 0, 0, 0));
+
 
         nodeBackground.getChildren().addAll(background, parentVBox);
 
@@ -88,13 +106,15 @@ public class GuiClass implements UIListener {
         world.requestFocus();
     }
 
-    //This method will make it so the StackPane that holds all the nodes
-    //that represent a class can be moved by clicking and dragging the mouse.
-    //the MouseAnchor calculation ensures smooth dragging, by
-    //letting the new location of nodeBackground be calculated from where
-    //we clicked our mouse rather than from the top left corner of the StackPane.
-    //it calls setLocation on parent UMLClass to update the parents coordinates.
-    //the parent in turn calls updateGUILocation() to move the classbox on the screen.
+    /**This method will make it so the StackPane that holds all the nodes
+      *that represent a class can be moved by clicking and dragging the mouse.
+      *The MouseAnchor calculation ensures smooth dragging, by
+      *letting the new location of nodeBackground be calculated from where
+      *we clicked our mouse rather than from the top left corner of the StackPane.
+      *It calls setLocation on parent UMLClass to update the parents coordinates.
+      *The parent in turn calls updateGUILocation() to move the classbox on the screen.
+      * @param nodeBackground, a StackPane representing the container for the class box contents.
+      */
     private void makeDraggable(StackPane nodeBackground) {
         nodeBackground.setOnMousePressed(e -> {
             System.out.println("Mouse pressed on StackPane at: " + e.getSceneX() + ", " + e.getSceneY());
@@ -138,21 +158,33 @@ public class GuiClass implements UIListener {
         });
     }
 
-    /**sets an action on the data field TextFields of class box, so that when a new string representing
+    /**Sets an action on the data field TextFields of class box, so that when a new string representing
      * a datafield is entered, it will be parsed and transformed into a UMLDataField and then inserted
      * into the parent class.
      * @param oldField, the TextField containing the old DataField attributes as a string.
      */
     public void linkTextFieldToDataField(TextField oldField){
+
         oldField.setOnAction(e ->{
             String customTypeName = "";
             String dataFieldText = oldField.getText();
             String[] textAsArray = dataFieldText.split(" ");
-            if(textAsArray.length < 3){
-                System.out.println("insufficient number of arguments");
+            if(textAsArray.length != 3){
+
+                System.out.println("Invalid number of arguments! Enter Visibility DataType Name.");
+                oldField.setText("Visibility Type Name");
+                return;
+            }
+            //make sure the user entered a valid Visibility value.
+            boolean acceptableVisibilityStatus = Visibility.acceptableVisibility(textAsArray[0]);
+            if(!acceptableVisibilityStatus){
+                System.out.println("Invalid visibility type! Enter: Public, Private, Protected, or Package.");
+                oldField.setText("Visibility Type Name");
                 return;
             }
             Visibility visibility = Visibility.stringVisibility(textAsArray[0]);
+
+
             DataType dataType = DataType.stringToDatatype(textAsArray[1]);
             if(dataType == DataType.OTHER){
                 customTypeName = textAsArray[1];
@@ -163,8 +195,10 @@ public class GuiClass implements UIListener {
             String dataFieldName = textAsArray[2];
             UMLDataField newField = new UMLDataField(dataFieldName, customTypeName, dataType, visibility);
 
+
             //attempt to add the field
             boolean success = this.parentClass.addField(newField);
+            System.out.println("field was added? " + success);
             if(success){
                 //Renaming a textField like this results in two datafields existing in UMLDocument
                 //oldField and the new one. Now we must delete oldField from UMLDocument and then
@@ -182,6 +216,7 @@ public class GuiClass implements UIListener {
             world.requestFocus();
 
         });
+
     }
 
     /**
@@ -192,25 +227,55 @@ public class GuiClass implements UIListener {
     public void addDataFieldButtonClickable(Button addDataField){
         addDataField.setOnAction(e -> {
             TextField newField = new TextField("Visibility Type Name");
-            newField.setFocusTraversable(false);
-            linkTextFieldToDataField(newField);
-            dataFieldTextFields.getChildren().add(newField);
-            e.consume();
+            //need to make sure there isn't a duplicate "Visibility Type Name" TextField in classbox already.
+            boolean duplicateTextField = false;
+            for(Node node : dataFieldTextFields.getChildren()){
+                if(((TextField)(node)).getText().equals(newField.getText())){
+                    duplicateTextField = true;
+                    break;
+                }
+            }
+            if(duplicateTextField){
+                System.out.println("Must update Visibility Type Name of previous data field before adding a new one.");
+                e.consume();
+                return;
+            }
+            else {
+                //Link this TextField to a DataField in underlying UMLDocument
+                newField.setFocusTraversable(false);
+                linkTextFieldToDataField(newField);
+                dataFieldTextFields.getChildren().add(newField);
+                e.consume();
+            }
         });
     }
-    
+
+    /**
+     * update is responsible for redrawing the classBox every time a data field or method is added or removed.
+     * It will recreate the class box with the update nodes in a fashion reminiscent of the GuiClass constructor.
+     * @param desiredElement, the UMLClass object that the GuiClass instance listens to.
+     */
     @Override
     public void update(UMLDiagramElement desiredElement) {
-       //reset VBoxes
+       //reset VBoxes and world children.
+        world.getChildren().clear();
         dataFieldTextFields = new VBox(10);
         methodTextFields = new VBox(10);
         parentVBox = new VBox(10);
+        parentVBox.setPadding(new Insets(10, 10, 10, 10));
+        parentVBox.setMinWidth(200);
+        parentVBox.setPrefWidth(250);
+        nodeBackground = new StackPane();
+        nodeBackground.setManaged(false);
+
         //create a rectangle background for the class.
         Rectangle background = new Rectangle();
-        background.setHeight(300);
-        background.setWidth(200);
+        //background.setHeight(300);
+        //background.setWidth(200);
         background.setFill(Color.MINTCREAM);
         background.setStroke(Color.BLACK);
+        background.widthProperty().bind(parentVBox.widthProperty().add(20));
+        background.heightProperty().bind(parentVBox.heightProperty().add(20));
 
         //create modifiable className and put into VBox
         TextField classNameField = new TextField(parentClass.getClassName());
@@ -221,14 +286,43 @@ public class GuiClass implements UIListener {
         //and pressing enter.
         makeClassNameRenamable(classNameField);
 
+        parentVBox.getChildren().addAll(classNameField, new Separator());
 
         //set up dataFields
         //retrieve dataFields hashMap, retrieve keySet, convert into an array, then cycle through each
-        //and create a textField and put in VBox. Put VBox into nodeBackground.
+        //and create a textField and put in dataFieldsVBox.
+        Label dataFieldsLabel = new Label("Data Fields:");
         HashMap<String, UMLDataField> UMLDataFields = ((UMLClass)(desiredElement)).getFieldsAll();
         ArrayList<String> fieldsAsStrings = convertDataFieldsToStrings(UMLDataFields);
-        
+        for(int i = 0; i < fieldsAsStrings.size(); i++){
+            TextField nextField = new TextField(fieldsAsStrings.get(i));
+            dataFieldTextFields.getChildren().add(nextField);
+        }
+        parentVBox.getChildren().addAll(dataFieldsLabel, dataFieldTextFields);
 
+        //create AddField Button, set action to make a new DataField
+        Button addDataField = new Button("Add data field");
+        addDataFieldButtonClickable(addDataField);
+        parentVBox.getChildren().addAll(addDataField, new Separator());
+
+        //create methods
+        Label methodsLabel = new Label("Methods:");
+        parentVBox.getChildren().addAll(methodsLabel, methodTextFields);
+        nodeBackground.getChildren().addAll(background, parentVBox);
+
+
+        //Here we bind the StackPane to the location of the UMLClass, then
+        //make the rectangle background draggable.
+        if(parentClass.getLocation() != null){
+            nodeBackground.setLayoutX(parentClass.getLocation().getX());
+            nodeBackground.setLayoutY(parentClass.getLocation().getY());
+        }
+
+        //make rectangle draggable
+        makeDraggable(nodeBackground);
+        //add classbox to world to display
+        world.getChildren().add(nodeBackground);
+        world.requestFocus();
         
     }
 
@@ -262,6 +356,7 @@ public class GuiClass implements UIListener {
             nextText.append(" ");
             nextText.append(nextField.getName());
             fieldsAsStrings.add(nextText.toString());
+            nextText = new StringBuilder();
         }
         return fieldsAsStrings;
     }
@@ -271,15 +366,17 @@ public class GuiClass implements UIListener {
     }
 
 
-    //This method will update the location of the gui element representing
-    //the umlClass. That is, any calls to this function will visibly move
-    //the class box on the screen.
-    @Override
+    /**This method will update the location of the gui element representing
+     *the umlClass. That is, any calls to this function will visibly move
+     *the class box on the screen.
+     * @param desiredElement, this is the UMLClass whose location data field is used to update nodeBackground
+     */
+     @Override
     public void updateLocation(UMLDiagramElement desiredElement) {
 
-        nodeBackground.setLayoutX(parentClass.getLocation().getX());
-        nodeBackground.setLayoutY(parentClass.getLocation().getY());
-        System.out.println("stackpane layout is changed to:" + parentClass.getLocation());
+        nodeBackground.setLayoutX(((UMLClass)(desiredElement)).getLocation().getX());
+        nodeBackground.setLayoutY(((UMLClass)(desiredElement)).getLocation().getY());
+        System.out.println("stackpane layout is changed to:" + ((UMLClass)(desiredElement)).getLocation());
         nodeBackground.getParent().requestLayout();
     }
 
