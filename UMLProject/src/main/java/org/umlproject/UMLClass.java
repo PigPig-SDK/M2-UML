@@ -21,7 +21,7 @@ public class UMLClass extends UMLDiagramElement {
      */
     private double locationX, locationY = 0;
     
-    public Point2D getLocation() { return new Point2D(locationX, locationX); }
+    public Point2D getLocation() { return new Point2D(locationX, locationY); }
     
     public void setLocation(Point2D location) { 
         this.locationX = location.getX();
