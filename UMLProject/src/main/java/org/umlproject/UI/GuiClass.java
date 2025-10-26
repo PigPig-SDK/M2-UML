@@ -31,6 +31,18 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
     double mouseAnchorX;
     double mouseAnchorY;
     StackPane nodeBackground;
+    VBox dataFieldTextFields;
+    VBox methodTextFields;
+    //VBox that holds className TextField and VBoxes for data fields and methods.
+    VBox parentVBox;
+    /**
+     * Constructor for GuiClass responsible for building the initial class box and setting all the proper
+     * actions on its nodes. TextFields will be editable and those edits will be reflected in the underlying
+     * UMLDocument singleton. "Add Field Button" will create new TextFields in the Data Fields section of the class
+     * box. "Add Method Button" will create new TextFields in the Methods section of the class box.
+     * @param world, representing the group that holds all class boxes
+     * @param parentClass, the UMLClass which a given GuiClass instance listens to.
+     */
     public GuiClass(Group world, UMLClass parentClass)
     {
         this.world = world;
@@ -217,7 +229,7 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         //retrieve dataFields hashMap, retrieve keySet, convert into an array, then cycle through each
         //and create a textField and put in dataFieldsVBox.
         Label dataFieldsLabel = new Label("Data Fields:");
-        HashMap<String, UMLDataField> UMLDataFields = ((UMLClass)(desiredElement)).getFieldsAll();
+        HashMap<String, UMLDataField> UMLDataFields = desiredElement.getFieldsAll();
         ArrayList<String> fieldsAsStrings = convertDataFieldsToStrings(UMLDataFields);
         for(int i = 0; i < fieldsAsStrings.size(); i++){
             TextField nextField = new TextField(fieldsAsStrings.get(i));
@@ -296,8 +308,8 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
     public void updateLocation(UMLClass desiredElement) {
         if(this.nodeBackground == null)
             return;
-        this.nodeBackground.setLayoutX(((UMLClass)(desiredElement)).getLocation().getX());
-        this.nodeBackground.setLayoutY(((UMLClass)(desiredElement)).getLocation().getY());
+        this.nodeBackground.setLayoutX(desiredElement.getLocation().getX());
+        this.nodeBackground.setLayoutY(desiredElement.getLocation().getY());
         //System.out.println("stackpane layout is changed to:" + ((UMLClass)(desiredElement)).getLocation());
         this.nodeBackground.getParent().requestLayout();
     }
@@ -338,6 +350,7 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
             return;
         this.world.getChildren().remove(this.nodeBackground);
     }
+    
     @Override
     public void setSelected(boolean isSelected) {
         
@@ -345,7 +358,8 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
 
     @Override
     public boolean getSelected() {
-        return false; //TODO: Implement.
+        
+        return false;
     }
 
     @Override
@@ -360,10 +374,15 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
 
     @Override
     public Point2D getLocation() {
-        return Point2D.ZERO;//TODO: Implement
+        if(parentClass == null)
+            return Point2D.ZERO;
+        return parentClass.getLocation();
     }
 
     @Override
     public void setLocation(Point2D location) {
+        if(parentClass == null)
+            return;
+        parentClass.setLocation(location);
     }
 }
