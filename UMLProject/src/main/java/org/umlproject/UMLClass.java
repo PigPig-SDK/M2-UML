@@ -6,7 +6,7 @@ import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
 import org.umlproject.UI.GuiClass;
 
-public class UMLClass extends UMLDiagramElement implements UIPositional{
+public class UMLClass extends UMLDiagramElement {
     private String className;
     /**
      * use hashmap for UMLDataFields where a unique DataField name is the key
@@ -20,34 +20,16 @@ public class UMLClass extends UMLDiagramElement implements UIPositional{
     /**
      * This has to be contained within UMLClass because the document layout must be retained between saves.
      */
-    private Point2D location;
-
-    /** This field stores the listener for a UMLClass instance. When an update to UMLClass occurs
-     * the update() method associated with this listener will be called.*/
-    private GuiClass listener;
-
-    //-------------------------------- UMLSelectable Interface -----------------------------------
-    @Override
-    public boolean contains(Point2D selectionPoint) {
-        //TODO :Implement bounds check for user cursor
-        //This will depend on the GUIListener. Sean will implement this.
-        return false;
-    }
-    @Override
-    public boolean intersects(Rectangle2D selectionRectangle) {
-        //TODO :Implement box select check for user selection
-        //This will depend on the GUIListener. Sean will implement this.
-        return false;
-    }
-    //-------------------------------- UIPositional Interface -----------------------------------
-    @Override
-    public Point2D getLocation() { return this.location; }
-    @Override
+    private double locationX, locationY = 0;
+    
+    public Point2D getLocation() { return new Point2D(locationX, locationY); }
+    
     public void setLocation(Point2D location) { 
-        this.location = location;
+        this.locationX = location.getX();
+        this.locationY = location.getY();
         updateGUILocation();
     }
-    //-------------------------------- Main Class -----------------------------------
+    
     /**
      * UMLClass constructor that takes a class name as input. Assigns empty hashMaps for
      * UMLDataFields and UMLMethods
@@ -61,9 +43,6 @@ public class UMLClass extends UMLDiagramElement implements UIPositional{
         this.className = className;
         this.fields = new HashMap<>();
         this.methods = new HashMap<>();
-
-        //for testing location
-        this.location = new Point2D(0.0, 0.0);
     }
 
     /**

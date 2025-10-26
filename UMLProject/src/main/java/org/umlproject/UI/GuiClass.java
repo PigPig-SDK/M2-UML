@@ -19,27 +19,18 @@ import org.umlproject.*;
 
 
 import java.util.*;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import javafx.geometry.Rectangle2D;
 
-public class GuiClass implements UIListener {
+public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositional {
     private Group world;
     private UMLClass parentClass;
 
     double mouseAnchorX;
     double mouseAnchorY;
     StackPane nodeBackground;
-    VBox dataFieldTextFields;
-    VBox methodTextFields;
-    //VBox that holds className TextField and VBoxes for data fields and methods.
-    VBox parentVBox;
-
-    /**
-     * Constructor for GuiClass responsible for building the initial class box and setting all the proper
-     * actions on its nodes. TextFields will be editable and those edits will be reflected in the underlying
-     * UMLDocument singleton. "Add Field Button" will create new TextFields in the Data Fields section of the class
-     * box. "Add Method Button" will create new TextFields in the Methods section of the class box.
-     * @param world, representing the group that holds all class boxes
-     * @param parentClass, the UMLClass which a given GuiClass instance listens to.
-     */
     public GuiClass(Group world, UMLClass parentClass)
     {
         this.world = world;
@@ -190,7 +181,7 @@ public class GuiClass implements UIListener {
      * @param desiredElement, the UMLClass object that the GuiClass instance listens to.
      */
     @Override
-    public final void update(UMLDiagramElement desiredElement) {
+    public final void update(UMLClass desiredElement) {
         //Clear out the previous GUI.
         cleanUp();
         //--=======================================================Clone start
@@ -258,7 +249,6 @@ public class GuiClass implements UIListener {
         this.world.getChildren().add(this.nodeBackground);
         this.world.requestFocus();
     }
-
     /**
      * Helper function for update() that converts a hashMap of data fields into a String[] array
      * where each entry represents a data field according to the TextField format: Visibility Type Name.
@@ -295,17 +285,15 @@ public class GuiClass implements UIListener {
     }
 
     @Override
-    public void updateSelected(UMLDiagramElement desiredElement) {
+    public void updateSelected(UMLClass desiredElement) {
     }
-
-
     /**This method will update the location of the gui element representing
      *the umlClass. That is, any calls to this function will visibly move
      *the class box on the screen.
      * @param desiredElement, this is the UMLClass whose location data field is used to update nodeBackground
      */
      @Override
-    public void updateLocation(UMLDiagramElement desiredElement) {
+    public void updateLocation(UMLClass desiredElement) {
         if(this.nodeBackground == null)
             return;
         this.nodeBackground.setLayoutX(((UMLClass)(desiredElement)).getLocation().getX());
@@ -349,5 +337,33 @@ public class GuiClass implements UIListener {
         if(this.nodeBackground == null)
             return;
         this.world.getChildren().remove(this.nodeBackground);
+    }
+    @Override
+    public void setSelected(boolean isSelected) {
+        
+    }
+
+    @Override
+    public boolean getSelected() {
+        return false; //TODO: Implement.
+    }
+
+    @Override
+    public boolean contains(Point2D selectionPoint) {
+        return false;
+    }
+
+    @Override
+    public boolean intersects(Rectangle2D selectionRectangle) {
+        return false;
+    }
+
+    @Override
+    public Point2D getLocation() {
+        return Point2D.ZERO;//TODO: Implement
+    }
+
+    @Override
+    public void setLocation(Point2D location) {
     }
 }

@@ -10,6 +10,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 
@@ -21,7 +24,7 @@ public class UMLDocument
     private Map<String, UMLClass> classSet = new HashMap<>();
     private Map<String,ArrayList<UMLRelationship>> relationshipList = new HashMap<>();
     
-    private static final String FILEEXTENT_STRING = ".json";
+    public static final String FILEEXTENT_STRING = ".json";
     private static final String DEFAULT_FILEDIRECTORY = "Documents" + File.separator + "NewUMLDocument";
 
     public static UMLGuiController guiController = null;
@@ -31,21 +34,21 @@ public class UMLDocument
      * To be used by a 'UMLGuiController' when requested
      * @return all UMLSelectables from both the classSet and relationshipList
      */
-    public List<UMLSelectable> getAllSelectables()
+    public List<UIListener> getUIListeners()
     {
-        List<UMLSelectable> allSelectables = new ArrayList();
+        List<UIListener> allSelectables = new ArrayList();
         for(UMLClass umlclass : classSet.values())
         {
-            if(umlclass == null) continue;//pointless, idc.
-            allSelectables.add(umlclass);
+            if(umlclass == null || umlclass.listener == null) continue;
+            allSelectables.add(umlclass.listener);
         }
         for(ArrayList<UMLRelationship> allRealtionshipLists : relationshipList.values())
         {
             if(allRealtionshipLists == null) continue;
             for(UMLRelationship relationship : allRealtionshipLists)
             {
-                if(relationship == null) continue;
-                allSelectables.add(relationship);
+                if(relationship == null || relationship.listener == null) continue;
+                allSelectables.add(relationship.listener);
             }
         }
         return allSelectables;
@@ -184,7 +187,7 @@ public class UMLDocument
         UMLRelationship relationship = new UMLRelationship(className, destinationName, relationshipType, (relationshipType == RelationshipType.OTHER) ? relationshipTypeString : null);
         relationshipList.get(className).add(relationship);
         if(guiController != null)
-            guiController.addRelationship(relationship);
+            guiController.onRelationshipAdded(relationship);
         return true;
     }
     /**
@@ -314,18 +317,16 @@ public class UMLDocument
     {
         return classSet.get(className);
     }
+    /**
+     * Gets if the file location is valid.
+     */
     public boolean isFileLocationValid()
     {
         if (this.fileLocation == null || this.fileLocation.trim().isEmpty()) {
             return false;
         }
-        File file = new File(this.fileLocation);
-        try {
-            file.createNewFile();
-        } catch (IOException ex) {
-            System.getLogger(UMLDocument.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
-        }
-        return file.exists();
+        Path path = Paths.get(this.fileLocation + FILEEXTENT_STRING);
+        return Files.exists(path);
     }
     /**
      * Calls save on the
@@ -388,7 +389,7 @@ public class UMLDocument
         ArrayList<UMLRelationship> newList = new ArrayList<>();
         relationshipList.put(className, newList);
         if(guiController != null)
-            guiController.addClass(umlclass);
+            guiController.onClassAdded(umlclass);
         return umlclass;
     }
 

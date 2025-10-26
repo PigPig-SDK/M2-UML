@@ -11,27 +11,6 @@ public class UMLRelationship  extends UMLDiagramElement
     private RelationshipType relationshipType;
     private String customNameType;
     
-    //-------------------------------- UMLSelectable Interface -----------------------------------
-    /**
-     * A line cannot contain a point simply. So how will users click on it?
-     * The user will have a 'forgiveness' radius, we then check if the line intersects the 'forgiveness circle'
-     * 
-     */
-    @Override
-    public boolean contains(Point2D selectionPoint) {
-        final float forgivenessRadius = 5;
-        //Something like this: Idk figure it out.
-        //https://www.geeksforgeeks.org/dsa/check-line-touches-intersects-circle/
-        return false;
-    }
-    /**
-     * 
-     */
-    @Override
-    public boolean intersects(Rectangle2D selectionRectangle) {
-        
-        return false;
-    }
     //-------------------------------- Main class -----------------------------------
     public UMLRelationship(String sourceName, String destinationName, RelationshipType relationshipType, String customNameType)
     {

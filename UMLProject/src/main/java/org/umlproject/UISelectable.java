@@ -9,7 +9,7 @@ import javafx.geometry.Rectangle2D;
  * This is kept within the UMLClass because it's inherently related to the 'model' we wish to preserve with GSON.
  * Classes that extend this will have their positional data stored in the saved JSON.
  */
-public interface UMLSelectable {
+public interface UISelectable {
     /**
      * Sets the selection status on the UMLSelectable.
      * @param isSelected
