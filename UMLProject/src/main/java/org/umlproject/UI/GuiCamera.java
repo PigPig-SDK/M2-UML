@@ -4,6 +4,7 @@ import javafx.animation.AnimationTimer;
 import javafx.geometry.Point2D;
 import javafx.scene.Group;
 import javafx.scene.control.TextInputControl;
+import javafx.scene.input.KeyEvent;
 import static javafx.scene.input.MouseButton.MIDDLE;
 import javafx.scene.input.ScrollEvent;
 import org.umlproject.Main;
@@ -11,12 +12,13 @@ import org.umlproject.Main;
 public class GuiCamera {
     private static Point2D camLocation = new Point2D(0,0);
     private static double cameraZoom = 1;
-    private static final int ARROWKEY_SPEED = 40;
+    private static final int ARROWKEY_SPEED = 4500;
     private static boolean up, down, left, right;
     private static final double ZOOM_SCALE_AMMOUNT = 0.005f;
     private static final double ZOOM_SCALE_MIN = 0.1f;
     private static final double ZOOM_SCALE_MAX = 3f;
 
+    private static long lastTime = 0;
     
     private static double startDragX = 0;
     private static double startDragY = 0;
@@ -28,18 +30,18 @@ public class GuiCamera {
         world.setTranslateX(camLocation.getX());
         world.setTranslateY(camLocation.getY());
     }
-    public static Point2D getUserInputDirection()
+    public static Point2D getUserInputDirection(double deltaTime)
     {
         double x = 0;
         double y = 0;
 
         double speedCalc = ARROWKEY_SPEED / Math.max(cameraZoom,5);
         
-        if (left && !right)  x = speedCalc;
-        else if (right && !left) x = -speedCalc;
+        if (left && !right)  x = speedCalc * deltaTime;
+        else if (right && !left) x = -speedCalc * deltaTime;
 
-        if (up && !down) y = speedCalc;
-        else if (down && !up) y = -speedCalc;
+        if (up && !down) y = speedCalc * deltaTime;
+        else if (down && !up) y = -speedCalc * deltaTime;
 
         return new Point2D(x, y);
     }
@@ -63,21 +65,24 @@ public class GuiCamera {
         if(Main.currentScene == null)
             return;
         //Key down
-        Main.currentScene.setOnKeyPressed(event -> {
+        Main.currentScene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+            if (event.isControlDown())
+                return;
+            
             switch (event.getCode()) {
-                case UP, W -> up = true;
-                case DOWN, S -> down = true;
-                case LEFT, A -> left = true;
-                case RIGHT, D -> right = true;
+                case UP, W -> {up = true;event.consume();}
+                case DOWN, S -> {down = true;event.consume();}
+                case LEFT, A -> {left = true;event.consume();}
+                case RIGHT, D -> {right = true;event.consume();}
             }
         });
         //Key up
-        Main.currentScene.setOnKeyReleased(event -> {
+        Main.currentScene.addEventHandler(KeyEvent.KEY_RELEASED, event -> {
             switch (event.getCode()) {
-                case UP, W -> up = false;
-                case DOWN, S -> down = false;
-                case LEFT, A -> left = false;
-                case RIGHT, D -> right = false;
+                case UP, W -> {up = false;event.consume();}
+                case DOWN, S -> {down = false;event.consume();}
+                case LEFT, A -> {left = false;event.consume();}
+                case RIGHT, D -> {right = false;event.consume();}
             }
         });
         //Mouse zoom
@@ -117,11 +122,14 @@ public class GuiCamera {
     }
     public static void setupCamera()
     {
+        
         AnimationTimer cameraTimer = new AnimationTimer() {
             @Override
             public void handle(long now){
+                double deltaTime = (now - lastTime) / 1000000000.0;
+                lastTime = now;
                 //Now push the camera based on the input.
-                setCameraLocation(camLocation.add(getUserInputDirection()));
+                setCameraLocation(camLocation.add(getUserInputDirection(deltaTime)));
             }
         };
         manageCameraInput();//Update input

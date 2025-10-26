@@ -11,7 +11,7 @@ public class GuiFileBrowser {
      * This will open the users OS's save functionality.
      * @return The directory they have chosen to save to.
      */
-    public static File promptForDiectory()
+    public static File promptForSaveDiectory()
     {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Save UML File");
@@ -19,6 +19,19 @@ public class GuiFileBrowser {
         fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
         fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("UMLDocument", "*.json"));
         File selectedDirectory = fileChooser.showSaveDialog(Main.mainStage);
+        return selectedDirectory;
+    }
+    /**
+     * This will open the users OS's load functionality.
+     * @return The directory they have chosen to load.
+     */
+    public static File promptForLoadDirectory()
+    {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Load UML File");
+        fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
+        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("UMLDocument", "*.json"));
+        File selectedDirectory = fileChooser.showOpenDialog(Main.mainStage);
         return selectedDirectory;
     }
     /**
