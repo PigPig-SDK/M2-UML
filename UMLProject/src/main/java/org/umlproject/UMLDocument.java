@@ -109,9 +109,12 @@ public class UMLDocument
         UMLClass removed = getClass(className);
         if (removed == null) return null;
         if(removeRelationships)
+        {
             removeClassKeyFromRelationships(className);
+            removed.disposeOfGuiListener();
+        }
         classSet.remove(className);
-        removed.disposeOfGuiListener();
+        
         return removed;
     }
     public UMLClass removeClass(String className)
