@@ -10,6 +10,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 
 
 public class UMLDocument
@@ -20,9 +24,35 @@ public class UMLDocument
     private Map<String, UMLClass> classSet = new HashMap<>();
     private Map<String,ArrayList<UMLRelationship>> relationshipList = new HashMap<>();
     
-    private static final String FILEEXTENT_STRING = ".json";
+    public static final String FILEEXTENT_STRING = ".json";
     private static final String DEFAULT_FILEDIRECTORY = "Documents" + File.separator + "NewUMLDocument";
 
+    public static UMLGuiController guiController = null;
+    
+    /**
+     * Used to return all selectable objects
+     * To be used by a 'UMLGuiController' when requested
+     * @return all UMLSelectables from both the classSet and relationshipList
+     */
+    public List<UIListener> getUIListeners()
+    {
+        List<UIListener> allListeners = new ArrayList();
+        for(UMLClass umlclass : classSet.values())
+        {
+            if(umlclass == null || umlclass.listener == null) continue;
+            allListeners.add(umlclass.listener);
+        }
+        for(ArrayList<UMLRelationship> allRealtionshipLists : relationshipList.values())
+        {
+            if(allRealtionshipLists == null) continue;
+            for(UMLRelationship relationship : allRealtionshipLists)
+            {
+                if(relationship == null || relationship.listener == null) continue;
+                allListeners.add(relationship.listener);
+            }
+        }
+        return allListeners;
+    }
     
     /**
      * Returns the current singleton, else creates it
@@ -79,8 +109,12 @@ public class UMLDocument
         UMLClass removed = getClass(className);
         if (removed == null) return null;
         if(removeRelationships)
+        {
             removeClassKeyFromRelationships(className);
+            removed.disposeOfGuiListener();
+        }
         classSet.remove(className);
+        
         return removed;
     }
     public UMLClass removeClass(String className)
@@ -144,12 +178,16 @@ public class UMLDocument
      *
      * @return boolean - True if the class was added
      * */
-    public boolean addRelationship(String className, String destinationName){
+    public boolean addRelationship(String className, String destinationName, String relationshipTypeString){
         if(!relationshipList.containsKey(className))
             relationshipList.put(className, new ArrayList<UMLRelationship>());
         if(hasRelationship(className,destinationName))
             return  false;
-        relationshipList.get(className).add(new UMLRelationship(className, destinationName));
+        RelationshipType relationshipType = RelationshipType.stringToRelationshipType(relationshipTypeString);
+        UMLRelationship relationship = new UMLRelationship(className, destinationName, relationshipType, (relationshipType == RelationshipType.OTHER) ? relationshipTypeString : null);
+        relationshipList.get(className).add(relationship);
+        if(guiController != null)
+            guiController.onRelationshipAdded(relationship);
         return true;
     }
     /**
@@ -178,7 +216,8 @@ public class UMLDocument
         int index = getRelationshipIndex(className, destinationName);
         if(index == -1)
             return false;
-        relationshipList.get(className).remove(index);
+        UMLRelationship relationship = relationshipList.get(className).remove(index);
+        relationship.disposeOfGuiListener();
         return true;
     }
 
@@ -199,7 +238,13 @@ public class UMLDocument
         for(String source : new ArrayList<>(relationshipList.keySet())){
             ArrayList<UMLRelationship> relationships = relationshipList.get(source);
             if(relationships != null){
-                relationships.removeIf(relationship -> relationship.getDestinationName().equals(className));
+                for(UMLRelationship relationship : relationships)
+                {
+                    if(!relationship.getDestinationName().equals(className))
+                        continue;
+                    relationship.disposeOfGuiListener();
+                    relationships.remove(relationship);
+                }
             }
         }
         return true;
@@ -272,18 +317,16 @@ public class UMLDocument
     {
         return classSet.get(className);
     }
+    /**
+     * Gets if the file location is valid.
+     */
     public boolean isFileLocationValid()
     {
         if (this.fileLocation == null || this.fileLocation.trim().isEmpty()) {
             return false;
         }
-        File file = new File(this.fileLocation);
-        try {
-            file.createNewFile();
-        } catch (IOException ex) {
-            System.getLogger(UMLDocument.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
-        }
-        return file.exists();
+        Path path = Paths.get(this.fileLocation + FILEEXTENT_STRING);
+        return Files.exists(path);
     }
     /**
      * Calls save on the
@@ -315,10 +358,13 @@ public class UMLDocument
     }
     public boolean load(String filename)
     {
+        
         Gson gson = new Gson();
         try (BufferedReader reader = new BufferedReader(new FileReader(filename + FILEEXTENT_STRING))) {
             // Deserialize the JSON into your Java object
             var data = gson.fromJson(reader, UMLDocument.class);
+            //Successful loading, before we update our information, clear all GUI listeners.
+            cleanUpAllGuiListeners();
             this.classSet=data.classSet;
             this.fileLocation=data.fileLocation;
             this.relationshipList=data.relationshipList;
@@ -327,9 +373,48 @@ public class UMLDocument
             return false;
         }
         this.fileLocation=filename;
+        //Send new information to our GUIListener...
+        suggestGuiControllerRedraw();
         return true;
     }
-
+    /**
+     * Rebinds every UMLClass,UMLRelationship... so on ... with the guiController.
+     * 
+     * Useful for when a UMLDocument is switched out.
+     */
+    private void suggestGuiControllerRedraw()
+    {
+        if(guiController != null)
+        {
+            for(UMLClass umlc : classSet.values()) { 
+                guiController.onClassAdded(umlc);
+            }
+            for(ArrayList<UMLRelationship> relationshipList : relationshipList.values())
+            {
+                for(UMLRelationship umlr : relationshipList){
+                    guiController.onRelationshipAdded(umlr);
+                }
+            }
+        }
+    }
+    /**
+     * Clears out the current file.
+     * Used for a quick reset
+     */
+    public void clearFile()
+    {
+        cleanUpAllGuiListeners();
+        classSet.clear();
+        relationshipList.clear();
+    }
+    private void cleanUpAllGuiListeners()
+    {
+        List<UIListener> allListeners = getUIListeners();
+        for(UIListener listener : allListeners)
+        {
+            listener.cleanUp();
+        }
+    }
     /**
      * Adds a class to the classSet map.
      *
@@ -343,6 +428,8 @@ public class UMLDocument
         classSet.put(className, umlclass);
         ArrayList<UMLRelationship> newList = new ArrayList<>();
         relationshipList.put(className, newList);
+        if(guiController != null)
+            guiController.onClassAdded(umlclass);
         return umlclass;
     }
 
@@ -370,6 +457,24 @@ public class UMLDocument
      */
     public Map<String, ArrayList<UMLRelationship>> getRelationshipList() {
         return this.relationshipList;
+    }
+
+    /**
+     * Returns the first available spot for a new class when added through GUI
+     *
+     * @return String - The first available name
+     */
+    public String findValidDummyName()
+    {
+        final String dummyName = "NewClass ";
+        int increment = 1;
+        while(true)
+        {
+            String testName = dummyName + increment;
+            if(!classSet.containsKey(testName))//Name is not taken
+                return testName;
+            increment++;
+        }
     }
 
     @Override
