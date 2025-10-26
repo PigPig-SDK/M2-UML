@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
+import org.umlproject.UI.GuiClass;
 
 public class UMLClass extends UMLDiagramElement {
     private String className;
@@ -42,6 +43,9 @@ public class UMLClass extends UMLDiagramElement {
         this.className = className;
         this.fields = new HashMap<>();
         this.methods = new HashMap<>();
+
+        //for testing location
+        this.location = new Point2D(0.0, 0.0);
     }
 
     /**

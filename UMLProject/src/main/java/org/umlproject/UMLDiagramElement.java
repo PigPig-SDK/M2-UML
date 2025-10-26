@@ -11,12 +11,14 @@ public abstract class UMLDiagramElement
     {
         this.listener = listener;
     }
+
     public void updateGUI()
     {
         if(listener == null)
             return;
         listener.update(this);
     }
+
     public void updateGUILocation()
     {
         if(listener == null)

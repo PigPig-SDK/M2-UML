@@ -24,7 +24,7 @@ public class UMLDocument
     private Map<String, UMLClass> classSet = new HashMap<>();
     private Map<String,ArrayList<UMLRelationship>> relationshipList = new HashMap<>();
     
-    private static final String FILEEXTENT_STRING = ".json";
+    public static final String FILEEXTENT_STRING = ".json";
     private static final String DEFAULT_FILEDIRECTORY = "Documents" + File.separator + "NewUMLDocument";
 
     public static UMLGuiController guiController = null;
@@ -414,6 +414,24 @@ public class UMLDocument
      */
     public Map<String, ArrayList<UMLRelationship>> getRelationshipList() {
         return this.relationshipList;
+    }
+
+    /**
+     * Returns the first available spot for a new class when added through GUI
+     *
+     * @return String - The first available name
+     */
+    public String findValidDummyName()
+    {
+        final String dummyName = "NewClass ";
+        int increment = 1;
+        while(true)
+        {
+            String testName = dummyName + increment;
+            if(!classSet.containsKey(testName))//Name is not taken
+                return testName;
+            increment++;
+        }
     }
 
     @Override

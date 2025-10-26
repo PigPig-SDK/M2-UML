@@ -1,14 +1,12 @@
 package org.umlproject.UI;
 
+import java.io.File;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Group;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuBar;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
 import org.umlproject.Main;
 import org.umlproject.TerminalHandler;
@@ -29,11 +27,15 @@ public class GuiController implements UMLGuiController {
     private MenuBar menubar;
     @FXML
     private Pane viewpane;
+
+    @FXML
+    private Button addClassButton;
     
     public Group getWorld(){return this.world;}
     public TextField getTerminal(){return this.console;}
     public MenuBar getMenuBar(){return this.menubar;}
     public Pane getViewPane(){return this.viewpane;}
+    private boolean saveLocationSet = false;
     
     @FXML
     private void initialize() {
@@ -41,6 +43,10 @@ public class GuiController implements UMLGuiController {
         UMLDocument.guiController = this;
         System.out.println("Setup GUI!");
         singleton = this;
+
+        //make sure addClassButton is not set to default so that way it doesn't
+        //trigger everytime enter is pressed
+        addClassButton.setDefaultButton(false);
         menubar.setViewOrder(-100);
         console.setViewOrder(-100);
     }
@@ -52,6 +58,7 @@ public class GuiController implements UMLGuiController {
     {
         GuiResizeManager.bindToSizeUpdates();
         GuiCamera.setupCamera();
+        GuiKeyBinds.setupKeyBinds();
     }
     //----------------- Menu bar callbacks -----------------
     @FXML
@@ -64,15 +71,32 @@ public class GuiController implements UMLGuiController {
     {
         System.out.println("Open file click");
     }
+    /**
+     * Handles the "Save" menu action.
+     * 
+     * If no save location is set, SaveAs will be executed
+     */
     @FXML
-    private void saveFileMenuAction()
+    public void saveFileMenuAction()
     {
-        System.out.println("Save file click");
+        if(saveLocationSet)
+            UMLDocument.getInstance().save();
+        else
+            saveAsFileMenuAction();
     }
+    /**
+     * Handles the "SaveAs" menu action.
+     */
     @FXML
-    private void saveAsFileMenuAction()
+    public void saveAsFileMenuAction()
     {
-        System.out.println("Save As file click");
+        File outputDirectory = GuiFileBrowser.promptForDiectory();
+        if(outputDirectory == null || outputDirectory.getAbsoluteFile() == null)
+            return;
+        UMLDocument.getInstance().setFileLocation(GuiFileBrowser.removeFileExtension(outputDirectory.getAbsolutePath()));
+        
+        if(UMLDocument.getInstance().save())
+            saveLocationSet = true;
     }
     @FXML
     private void quitFileMenuAction()
@@ -96,12 +120,12 @@ public class GuiController implements UMLGuiController {
         System.out.println("Delete edit click");
     }
     @FXML
-    private void selectAllEditMenuAction()
+    public void selectAllEditMenuAction()
     {
         System.out.println("SelectAll edit click");
     }
     @FXML
-    private void unSelectAllEditMenuAction()
+    public void unSelectAllEditMenuAction()
     {
         System.out.println("SelectAll but like backwards edit click");
     }
@@ -117,6 +141,30 @@ public class GuiController implements UMLGuiController {
         console.setText("");
     }
     //----------------- UMLGuiController Interface -----------------
+
+    /** This method will listen for when +C is pushed inside gui. It then retrieves the
+     * UMLDocument instance and calls addClass(with the argument "newClass change name".
+     * Not, we don't have a default constructor for UMLClass().
+     *
+      */
+    @FXML
+    public void addClassButtonPushed(){
+        UMLDocument doc = UMLDocument.getInstance();
+        UMLClass checkClass = doc.addClass(doc.findValidDummyName());
+        if(checkClass == null) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Dummy Creation Error");
+            alert.showAndWait();
+            System.out.println("Class add failed");
+        }
+        else{
+            System.out.println("Class was added");
+        }
+        System.out.println("+C was called");
+
+    }
+
+    //This method will bind a guiClass listener to the new umlClass
     @Override
     public void onClassAdded(UMLClass umlClass) {
         GuiClass guiClass = new GuiClass(world, umlClass);
