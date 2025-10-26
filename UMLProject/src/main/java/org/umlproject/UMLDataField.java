@@ -45,7 +45,16 @@ public class UMLDataField {
         this.visibility = visibility;
         this.dataType = dataType;
         this.name = name;
-        if(dataType.equals(DataType.OTHER)) this.customNameType = customNameType;
+        if(dataType.equals(DataType.OTHER) && customNameType == null){
+            System.out.println("customNameType cannot be null for DataType == OTHER");
+            throw new IllegalArgumentException();
+        }
+        else if(dataType.equals(DataType.OTHER)){
+            this.customNameType = customNameType;
+        }
+        else{
+            this.customNameType = null;
+        }
     }
     
     /**
@@ -125,6 +134,14 @@ public class UMLDataField {
         if(name == null || name.isEmpty())
             return;
         this.name = name;
+    }
+
+    /**
+     * getter to return customNameType
+     * @return String representing the custom name.
+     */
+    public String getCustomNameType(){
+        return this.customNameType;
     }
 
     /**setter to reset the customNameType ONLY if dataType == OTHER, otherwises prints message

@@ -27,6 +27,9 @@ public class GuiController implements UMLGuiController {
     @FXML
     private Pane viewpane;
 
+    /**  This datafield is an internal program reference to the +C clickable button in
+     * the FXML document.
+     */
     @FXML
     private Button addClassButton;
     
@@ -42,8 +45,8 @@ public class GuiController implements UMLGuiController {
         System.out.println("Setup GUI!");
         singleton = this;
 
-        //make sure addClassButton is not set to default so that way it doesn't
-        //trigger everytime enter is pressed
+        //Make sure addClassButton is not set to default so that way it doesn't
+        //trigger everytime enter is pressed.
         addClassButton.setDefaultButton(false);
         menubar.setViewOrder(-100);
         console.setViewOrder(-100);
@@ -123,8 +126,8 @@ public class GuiController implements UMLGuiController {
     //----------------- UMLGuiController Interface -----------------
 
     /** This method will listen for when +C is pushed inside gui. It then retrieves the
-     * UMLDocument instance and calls addClass(with the argument "newClass change name".
-     * Not, we don't have a default constructor for UMLClass().
+     * UMLDocument instance and calls addClass() with findValidDummyName() as the argument. This argument
+     * function will generate a new unique name for the new class that isn't one already stored in UMLDocument.".
      *
       */
     @FXML
