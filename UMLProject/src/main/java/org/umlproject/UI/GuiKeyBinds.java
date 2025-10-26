@@ -4,6 +4,7 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.input.KeyCode;
+import static javafx.scene.input.KeyCode.N;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import org.umlproject.Main;
@@ -16,30 +17,35 @@ public class GuiKeyBinds {
     public static void setupKeyBinds()
     {
         //Setup CTRL+S for "Save"
-        addAccelerator( new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN), "Save");
+        addAccelerator(new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN), "Save");
+        addAccelerator(new KeyCodeCombination(KeyCode.O, KeyCombination.CONTROL_DOWN), "Open…");
+        addAccelerator(new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN), "Save As…");
+        addAccelerator(new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN), "New");
+        addAccelerator(new KeyCodeCombination(KeyCode.A, KeyCombination.CONTROL_DOWN), "Select All");
         Main.currentScene.setOnKeyPressed(event -> {
-            if (event.getCode() == KeyCode.S && event.isControlDown()) {
-                if(GuiController.singleton == null)
-                    return;
-                GuiController.singleton.saveFileMenuAction();
+            if(GuiController.singleton == null)//Cannot execute quickbind. The menu dosn't exist.
+            {
+                event.consume();
+                return;
             }
-        });
-        //Setup CTRL+SHIFT+S for "Save As"
-        addAccelerator( new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN), "Save As…");
-        Main.currentScene.setOnKeyPressed(event -> {
-            if (event.getCode() == KeyCode.S && event.isControlDown() && event.isShiftDown()) {
-                if(GuiController.singleton == null)
-                    return;
-                GuiController.singleton.saveAsFileMenuAction();
-            }
-        });
-        //Setup Select All
-        addAccelerator( new KeyCodeCombination(KeyCode.A, KeyCombination.CONTROL_DOWN), "Select All");
-        Main.currentScene.setOnKeyPressed(event -> {
-            if (event.getCode() == KeyCode.A && event.isControlDown()) {
-                if(GuiController.singleton == null)
-                    return;
-                GuiController.singleton.selectAllEditMenuAction();
+            //All commands must have CTRL held down!
+            if (!event.isControlDown())
+                return;
+            
+            switch(event.getCode())
+            {
+                case S -> {
+                    if(event.isShiftDown())//CTRL+SHIFT+S for "Save As"
+                        GuiController.singleton.saveAsFileMenuAction();
+                    else//CTRL+S for Save
+                        GuiController.singleton.saveFileMenuAction();
+                }
+                //Select all (CTRL+A)
+                case A -> GuiController.singleton.selectAllEditMenuAction();
+                //New file (CTRL+N)
+                case N -> GuiController.singleton.newFileMenuAction();
+                //Open file (CTRL+O)
+                case O -> GuiController.singleton.openFileMenuAction();
             }
         });
     }

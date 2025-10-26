@@ -36,11 +36,11 @@ public class UMLDocument
      */
     public List<UIListener> getUIListeners()
     {
-        List<UIListener> allSelectables = new ArrayList();
+        List<UIListener> allListeners = new ArrayList();
         for(UMLClass umlclass : classSet.values())
         {
             if(umlclass == null || umlclass.listener == null) continue;
-            allSelectables.add(umlclass.listener);
+            allListeners.add(umlclass.listener);
         }
         for(ArrayList<UMLRelationship> allRealtionshipLists : relationshipList.values())
         {
@@ -48,10 +48,10 @@ public class UMLDocument
             for(UMLRelationship relationship : allRealtionshipLists)
             {
                 if(relationship == null || relationship.listener == null) continue;
-                allSelectables.add(relationship.listener);
+                allListeners.add(relationship.listener);
             }
         }
-        return allSelectables;
+        return allListeners;
     }
     
     /**
@@ -355,10 +355,13 @@ public class UMLDocument
     }
     public boolean load(String filename)
     {
+        
         Gson gson = new Gson();
         try (BufferedReader reader = new BufferedReader(new FileReader(filename + FILEEXTENT_STRING))) {
             // Deserialize the JSON into your Java object
             var data = gson.fromJson(reader, UMLDocument.class);
+            //Successful loading, before we update our information, clear all GUI listeners.
+            cleanUpAllGuiListeners();
             this.classSet=data.classSet;
             this.fileLocation=data.fileLocation;
             this.relationshipList=data.relationshipList;
@@ -367,11 +370,48 @@ public class UMLDocument
             return false;
         }
         this.fileLocation=filename;
-        if(guiController != null)
-            guiController.redrawScreen(this);
+        //Send new information to our GUIListener...
+        suggestGuiControllerRedraw();
         return true;
     }
-
+    /**
+     * Rebinds every UMLClass,UMLRelationship... so on ... with the guiController.
+     * 
+     * Useful for when a UMLDocument is switched out.
+     */
+    private void suggestGuiControllerRedraw()
+    {
+        if(guiController != null)
+        {
+            for(UMLClass umlc : classSet.values()) { 
+                guiController.onClassAdded(umlc);
+            }
+            for(ArrayList<UMLRelationship> relationshipList : relationshipList.values())
+            {
+                for(UMLRelationship umlr : relationshipList){
+                    guiController.onRelationshipAdded(umlr);
+                }
+            }
+        }
+    }
+    /**
+     * Clears out the current file.
+     * Used for a quick reset
+     */
+    public void clearFile()
+    {
+        cleanUpAllGuiListeners();
+        classSet.clear();
+        relationshipList.clear();
+    }
+    private void cleanUpAllGuiListeners()
+    {
+        List<UIListener> allListeners = getUIListeners();
+        for(UIListener listener : allListeners)
+        {
+            listener.cleanUp();
+        }
+    }
     /**
      * Adds a class to the classSet map.
      *

@@ -1,10 +1,12 @@
 package org.umlproject.UI;
 
 import java.io.File;
+import java.util.Optional;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.geometry.Point2D;
 import javafx.scene.Group;
 import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
@@ -61,15 +63,37 @@ public class GuiController implements UMLGuiController {
         GuiKeyBinds.setupKeyBinds();
     }
     //----------------- Menu bar callbacks -----------------
+    /**
+     * Handles the "new file" menu action.
+     */
     @FXML
-    private void newFileMenuAction()
+    public void newFileMenuAction()
     {
-        System.out.println("New file click");
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle("New File");
+        alert.setHeaderText("Any unsaved progress will be lost!");
+        alert.setContentText("Are you sure you want to create a new file?");
+        ButtonType yesButton = new ButtonType("New File", ButtonBar.ButtonData.YES);
+        ButtonType noButton  = new ButtonType("Close", ButtonBar.ButtonData.NO);
+        alert.getButtonTypes().setAll(yesButton, noButton);
+        Optional<ButtonType> result = alert.showAndWait();
+        
+        if (result.isPresent() && result.get() == yesButton) {
+            GuiCamera.setCameraLocation(Point2D.ZERO);//Reset camera...
+            UMLDocument.getInstance().clearFile();
+        }
     }
+    /**
+     * Handles the "open" menu action.
+     */
     @FXML
-    private void openFileMenuAction()
+    public void openFileMenuAction()
     {
-        System.out.println("Open file click");
+        File outputDirectory = GuiFileBrowser.promptForLoadDiectory();
+        if(outputDirectory == null || outputDirectory.getAbsoluteFile() == null)
+            return;
+        String pathString = GuiFileBrowser.removeFileExtension(outputDirectory.getAbsolutePath());
+        UMLDocument.getInstance().load(pathString);
     }
     /**
      * Handles the "Save" menu action.
@@ -90,7 +114,7 @@ public class GuiController implements UMLGuiController {
     @FXML
     public void saveAsFileMenuAction()
     {
-        File outputDirectory = GuiFileBrowser.promptForDiectory();
+        File outputDirectory = GuiFileBrowser.promptForSaveDiectory();
         if(outputDirectory == null || outputDirectory.getAbsoluteFile() == null)
             return;
         UMLDocument.getInstance().setFileLocation(GuiFileBrowser.removeFileExtension(outputDirectory.getAbsolutePath()));
