@@ -19,6 +19,7 @@ import org.umlproject.*;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import javafx.geometry.Rectangle2D;
 
 public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositional {
     private Group world;
