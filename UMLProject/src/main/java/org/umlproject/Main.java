@@ -68,8 +68,6 @@ public class Main extends Application
     
     public static void main(String[] args) 
     {
-        String classDR = Main.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-        System.out.println(classDR);
 
         //If terminal launch option is requested. Override JAVAFX.
         if(args.length == 1 && args[0].equals(terminalLaunchString))
