@@ -43,67 +43,9 @@ public class GuiClass implements UIListener {
     public GuiClass(Group world, UMLClass parentClass)
     {
         this.world = world;
-
-
         world.setFocusTraversable(true);//lets world request focus.
         this.parentClass = parentClass;
-        this.nodeBackground = new StackPane();
-        nodeBackground.setManaged(false);
-
-        parentVBox = new VBox();
-        parentVBox.setSpacing(10);
-        parentVBox.setPadding(new Insets(10, 10, 10, 10));
-        parentVBox.setMinWidth(200);
-        parentVBox.setPrefWidth(250);
-        dataFieldTextFields = new VBox(10);
-        methodTextFields = new VBox(10);
-
-        //create a rectangle background for the class.
-        Rectangle background = new Rectangle();
-        background.setFill(Color.MINTCREAM);
-        background.setStroke(Color.BLACK);
-        background.widthProperty().bind(parentVBox.widthProperty().add(20));
-        background.heightProperty().bind(parentVBox.heightProperty().add(20));
-
-        //Create modifiable className and put into VBox
-        TextField classNameField = new TextField(parentClass.getClassName());
-        classNameField.setStyle("-fx-font-size: 10px; -fx-font-weight: bold");
-        classNameField.setMaxWidth(250);
-        classNameField.setFocusTraversable(false);
-        //Make it so the UMLClass class name updates after modifying classNameField and pressing enter.
-        makeClassNameRenamable(classNameField);
-
-        //Create VBox for DataFields of class.
-        Separator separator1 = new Separator();
-        Label dataFieldsLabel = new Label("Data Fields:");
-        Button addDataField = new Button("Add data field");
-        //Set action on addDataField so you can create new data field Textfield after clicking.
-        addDataFieldButtonClickable(addDataField);
-
-        Separator separator2 = new Separator();
-        Label methodsLabel = new Label("Methods:");
-
-        //insert className textField
-        parentVBox.getChildren().add(classNameField);
-        parentVBox.getChildren().addAll(separator1, dataFieldsLabel, dataFieldTextFields, addDataField, separator2, methodsLabel);
-        parentVBox.setAlignment(Pos.TOP_CENTER);
-
-
-        nodeBackground.getChildren().addAll(background, parentVBox);
-
-
-        //Here we bind the StackPane to the location of the UMLClass, then
-        //make the rectangle background draggable.
-        if(parentClass.getLocation() != null){
-            nodeBackground.setLayoutX(parentClass.getLocation().getX());
-            nodeBackground.setLayoutY(parentClass.getLocation().getY());
-        }
-
-        //make rectangle draggable
-        makeDraggable(nodeBackground);
-        //add classbox to world to display
-        world.getChildren().add(nodeBackground);
-        world.requestFocus();
+        update(parentClass);
     }
 
     /**This method will make it so the StackPane that holds all the nodes
@@ -118,18 +60,18 @@ public class GuiClass implements UIListener {
     private void makeDraggable(StackPane nodeBackground) {
         nodeBackground.setOnMousePressed(e -> {
             System.out.println("Mouse pressed on StackPane at: " + e.getSceneX() + ", " + e.getSceneY());
-            mouseAnchorX = e.getSceneX() - nodeBackground.getLayoutX();
-            mouseAnchorY = e.getSceneY() - nodeBackground.getLayoutY();
+            this.mouseAnchorX = e.getSceneX() - nodeBackground.getLayoutX();
+            this.mouseAnchorY = e.getSceneY() - nodeBackground.getLayoutY();
             e.consume(); // Prevent event from propagating to other nodes
         });
 
-        nodeBackground.setOnMouseDragged(e -> {
+        this.nodeBackground.setOnMouseDragged(e -> {
             System.out.println("Mouse dragged on StackPane to: " + e.getSceneX() + ", " + e.getSceneY());
-            double newX = e.getSceneX() - mouseAnchorX;
-            double newY = e.getSceneY() - mouseAnchorY;
+            double newX = e.getSceneX() - this.mouseAnchorX;
+            double newY = e.getSceneY() - this.mouseAnchorY;
             System.out.println("Setting UMLClass location to: " + newX + ", " + newY);
-            parentClass.setLocation(new Point2D(newX, newY));
-            nodeBackground.getParent().requestLayout(); // Force layout update
+            this.parentClass.setLocation(new Point2D(newX, newY));
+            this.nodeBackground.getParent().requestLayout(); // Force layout update
             e.consume(); // Prevent event from propagating to other nodes
         });
     }
@@ -141,20 +83,14 @@ public class GuiClass implements UIListener {
     private void makeClassNameRenamable(TextField classNameField){
         classNameField.setOnAction(e -> {
             String newName = classNameField.getText();
-            String oldName = parentClass.getClassName();
+            String oldName = this.parentClass.getClassName();
             //update UMLDocument with new class name if new name is unique.
             boolean updateSuccess = updateRename(oldName, newName);
             if(!updateSuccess){
                 classNameField.setText(oldName);
             }
-            //remove class function in UMLDocument removes listener, so we need to reapply it.
-            //and consume the event e.
-            parentClass.setListener(this);
             e.consume();
-            //Move focus elsewhere. This is necessary to accept changes to TextField and remove
-            //cursor from TextField.
             world.requestFocus();
-            //for debugging to see if class name updates in UMLDocument
         });
     }
 
@@ -203,7 +139,7 @@ public class GuiClass implements UIListener {
                 //Renaming a textField like this results in two datafields existing in UMLDocument
                 //oldField and the new one. Now we must delete oldField from UMLDocument and then
                 //remove its text field from the VBox and let update() draw a new one.
-                parentClass.removeField(oldField.getText());
+                this.parentClass.removeField(oldField.getText());
                 this.dataFieldTextFields.getChildren().remove(oldField);
                 System.out.println("Field was added and class box will be updated!");
             //update is automatically called by UMLClass to redraw class box.
@@ -214,9 +150,7 @@ public class GuiClass implements UIListener {
                 oldField.setText("Visibility Type Name");
             }
             world.requestFocus();
-
         });
-
     }
 
     /**
@@ -229,7 +163,7 @@ public class GuiClass implements UIListener {
             TextField newField = new TextField("Visibility Type Name");
             //need to make sure there isn't a duplicate "Visibility Type Name" TextField in classbox already.
             boolean duplicateTextField = false;
-            for(Node node : dataFieldTextFields.getChildren()){
+            for(Node node : this.dataFieldTextFields.getChildren()){
                 if(((TextField)(node)).getText().equals(newField.getText())){
                     duplicateTextField = true;
                     break;
@@ -244,7 +178,7 @@ public class GuiClass implements UIListener {
                 //Link this TextField to a DataField in underlying UMLDocument
                 newField.setFocusTraversable(false);
                 linkTextFieldToDataField(newField);
-                dataFieldTextFields.getChildren().add(newField);
+                this.dataFieldTextFields.getChildren().add(newField);
                 e.consume();
             }
         });
@@ -256,37 +190,37 @@ public class GuiClass implements UIListener {
      * @param desiredElement, the UMLClass object that the GuiClass instance listens to.
      */
     @Override
-    public void update(UMLDiagramElement desiredElement) {
-       //reset VBoxes and world children.
-        world.getChildren().clear();
-        dataFieldTextFields = new VBox(10);
-        methodTextFields = new VBox(10);
-        parentVBox = new VBox(10);
-        parentVBox.setPadding(new Insets(10, 10, 10, 10));
-        parentVBox.setMinWidth(200);
-        parentVBox.setPrefWidth(250);
-        nodeBackground = new StackPane();
-        nodeBackground.setManaged(false);
+    public final void update(UMLDiagramElement desiredElement) {
+        //Clear out the previous GUI.
+        cleanUp();
+        //--=======================================================Clone start
+        this.dataFieldTextFields = new VBox(10);
+        this.methodTextFields = new VBox(10);
+        this.parentVBox = new VBox(10);
+        this.parentVBox.setSpacing(10);
+        this.parentVBox.setPadding(new Insets(10, 10, 10, 10));
+        this.parentVBox.setMinWidth(200);
+        this.parentVBox.setPrefWidth(250);
+        
+        this.nodeBackground = new StackPane();
+        this.nodeBackground.setManaged(false);
 
         //create a rectangle background for the class.
         Rectangle background = new Rectangle();
-        //background.setHeight(300);
-        //background.setWidth(200);
         background.setFill(Color.MINTCREAM);
         background.setStroke(Color.BLACK);
-        background.widthProperty().bind(parentVBox.widthProperty().add(20));
-        background.heightProperty().bind(parentVBox.heightProperty().add(20));
+        background.widthProperty().bind(this.parentVBox.widthProperty().add(20));
+        background.heightProperty().bind(this.parentVBox.heightProperty().add(20));
 
-        //create modifiable className and put into VBox
+        //Create modifiable className and put into VBox
         TextField classNameField = new TextField(parentClass.getClassName());
         classNameField.setStyle("-fx-font-size: 10px; -fx-font-weight: bold");
         classNameField.setMaxWidth(250);
         classNameField.setFocusTraversable(false);
         //Make it so the UMLClass class name updates after modifying classNameField
-        //and pressing enter.
         makeClassNameRenamable(classNameField);
 
-        parentVBox.getChildren().addAll(classNameField, new Separator());
+        this.parentVBox.getChildren().addAll(classNameField, new Separator());
 
         //set up dataFields
         //retrieve dataFields hashMap, retrieve keySet, convert into an array, then cycle through each
@@ -296,34 +230,33 @@ public class GuiClass implements UIListener {
         ArrayList<String> fieldsAsStrings = convertDataFieldsToStrings(UMLDataFields);
         for(int i = 0; i < fieldsAsStrings.size(); i++){
             TextField nextField = new TextField(fieldsAsStrings.get(i));
-            dataFieldTextFields.getChildren().add(nextField);
+            this.dataFieldTextFields.getChildren().add(nextField);
         }
-        parentVBox.getChildren().addAll(dataFieldsLabel, dataFieldTextFields);
+        this.parentVBox.getChildren().addAll(dataFieldsLabel, this.dataFieldTextFields);
 
         //create AddField Button, set action to make a new DataField
         Button addDataField = new Button("Add data field");
         addDataFieldButtonClickable(addDataField);
-        parentVBox.getChildren().addAll(addDataField, new Separator());
+        this.parentVBox.getChildren().addAll(addDataField, new Separator());
 
         //create methods
         Label methodsLabel = new Label("Methods:");
-        parentVBox.getChildren().addAll(methodsLabel, methodTextFields);
-        nodeBackground.getChildren().addAll(background, parentVBox);
+        this.parentVBox.getChildren().addAll(methodsLabel, this.methodTextFields);
+        this.nodeBackground.getChildren().addAll(background, this.parentVBox);
 
 
         //Here we bind the StackPane to the location of the UMLClass, then
         //make the rectangle background draggable.
-        if(parentClass.getLocation() != null){
-            nodeBackground.setLayoutX(parentClass.getLocation().getX());
-            nodeBackground.setLayoutY(parentClass.getLocation().getY());
+        if(this.parentClass.getLocation() != null){
+            this.nodeBackground.setLayoutX(this.parentClass.getLocation().getX());
+            this.nodeBackground.setLayoutY(this.parentClass.getLocation().getY());
         }
 
         //make rectangle draggable
-        makeDraggable(nodeBackground);
+        makeDraggable(this.nodeBackground);
         //add classbox to world to display
-        world.getChildren().add(nodeBackground);
-        world.requestFocus();
-        
+        this.world.getChildren().add(this.nodeBackground);
+        this.world.requestFocus();
     }
 
     /**
@@ -373,11 +306,12 @@ public class GuiClass implements UIListener {
      */
      @Override
     public void updateLocation(UMLDiagramElement desiredElement) {
-
-        nodeBackground.setLayoutX(((UMLClass)(desiredElement)).getLocation().getX());
-        nodeBackground.setLayoutY(((UMLClass)(desiredElement)).getLocation().getY());
-        System.out.println("stackpane layout is changed to:" + ((UMLClass)(desiredElement)).getLocation());
-        nodeBackground.getParent().requestLayout();
+        if(this.nodeBackground == null)
+            return;
+        this.nodeBackground.setLayoutX(((UMLClass)(desiredElement)).getLocation().getX());
+        this.nodeBackground.setLayoutY(((UMLClass)(desiredElement)).getLocation().getY());
+        //System.out.println("stackpane layout is changed to:" + ((UMLClass)(desiredElement)).getLocation());
+        this.nodeBackground.getParent().requestLayout();
     }
 
     /**
@@ -412,7 +346,8 @@ public class GuiClass implements UIListener {
 
     @Override
     public void cleanUp() {
+        if(this.nodeBackground == null)
+            return;
+        this.world.getChildren().remove(this.nodeBackground);
     }
-    
-    
 }
