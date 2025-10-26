@@ -1,11 +1,7 @@
 package org.umlproject;
 
-import javafx.application.Platform;
 import javafx.scene.control.Button;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Scanner;
 import javafx.application.Application;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
