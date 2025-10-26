@@ -7,6 +7,7 @@ import javafx.scene.input.KeyCode;
 import static javafx.scene.input.KeyCode.N;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
+import javafx.scene.input.KeyEvent;
 import org.umlproject.Main;
 
 public class GuiKeyBinds {
@@ -22,12 +23,10 @@ public class GuiKeyBinds {
         addAccelerator(new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN), "Save As…");
         addAccelerator(new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN), "New");
         addAccelerator(new KeyCodeCombination(KeyCode.A, KeyCombination.CONTROL_DOWN), "Select All");
-        Main.currentScene.setOnKeyPressed(event -> {
+        
+        Main.currentScene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
             if(GuiController.singleton == null)//Cannot execute quickbind. The menu dosn't exist.
-            {
-                event.consume();
                 return;
-            }
             //All commands must have CTRL held down!
             if (!event.isControlDown())
                 return;
@@ -39,15 +38,26 @@ public class GuiKeyBinds {
                         GuiController.singleton.saveAsFileMenuAction();
                     else//CTRL+S for Save
                         GuiController.singleton.saveFileMenuAction();
+                    event.consume();
                 }
                 //Select all (CTRL+A)
-                case A -> GuiController.singleton.selectAllEditMenuAction();
+                case A -> {
+                    GuiController.singleton.selectAllEditMenuAction();
+                    event.consume();
+                }
                 //New file (CTRL+N)
-                case N -> GuiController.singleton.newFileMenuAction();
+                case N -> {
+                    GuiController.singleton.newFileMenuAction();
+                    event.consume();
+                }
                 //Open file (CTRL+O)
-                case O -> GuiController.singleton.openFileMenuAction();
+                case O -> {
+                    GuiController.singleton.openFileMenuAction();
+                    event.consume();
+                }
             }
         });
+        
     }
     /**
      * PURELY DECORATION! No function comes from this!
