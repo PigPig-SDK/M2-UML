@@ -43,9 +43,6 @@ public class UMLClass extends UMLDiagramElement {
         this.className = className;
         this.fields = new HashMap<>();
         this.methods = new HashMap<>();
-
-        //for testing location
-        this.location = new Point2D(0.0, 0.0);
     }
 
     /**
