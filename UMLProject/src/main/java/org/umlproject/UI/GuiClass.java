@@ -100,25 +100,41 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
     /**Sets an action on the data field TextFields of class box, so that when a new string representing
      * a datafield is entered, it will be parsed and transformed into a UMLDataField and then inserted
      * into the parent class.
-     * @param oldField, the TextField containing the old DataField attributes as a string.
+     * @param fieldRow, the HBox containing the old DataField attributes as a string.
      */
-    public void linkTextFieldToDataField(TextField oldField){
+    public void linkTextFieldToDataField(HBox fieldRow){
 
-        oldField.setOnAction(e ->{
+        if(fieldRow == null || fieldRow.getChildren().isEmpty()){
+            throw new IllegalArgumentException("provided field row HBox is null");
+        }
+        //retrieve old name of datafield
+        String oldName;
+        TextField newField = (TextField)fieldRow.getChildren().get(1);
+
+        String[] newFieldAsString = ((String)(newField.getUserData())).split(" ");
+        if(newFieldAsString.length == 3) {
+            System.out.println(newFieldAsString[2]);
+            oldName = newFieldAsString[2];
+        }
+        else{
+            //if this textfield is brand new, i.e. has the value: Visibility Type Name, then oldName is empty
+            oldName = "";
+        }
+        newField.setOnAction(e ->{
             String customTypeName = "";
-            String dataFieldText = oldField.getText();
+            String dataFieldText = newField.getText();
             String[] textAsArray = dataFieldText.split(" ");
             if(textAsArray.length != 3){
 
                 System.out.println("Invalid number of arguments! Enter Visibility DataType Name.");
-                oldField.setText("Visibility Type Name");
+                newField.setText("Visibility Type Name");
                 return;
             }
             //make sure the user entered a valid Visibility value.
             boolean acceptableVisibilityStatus = Visibility.acceptableVisibility(textAsArray[0]);
             if(!acceptableVisibilityStatus){
                 System.out.println("Invalid visibility type! Enter: Public, Private, Protected, or Package.");
-                oldField.setText("Visibility Type Name");
+                newField.setText("Visibility Type Name");
                 return;
             }
             Visibility visibility = Visibility.stringVisibility(textAsArray[0]);
@@ -132,28 +148,37 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
                 customTypeName = null;
             }
             String dataFieldName = textAsArray[2];
-            UMLDataField newField = new UMLDataField(dataFieldName, customTypeName, dataType, visibility);
+            UMLDataField dataField = new UMLDataField(dataFieldName, customTypeName, dataType, visibility);
 
 
             //attempt to add the field
-            boolean success = this.parentClass.addField(newField);
-            System.out.println("field was added? " + success);
+            boolean success = this.parentClass.addField(dataField);
+            System.out.println("The dataField added was " + dataField.toString());
             if(success){
                 //Renaming a textField like this results in two datafields existing in UMLDocument
-                //oldField and the new one. Now we must delete oldField from UMLDocument and then
+                //oldField and the new one. Now we must delete oldField, using the name of the oldField
+                // from UMLDocument and then
                 //remove its text field from the VBox and let update() draw a new one.
-                this.parentClass.removeField(oldField.getText());
-                this.dataFieldTextFields.getChildren().remove(oldField);
+                //then set the UserData of newField to its current value.
+                if(!oldName.isEmpty()) {
+                    this.parentClass.removeField(oldName);
+                }
+                newField.setUserData(newField.getText());
+                //set the userData on the field row to be the constructed data field. This way if you delete the
+                //default Visibility Type Name field you won't get an error.
+                fieldRow.setUserData(dataField);
+                //this.dataFieldTextFields.getChildren().remove(oldName);
                 System.out.println("Field was added and class box will be updated!");
             //update is automatically called by UMLClass to redraw class box.
 
             }
             else{
                 System.out.println("Datafield is a duplicate or invalid!");
-                oldField.setText("Visibility Type Name");
+                newField.setText("Visibility Type Name");
             }
             world.requestFocus();
         });
+
     }
 
     /**
@@ -164,12 +189,26 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
     public void addDataFieldButtonClickable(Button addDataField){
         addDataField.setOnAction(e -> {
             TextField newField = new TextField("Visibility Type Name");
+            //UserData will typically store the previous string of the TextField. But for the creation of a new
+            //button there is no data to store.
+            newField.setUserData("");
             //need to make sure there isn't a duplicate "Visibility Type Name" TextField in classbox already.
             boolean duplicateTextField = false;
-            for(Node node : this.dataFieldTextFields.getChildren()){
-                if(((TextField)(node)).getText().equals(newField.getText())){
-                    duplicateTextField = true;
-                    break;
+            //check size
+            System.out.println(dataFieldTextFields.getChildren().size());
+            for(Node fieldBox : this.dataFieldTextFields.getChildren()){
+                boolean HBoxOrNot = fieldBox instanceof HBox;
+                System.out.println("fieldBox is instance of HBox? " + HBoxOrNot);
+                if(fieldBox instanceof HBox){
+                    if(((HBox)(fieldBox)).getChildren().size() == 2){
+                        //retrieve TextField from HBox
+                        TextField field = (TextField)((HBox)(fieldBox)).getChildren().get(1);
+                        if(field.getText().equals(newField.getText())){
+                            duplicateTextField = true;
+                            System.out.println("Field is a duplicate!");
+                            break;
+                        }
+                    }
                 }
             }
             if(duplicateTextField){
@@ -178,10 +217,24 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
                 return;
             }
             else {
+
                 //Link this TextField to a DataField in underlying UMLDocument
                 newField.setFocusTraversable(false);
-                linkTextFieldToDataField(newField);
-                this.dataFieldTextFields.getChildren().add(newField);
+                //put TextField in HBox with delete button.
+                HBox fieldRow = new HBox(10);
+                Button deleteField = new Button("-");
+                deleteField.setFocusTraversable(false);
+                deleteField.setOnAction(event -> {
+                    if(((UMLDataField)fieldRow.getUserData() != null)) {
+                        parentClass.removeField(((UMLDataField) fieldRow.getUserData()).getName());
+                    }
+                    dataFieldTextFields.getChildren().remove(fieldRow);
+                    event.consume();
+                });
+                fieldRow.getChildren().addAll(deleteField, newField);
+                linkTextFieldToDataField(fieldRow);
+
+                this.dataFieldTextFields.getChildren().add(fieldRow);
                 e.consume();
             }
         });
@@ -222,19 +275,19 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         classNameField.setFocusTraversable(false);
         //Make it so the UMLClass class name updates after modifying classNameField
         makeClassNameRenamable(classNameField);
-
         this.parentVBox.getChildren().addAll(classNameField, new Separator());
+
+
 
         //set up dataFields
         //retrieve dataFields hashMap, retrieve keySet, convert into an array, then cycle through each
         //and create a textField and put in dataFieldsVBox.
         Label dataFieldsLabel = new Label("Data Fields:");
         HashMap<String, UMLDataField> UMLDataFields = desiredElement.getFieldsAll();
-        ArrayList<String> fieldsAsStrings = convertDataFieldsToStrings(UMLDataFields);
-        for(int i = 0; i < fieldsAsStrings.size(); i++){
-            TextField nextField = new TextField(fieldsAsStrings.get(i));
-            this.dataFieldTextFields.getChildren().add(nextField);
-        }
+        convertDataFieldsToHBoxes(UMLDataFields);
+
+        //convertDataFieldsToHBoxes filled the dataFIeldTexxtFields VBox with all the delete button
+        //TextField combinations. Note that dataFieldTextFields VBox was reset upon calling update().
         this.parentVBox.getChildren().addAll(dataFieldsLabel, this.dataFieldTextFields);
 
         //create AddField Button, set action to make a new DataField
@@ -261,6 +314,56 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         this.world.getChildren().add(this.nodeBackground);
         this.world.requestFocus();
     }
+
+    public void convertDataFieldsToHBoxes(HashMap<String, UMLDataField> UMLDataFields){
+        if(UMLDataFields == null){
+            System.out.println("invalidInput");
+            return;
+        }
+
+        String fieldAsString;
+        Set<String> dataFieldKeys = UMLDataFields.keySet();
+        List<String> keyList = new ArrayList<>(dataFieldKeys);
+        Collections.sort(keyList);
+        String[] sortedKeys = keyList.toArray(new String[0]);
+        //test print
+        for(int i = 0; i < sortedKeys.length; i++){
+            System.out.println(sortedKeys[i]);
+        }
+        StringBuilder nextText = new StringBuilder();
+        for(int i = 0; i < sortedKeys.length; i++){
+            HBox fieldRow = new HBox(10);
+            UMLDataField nextField = UMLDataFields.get(sortedKeys[i]);
+            //store the UMLDataField for easy removal with delete button
+            fieldRow.setUserData(nextField);
+
+            nextText.append(nextField.getVisibility());
+            nextText.append(" ");
+            if(nextField.getDataType() == DataType.OTHER){
+                nextText.append(nextField.getCustomNameType());
+            }
+            else{
+                nextText.append(nextField.getDataType());
+            }
+            nextText.append(" ");
+            nextText.append(nextField.getName());
+            fieldAsString = nextText.toString();
+            TextField nextTextField = new TextField(fieldAsString);
+
+            Button deleteField = new Button("-");
+            deleteField.setFocusTraversable(false);
+            deleteField.setOnAction(e -> {
+                parentClass.removeField(((UMLDataField)fieldRow.getUserData()).getName());
+                dataFieldTextFields.getChildren().remove(fieldRow);
+                e.consume();
+            });
+            fieldRow.getChildren().addAll(deleteField, nextTextField);
+            dataFieldTextFields.getChildren().add(fieldRow);
+            nextText = new StringBuilder();
+        }
+        return;
+    }
+
     /**
      * Helper function for update() that converts a hashMap of data fields into a String[] array
      * where each entry represents a data field according to the TextField format: Visibility Type Name.
