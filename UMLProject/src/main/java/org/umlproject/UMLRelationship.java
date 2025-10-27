@@ -3,6 +3,7 @@ package org.umlproject;
 import java.util.Objects;
 import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
+import static org.umlproject.RelationshipType.OTHER;
 
 public class UMLRelationship  extends UMLDiagramElement
 {
@@ -37,6 +38,13 @@ public class UMLRelationship  extends UMLDiagramElement
     }
     public RelationshipType getRelationshipType(){return this.relationshipType;}
     public String getCustomNameType(){return this.customNameType;}
+    public String getRelationshipName()
+    {
+        if(this.relationshipType == OTHER)
+            return getCustomNameType();
+        
+        return this.relationshipType.toString();
+    }
     public void setSourceName(String newName)
     {
         this.sourceName = newName;
