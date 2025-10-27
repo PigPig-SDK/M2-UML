@@ -190,6 +190,54 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
      */
     public void addMethodButtonClickable(Button addMethod){
 
+        addMethod.setOnAction(e -> {
+            TextField newMethod = new TextField("Visibility ReturnType Name Type Param1 Type Param2 ... Type ParamN");
+            newMethod.setUserData(newMethod.getText());
+            //check method textbox isn't a duplicate
+            boolean duplicateTextMethod = false;
+            for(Node fieldBox : this.methodTextFields.getChildren()){
+                if(fieldBox instanceof HBox){
+                    if(((HBox)(fieldBox)).getChildren().size() == 2){
+                        //retrieve TextField from HBox
+                        TextField method = (TextField)((HBox)(fieldBox)).getChildren().get(1);
+                        if(method.getText().equals(newMethod.getText())){
+                            duplicateTextMethod = true;
+                            System.out.println("Method is a duplicate!");
+                            break;
+                        }
+                    }
+                }
+            }
+            //if duplicate TextField, print message for user, consume event and return.
+            if(duplicateTextMethod){
+                System.out.println("Must update Visibility ReturnType Name Type Param1 ... of previous" +
+                        "method before another one can be added.");
+                e.consume();
+                return;
+            }
+            else{
+
+                //Link this TextField to a UMLMethod in underlying UMLDocument and put it in HBox with delete button.
+                newMethod.setFocusTraversable(false);
+                HBox methodRow = new HBox(10);
+                Button deleteField = new Button("-");
+                deleteField.setFocusTraversable(false);
+                deleteField.setOnAction(event -> {
+                    if(((String[])methodRow.getUserData() != null)) {
+                        //Note that the userData of methodRow will be a size 2 array where the index 0 stores
+                        //the method name, and index 1 stores the index into the methods array list to be removed.
+                        String[] userData = (String[])methodRow.getUserData();
+                        parentClass.removeMethod(userData[0], Integer.parseInt(userData[1]));
+                    }
+                    methodTextFields.getChildren().remove(methodRow);
+                    event.consume();
+                });
+                methodRow.getChildren().addAll(deleteField, newMethod);
+                linkTextFieldToMethod(methodRow);
+                this.methodTextFields.getChildren().add(methodRow);
+                e.consume();
+            }
+        });
     }
 
     public void linkTextFieldToMethod(HBox methodRow){
@@ -213,11 +261,7 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
             newField.setUserData("");
             //need to make sure there isn't a duplicate "Visibility Type Name" TextField in classbox already.
             boolean duplicateTextField = false;
-            //check size
-            System.out.println(dataFieldTextFields.getChildren().size());
             for(Node fieldBox : this.dataFieldTextFields.getChildren()){
-                boolean HBoxOrNot = fieldBox instanceof HBox;
-                System.out.println("fieldBox is instance of HBox? " + HBoxOrNot);
                 if(fieldBox instanceof HBox){
                     if(((HBox)(fieldBox)).getChildren().size() == 2){
                         //retrieve TextField from HBox
@@ -301,20 +345,24 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         Label dataFieldsLabel = new Label("Data Fields:");
         HashMap<String, UMLDataField> UMLDataFields = desiredElement.getFieldsAll();
         convertDataFieldsToHBoxes(UMLDataFields);
-
-        //convertDataFieldsToHBoxes filled the dataFIeldTexxtFields VBox with all the delete button
-        //TextField combinations. Note that dataFieldTextFields VBox was reset upon calling update().
-        this.parentVBox.getChildren().addAll(dataFieldsLabel, this.dataFieldTextFields);
-
         //create AddField Button, set action to make a new DataField
         Button addDataField = new Button("Add data field");
         addDataFieldButtonClickable(addDataField);
-        this.parentVBox.getChildren().addAll(addDataField, new Separator());
 
+        //convertDataFieldsToHBoxes filled the dataFIeldTexxtFields VBox with all the delete button
+        //TextField combinations. Note that dataFieldTextFields VBox was reset upon calling update().
+        this.parentVBox.getChildren().addAll(dataFieldsLabel, this.dataFieldTextFields, addDataField, new Separator());
+
+        //-------------------------------------------------------------------------------------------
         //create methods
         Label methodsLabel = new Label("Methods:");
+        HashMap<String, ArrayList<UMLMethod>> umlMethods = desiredElement.getMethodsAll();
+        convertMethodsToHBoxes(umlMethods);
+        Button addMethod = new Button("Add method");
+        addMethodButtonClickable(addMethod);
+        this.parentVBox.getChildren().addAll(methodsLabel, this.methodTextFields, addMethod);
+//-------------------------------------------------------------------------------------------------
 
-        this.parentVBox.getChildren().addAll(methodsLabel, this.methodTextFields);
         this.nodeBackground.getChildren().addAll(background, this.parentVBox);
 
         //Here we bind the StackPane to the location of the UMLClass, then
