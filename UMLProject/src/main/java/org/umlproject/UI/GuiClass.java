@@ -113,7 +113,6 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
 
         String[] newFieldAsString = ((String)(newField.getUserData())).split(" ");
         if(newFieldAsString.length == 3) {
-            System.out.println(newFieldAsString[2]);
             oldName = newFieldAsString[2];
         }
         else{
@@ -153,7 +152,6 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
 
             //attempt to add the field
             boolean success = this.parentClass.addField(dataField);
-            System.out.println("The dataField added was " + dataField.toString());
             if(success){
                 //Renaming a textField like this results in two datafields existing in UMLDocument
                 //oldField and the new one. Now we must delete oldField, using the name of the oldField
@@ -178,6 +176,27 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
             }
             world.requestFocus();
         });
+        Platform.runLater(() -> world.requestFocus());
+
+    }
+
+    /**
+     * Helper method that sets the action on the addMethod button. This method will
+     * create a method TextField with the argument: Visibility ReturnType MethodName Type param1 Type param2 ...
+     * indicating that the user should enter a visibility followed by a space, then a return type followed by a space
+     * and so on to generate a method signature. Set an action on the TextField to make it create the new method
+     * if the input is valid and the signature isn't a duplicate.
+     * @param addMethod, button to set an action on.
+     */
+    public void addMethodButtonClickable(Button addMethod){
+
+    }
+
+    public void linkTextFieldToMethod(HBox methodRow){
+
+    }
+
+    public void convertMethodsToHBoxes(HashMap<String, ArrayList<UMLMethod>> methods){
 
     }
 
@@ -218,9 +237,8 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
             }
             else {
 
-                //Link this TextField to a DataField in underlying UMLDocument
+                //Link this TextField to a DataField in underlying UMLDocument and put it in HBox with delete button.
                 newField.setFocusTraversable(false);
-                //put TextField in HBox with delete button.
                 HBox fieldRow = new HBox(10);
                 Button deleteField = new Button("-");
                 deleteField.setFocusTraversable(false);
@@ -277,8 +295,6 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         makeClassNameRenamable(classNameField);
         this.parentVBox.getChildren().addAll(classNameField, new Separator());
 
-
-
         //set up dataFields
         //retrieve dataFields hashMap, retrieve keySet, convert into an array, then cycle through each
         //and create a textField and put in dataFieldsVBox.
@@ -297,9 +313,9 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
 
         //create methods
         Label methodsLabel = new Label("Methods:");
+
         this.parentVBox.getChildren().addAll(methodsLabel, this.methodTextFields);
         this.nodeBackground.getChildren().addAll(background, this.parentVBox);
-
 
         //Here we bind the StackPane to the location of the UMLClass, then
         //make the rectangle background draggable.
@@ -327,7 +343,9 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         Collections.sort(keyList);
         String[] sortedKeys = keyList.toArray(new String[0]);
         //test print
+        System.out.println("length of sorted keys is: " + sortedKeys.length);
         for(int i = 0; i < sortedKeys.length; i++){
+
             System.out.println(sortedKeys[i]);
         }
         StringBuilder nextText = new StringBuilder();
@@ -349,6 +367,8 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
             nextText.append(nextField.getName());
             fieldAsString = nextText.toString();
             TextField nextTextField = new TextField(fieldAsString);
+            //setUserData as the string representing the field so that we can easily delete the field later if need be.
+            nextTextField.setUserData(fieldAsString);
 
             Button deleteField = new Button("-");
             deleteField.setFocusTraversable(false);
@@ -358,46 +378,13 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
                 e.consume();
             });
             fieldRow.getChildren().addAll(deleteField, nextTextField);
+            linkTextFieldToDataField(fieldRow);
             dataFieldTextFields.getChildren().add(fieldRow);
             nextText = new StringBuilder();
         }
         return;
     }
 
-    /**
-     * Helper function for update() that converts a hashMap of data fields into a String[] array
-     * where each entry represents a data field according to the TextField format: Visibility Type Name.
-     * @param UMLDataFields, hashmap of datafields
-     * @return ArrayList<String> representing each of the dataFields
-     */
-    public ArrayList<String> convertDataFieldsToStrings(HashMap<String, UMLDataField> UMLDataFields){
-        if(UMLDataFields == null){
-            System.out.println("invalidInput");
-            return null;
-        }
-        ArrayList<String> fieldsAsStrings = new ArrayList<String>();
-        Set<String> dataFieldKeys = UMLDataFields.keySet();
-        List<String> keyList = new ArrayList<>(dataFieldKeys);
-        Collections.sort(keyList);
-        String[] sortedKeys = keyList.toArray(new String[0]);
-        StringBuilder nextText = new StringBuilder();
-        for(int i = 0; i < sortedKeys.length; i++){
-            UMLDataField nextField = UMLDataFields.get(sortedKeys[i]);
-            nextText.append(nextField.getVisibility());
-            nextText.append(" ");
-            if(nextField.getDataType() == DataType.OTHER){
-                nextText.append(nextField.getCustomNameType());
-            }
-            else{
-                nextText.append(nextField.getDataType());
-            }
-            nextText.append(" ");
-            nextText.append(nextField.getName());
-            fieldsAsStrings.add(nextText.toString());
-            nextText = new StringBuilder();
-        }
-        return fieldsAsStrings;
-    }
 
     @Override
     public void updateSelected(UMLClass desiredElement) {
