@@ -48,15 +48,13 @@ public class Main extends Application
             //Open terminal.. I'll let someone else figure that out.
             try{
 
-                //In progress terminal launch
-                String command = "cmd.exe /k start cd" +
-                                Main.class.getProtectionDomain().getCodeSource().getLocation().getPath().substring(1)
-                        + " && java --module-path D:\\Documents\\javafx-sdk-25.0.1\\lib" +
-                              " --add-modules=javafx.controls,javafx.fxml -jar .\\UMLProject.jar -terminal";
+                //Terminal Launch: Assumes that terminalscript.cmd, javafxlibrary, and jar are in the same directory
+                String location = Main.class.getProtectionDomain().getCodeSource().
+                        getLocation().getPath();
+                location = location.substring(1, location.indexOf("UMLProject.jar")) + "terminalscript.cmd";
+                System.out.println(location);
+                Runtime.getRuntime().exec("cmd /c start " + location);
 
-
-
-                Runtime.getRuntime().exec(command);
 
             }
             catch (Exception e){
