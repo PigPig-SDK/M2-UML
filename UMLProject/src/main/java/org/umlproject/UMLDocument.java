@@ -283,7 +283,30 @@ public class UMLDocument
             return null;
         return relationshipList.get(className);
     }
-
+    /**
+     * Returns the list of relationships belonging to a given class in the master relationship list
+     *
+     * @param className The source checked
+     *
+     * @return ArrayList - An ArrayList containing all relationships belonging to the given class,
+     * null if class name is not found
+     *  */
+    public ArrayList<UMLRelationship> getAllRelationshipsInstanceOf(String className)
+    {
+        ArrayList<UMLRelationship> list = new ArrayList();
+        if(relationshipList.containsKey(className))
+            list.addAll(relationshipList.get(className));
+        
+        for(ArrayList<UMLRelationship> tempList : relationshipList.values())
+        {
+            for(UMLRelationship relationship : tempList)
+            {
+                if(relationship.getDestinationName().equals(className))
+                    list.add(relationship);
+            }
+        }
+        return list;
+    }
     /**
      * Helper function. Iterates through the given class name provided in the map, searching for relationships
      * that have a matching className and destinationName, and returns a matching index if a relationship is found.
