@@ -346,6 +346,7 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
             alert.showAndWait();
             return false;
         }
+        updateAllRelationships(parentClass);
         return true;
     }
 
