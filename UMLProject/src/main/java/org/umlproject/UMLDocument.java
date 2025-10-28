@@ -431,8 +431,9 @@ public class UMLDocument
                     guiController.onRelationshipAdded(umlr);
                 }
             }
+            guiController.redrawScreen(this);
         }
-        guiController.redrawScreen(this);
+        
     }
     /**
      * Clears out the current file.
