@@ -108,13 +108,13 @@ public class UMLDocument
     {
         UMLClass removed = getClass(className);
         if (removed == null) return null;
+        
         if(removeRelationships)
         {
             removeClassKeyFromRelationships(className);
             removed.disposeOfGuiListener();
         }
         classSet.remove(className);
-        
         return removed;
     }
     public UMLClass removeClass(String className)
@@ -136,6 +136,10 @@ public class UMLDocument
     {
         //Ensure the newname location isnt taken.
         if(classSet.containsKey(newName) || relationshipList.containsKey(newName)) return false;
+        
+        //add class Car
+        //add relationship car dest awre
+        
         
         //Validation
         ArrayList<UMLRelationship> tempRelationshipsPointer = getAllRelationships(originClassName);
@@ -179,8 +183,12 @@ public class UMLDocument
      * @return boolean - True if the class was added
      * */
     public boolean addRelationship(String className, String destinationName, String relationshipTypeString){
+        if(!classSet.containsKey(className) && !classSet.containsKey(destinationName))
+            return false;
+
         if(!relationshipList.containsKey(className))
             relationshipList.put(className, new ArrayList<UMLRelationship>());
+        
         if(hasRelationship(className,destinationName))
             return  false;
         RelationshipType relationshipType = RelationshipType.stringToRelationshipType(relationshipTypeString);
@@ -233,17 +241,22 @@ public class UMLDocument
     {
         if(!relationshipList.containsKey(className))
             return false;
+        ArrayList<UMLRelationship> myRelationships = relationshipList.get(className);
+        for(UMLRelationship relationship : myRelationships)
+        {
+            relationship.disposeOfGuiListener();
+        }
         relationshipList.remove(className);
         //need to ensure className is removed as a destination value in all other relationships
         for(String source : new ArrayList<>(relationshipList.keySet())){
             ArrayList<UMLRelationship> relationships = relationshipList.get(source);
             if(relationships != null){
-                for(UMLRelationship relationship : relationships)
+                for(int i = relationships.size() - 1; i >= 0; i--)
                 {
-                    if(!relationship.getDestinationName().equals(className))
+                    if(!relationships.get(i).getDestinationName().equals(className))
                         continue;
-                    relationship.disposeOfGuiListener();
-                    relationships.remove(relationship);
+                    relationships.get(i).disposeOfGuiListener();
+                    relationships.remove(i);
                 }
             }
         }
@@ -419,6 +432,7 @@ public class UMLDocument
                 }
             }
         }
+        guiController.redrawScreen(this);
     }
     /**
      * Clears out the current file.
