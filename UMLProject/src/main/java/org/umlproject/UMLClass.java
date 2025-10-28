@@ -482,6 +482,51 @@ public class UMLClass extends UMLDiagramElement {
         return false;
     }
 
+    /**
+     * Returns the first available spot for a new data field when added through GUI
+     *
+     * @return String - The first available name
+     */
+    public String findValidFieldDummySignature()
+    {
+        final String dummySignature = "PRIVATE INT ";
+        final String dummyName = "dummyField";
+        //print the fields so we can see whats happening
+        ArrayList<String> fieldList = new ArrayList<>(fields.keySet());
+        System.out.println("printing dummy fields in existence");
+        for(int i = 0; i < fieldList.size(); i++){
+            System.out.println(fieldList.get(i));
+        }
+        int increment = 1;
+        while(true)
+        {
+            String testName = dummyName + increment;
+            if(!fields.containsKey(testName))//Name is not taken
+                return dummySignature + testName;
+            increment++;
+        }
+    }
+
+    /**
+     * Returns the first available spot for a new method when added through GUI
+     *
+     * @return String - The first available name
+     */
+    public String findValidMethodDummySignature()
+    {
+        final String dummyName = "method";
+        final String dummySignature = " INT PARAM1";
+        int increment = 1;
+        while(true)
+        {
+            String testName = dummyName + increment;
+            if(!methods.containsKey(testName)) {//Name is not taken
+                System.out.println("the signature being returned is: " + testName + dummySignature);
+                return testName + dummySignature;
+            }
+            increment++;
+        }
+    }
 
     //--------------------------------Whats below needs updating-----------------------------------
 
