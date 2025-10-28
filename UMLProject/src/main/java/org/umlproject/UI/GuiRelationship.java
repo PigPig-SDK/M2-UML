@@ -31,7 +31,7 @@ public final class GuiRelationship implements UIListener<UMLRelationship>, UISel
     
     private static final double SYMBOL_DISTANCE_BUFFER = 50;
     private static final double SYMBOL_MIN_DISTANCE = 100;
-    private static final double MIN_LINE_DISTANCE_FOR_TEXT = 500;//blaze it
+    private static final double MIN_LINE_DISTANCE_FOR_TEXT = 500;
     
     
     public GuiRelationship(Group world, UMLRelationship umlRelationship)
@@ -43,8 +43,18 @@ public final class GuiRelationship implements UIListener<UMLRelationship>, UISel
     @Override
     public void update(UMLRelationship desiredElement) {
         cleanUp();
+        
+        
         UMLClass startClass = UMLDocument.getInstance().getClass(desiredElement.getSourceName());
         UMLClass endClass = UMLDocument.getInstance().getClass(desiredElement.getDestinationName());
+        
+        //Flip the diagram under these shapes.
+        if(desiredElement.getRelationshipType() == COMPOSITION || desiredElement.getRelationshipType() == AGGREGATION)
+        {
+            UMLClass temp = startClass;
+            startClass = endClass;
+            endClass = temp;
+        }
         
         //If no start or end... do nothing
         //THIS IS A POSSIBLE STATE! Think 'non existing' start or end...
