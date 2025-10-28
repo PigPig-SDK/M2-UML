@@ -60,6 +60,7 @@ public class UMLRelationship  extends UMLDiagramElement
         updateGUI();
     }
     public void setCustomNameType(String newTypeCustom){
+        this.relationshipType = OTHER;
         this.customNameType = newTypeCustom;
         updateGUI();
     }
