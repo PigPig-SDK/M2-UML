@@ -6,10 +6,6 @@ public interface UIListener<T> {
      */
     void update(T desiredElement);
     /**
-     * Tells the GUIListener they should only update the 'selected' state.
-     */
-    void updateSelected(T desiredElement);
-    /**
      * Tells the GUIListener to only update the 'location' of its drawn elements.
      */
     void updateLocation(T desiredElement);

@@ -81,7 +81,7 @@
          <children>
             <Group fx:id="world">
                <children>
-                  <Text fill="#534b3e" layoutX="20.0" layoutY="200.0" strokeType="OUTSIDE" strokeWidth="0.0" text="WORKSPACE" textAlignment="CENTER">
+                  <Text fx:id="workspaceText" fill="#534b3e" layoutX="34.0" layoutY="214.0" strokeType="OUTSIDE" strokeWidth="0.0" text="WORKSPACE" textAlignment="CENTER">
                      <font>
                         <Font name="Bodoni MT" size="93.0" />
                      </font>

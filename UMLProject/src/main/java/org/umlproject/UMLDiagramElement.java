@@ -7,6 +7,12 @@ public abstract class UMLDiagramElement
 {
     transient protected UIListener listener;
     
+    
+    public UIListener getUIListener()
+    {
+        return listener;
+    }
+    
     public void setListener(UIListener listener)
     {
         this.listener = listener;
@@ -24,12 +30,6 @@ public abstract class UMLDiagramElement
         if(listener == null)
             return;
         listener.updateLocation(this);
-    }
-    public void updateGUISelectionState()
-    {
-        if(listener == null)
-            return;
-        listener.updateSelected(this);
     }
     public void disposeOfGuiListener()
     {

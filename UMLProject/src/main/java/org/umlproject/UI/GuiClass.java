@@ -15,6 +15,7 @@ import org.umlproject.*;
 
 import java.util.*;
 import java.util.Set;
+import javafx.geometry.Bounds;
 import javafx.geometry.Rectangle2D;
 
 public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositional {
@@ -61,10 +62,10 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
             e.consume(); // Prevent event from propagating to other nodes
         });
         this.nodeBackground.setOnMouseDragged(e -> {
-            System.out.println("Mouse dragged on StackPane to: " + e.getSceneX() + ", " + e.getSceneY());
+            //System.out.println("Mouse dragged on StackPane to: " + e.getSceneX() + ", " + e.getSceneY());
             double newX = e.getSceneX() - this.mouseAnchorX;
             double newY = e.getSceneY() - this.mouseAnchorY;
-            System.out.println("Setting UMLClass location to: " + newX + ", " + newY);
+            //System.out.println("Setting UMLClass location to: " + newX + ", " + newY);
             this.parentClass.setLocation(new Point2D(newX, newY));
             this.nodeBackground.getParent().requestLayout(); // Force layout update
             e.consume(); // Prevent event from propagating to other nodes
@@ -447,14 +448,41 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         //add classbox to world to display
         this.world.getChildren().add(this.nodeBackground);
         this.world.requestFocus();
+        updateAllRelationships(desiredElement);
     }
-
-
-
-
-
-    @Override
-    public void updateSelected(UMLClass desiredElement) {
+    /**
+     * Helper function for update() that converts a hashMap of data fields into a String[] array
+     * where each entry represents a data field according to the TextField format: Visibility Type Name.
+     * @param UMLDataFields, hashmap of datafields
+     * @return ArrayList<String> representing each of the dataFields
+     */
+    public ArrayList<String> convertDataFieldsToStrings(HashMap<String, UMLDataField> UMLDataFields){
+        if(UMLDataFields == null){
+            System.out.println("invalidInput");
+            return null;
+        }
+        ArrayList<String> fieldsAsStrings = new ArrayList<String>();
+        Set<String> dataFieldKeys = UMLDataFields.keySet();
+        List<String> keyList = new ArrayList<>(dataFieldKeys);
+        Collections.sort(keyList);
+        String[] sortedKeys = keyList.toArray(new String[0]);
+        StringBuilder nextText = new StringBuilder();
+        for(int i = 0; i < sortedKeys.length; i++){
+            UMLDataField nextField = UMLDataFields.get(sortedKeys[i]);
+            nextText.append(nextField.getVisibility());
+            nextText.append(" ");
+            if(nextField.getDataType() == DataType.OTHER){
+                nextText.append(nextField.getCustomNameType());
+            }
+            else{
+                nextText.append(nextField.getDataType());
+            }
+            nextText.append(" ");
+            nextText.append(nextField.getName());
+            fieldsAsStrings.add(nextText.toString());
+            nextText = new StringBuilder();
+        }
+        return fieldsAsStrings;
     }
     /**This method will update the location of the gui element representing
      *the umlClass. That is, any calls to this function will visibly move
@@ -465,12 +493,19 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
     public void updateLocation(UMLClass desiredElement) {
         if(this.nodeBackground == null)
             return;
+        updateAllRelationships(desiredElement);
         this.nodeBackground.setLayoutX(desiredElement.getLocation().getX());
         this.nodeBackground.setLayoutY(desiredElement.getLocation().getY());
+
         //System.out.println("stackpane layout is changed to:" + ((UMLClass)(desiredElement)).getLocation());
         this.nodeBackground.getParent().requestLayout();
     }
-
+    public void updateAllRelationships(UMLClass desiredElement)
+    {
+        ArrayList<UMLRelationship> list = UMLDocument.getInstance().getAllRelationshipsInstanceOf(desiredElement.getClassName());
+        for(UMLRelationship relationship : list)//Update all relationship GUI
+            relationship.updateGUI();
+    }
     /**
      * Runs after user input, removing the chosen class from the model
      *
@@ -541,5 +576,20 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         if(parentClass == null)
             return;
         parentClass.setLocation(location);
+    }
+    
+    public Rectangle2D getRectBounds()
+    {
+        if(this.parentVBox == null)
+            return null;
+        Bounds bounds = this.parentVBox.getBoundsInLocal();
+        Point2D offset = getLocation();
+        Rectangle2D rect = new Rectangle2D(
+                bounds.getMinX() + offset.getX(), 
+                bounds.getMinY() + offset.getY(), 
+                bounds.getWidth(), 
+                bounds.getHeight()
+            );
+        return rect;
     }
 }
