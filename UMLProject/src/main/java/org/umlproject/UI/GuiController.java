@@ -10,6 +10,7 @@ import javafx.geometry.Point2D;
 import javafx.scene.Group;
 import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
+import javafx.scene.text.Text;
 import org.umlproject.Main;
 import org.umlproject.TerminalHandler;
 import org.umlproject.UMLClass;
@@ -29,6 +30,8 @@ public class GuiController implements UMLGuiController {
     private MenuBar menubar;
     @FXML
     private Pane viewpane;
+    @FXML 
+    private Text workspaceText;
 
     /**  This datafield is an internal program reference to the +C clickable button in
      * the FXML document.
@@ -54,6 +57,7 @@ public class GuiController implements UMLGuiController {
         addClassButton.setDefaultButton(false);
         menubar.setViewOrder(-100);
         console.setViewOrder(-100);
+        workspaceText.setViewOrder(1000000);//To the back of the universe
     }
     /**
      * This is called after initialize. 

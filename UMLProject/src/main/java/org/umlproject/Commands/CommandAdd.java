@@ -158,7 +158,12 @@ public class CommandAdd extends BaseCommand
         {
             System.out.println("""
                                     add relationship | Please specify three extra parameters
-                                                       EX: add relationship class1 class2 relationshipType""");
+                                                       EX: add relationship <class1> <class2> <relationship type>
+                                                            relationship types:
+                                                                                'aggregation'
+                                                                                'composition'
+                                                                                'generalization'
+                                                                                'realization'""");
         }
     }
     /**
