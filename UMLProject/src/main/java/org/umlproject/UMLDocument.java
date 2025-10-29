@@ -135,6 +135,11 @@ public class UMLDocument
      * */
     public boolean renameClass(String originClassName, String newName)
     {
+        Objects.requireNonNull(originClassName, "originClassName cannot be null");
+        Objects.requireNonNull(newName, "newName cannot be null");
+        
+        originClassName = originClassName.replaceAll("\\s+", "");//Remove spaces
+        newName = newName.replaceAll("\\s+", "");//Remove spaces
         //Ensure the newname location isnt taken.
         if(classSet.containsKey(newName) || relationshipList.containsKey(newName)) return false;
         
@@ -463,7 +468,12 @@ public class UMLDocument
      * @return UMLClass - Returns created class, or null if class already exists
      */
     public UMLClass addClass(String className){
+        
+        Objects.requireNonNull(className, "newName cannot be null");
+        className = className.replaceAll("\\s+", "");//Remove spaces
+        
         if (classSet.containsKey(className)) return null;
+        
         UMLClass umlclass = new UMLClass(className);
         classSet.put(className, umlclass);
         ArrayList<UMLRelationship> newList = new ArrayList<>();

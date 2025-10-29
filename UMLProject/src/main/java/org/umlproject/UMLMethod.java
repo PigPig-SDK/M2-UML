@@ -28,7 +28,7 @@ public class UMLMethod
      *
      */
     public UMLMethod(String methodName, ArrayList<UMLParameter> parameters){
-        if(methodName == null || methodName.isEmpty()){
+        if(methodName == null || parameters == null){
             throw new IllegalArgumentException("name is null or empty string");
         }
         this.methodName = methodName;
