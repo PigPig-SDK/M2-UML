@@ -516,7 +516,7 @@ public class UMLDocument
      */
     public String findValidDummyName()
     {
-        final String dummyName = "NewClass ";
+        final String dummyName = "NewClass";
         int increment = 1;
         while(true)
         {
