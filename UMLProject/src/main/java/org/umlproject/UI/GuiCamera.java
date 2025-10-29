@@ -129,8 +129,8 @@ public class GuiCamera {
         double dWidth = pain.getWidth()/2;
         double dHeight = pain.getHeight()/2;
         
-        dWidth += GuiController.singleton.getWorld().getTranslateX();
-        dHeight += GuiController.singleton.getWorld().getTranslateY();
+        dWidth -= camLocation.getX();
+        dHeight -= camLocation.getY();
         
         return new Point2D(dWidth,dHeight);
     }
