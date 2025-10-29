@@ -266,7 +266,6 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         }
         TextField newField = (TextField)fieldRow.getChildren().get(1);
         newField.setOnAction(e ->{
-            String customTypeName = "";
             String dataFieldText = newField.getText();
             String[] textAsArray = dataFieldText.split(" ");
             if(textAsArray.length != 3){
@@ -275,23 +274,21 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
                 newField.setText("Visibility Type Name");
                 return;
             }
+            
+            String visibilityString = textAsArray[0];
+            String typeString = textAsArray[1];
+            String dataFieldName = textAsArray[2];
+
             //make sure the user entered a valid Visibility value.
-            boolean acceptableVisibilityStatus = Visibility.acceptableVisibility(textAsArray[0]);
-            if(!acceptableVisibilityStatus){
+            if(!Visibility.acceptableVisibility(visibilityString)){
                 System.out.println("Invalid visibility type! Enter: Public, Private, Protected, or Package.");
                 newField.setText("Visibility Type Name");
                 return;
             }
-            Visibility visibility = Visibility.stringVisibility(textAsArray[0]);
-            DataType dataType = DataType.stringToDatatype(textAsArray[1]);
-            if(dataType == DataType.OTHER){
-                customTypeName = textAsArray[1];
-            }
-            else{
-                customTypeName = null;
-            }
-            String dataFieldName = textAsArray[2];
-            UMLDataField dataField = new UMLDataField(dataFieldName, customTypeName, dataType, visibility);
+            Visibility visibility = Visibility.stringVisibility(visibilityString);
+            DataType dataType = DataType.stringToDatatype(typeString);
+            
+            UMLDataField dataField = new UMLDataField(dataFieldName, (dataType == DataType.OTHER)? textAsArray[1] : null , dataType, visibility);
             //attempt to add the field
             boolean success = this.parentClass.addField(dataField);
             if(success){
@@ -334,28 +331,13 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         Collections.sort(keyList);
         String[] sortedKeys = keyList.toArray(new String[0]);
         //test print
-        System.out.println("length of sorted keys is: " + sortedKeys.length);
-        for(int i = 0; i < sortedKeys.length; i++){
-
-            System.out.println(sortedKeys[i]);
-        }
-        StringBuilder nextText = new StringBuilder();
-        for(int i = 0; i < sortedKeys.length; i++){
+        //System.out.println("length of sorted keys is: " + sortedKeys.length);
+        for (String sortedKey : sortedKeys) {
             HBox fieldRow = new HBox(10);
-            UMLDataField nextField = UMLDataFields.get(sortedKeys[i]);
+            UMLDataField nextField = UMLDataFields.get(sortedKey);
             //store the UMLDataField for easy removal with delete button
             fieldRow.setUserData(nextField);
-            nextText.append(nextField.getVisibility());
-            nextText.append(" ");
-            if(nextField.getDataType() == DataType.OTHER){
-                nextText.append(nextField.getCustomNameType());
-            }
-            else{
-                nextText.append(nextField.getDataType());
-            }
-            nextText.append(" ");
-            nextText.append(nextField.getName());
-            fieldAsString = nextText.toString();
+            fieldAsString = String.format("%s %s %s",nextField.getVisibility(), nextField.getTypeAsString(), nextField.getName());
             TextField nextTextField = new TextField(fieldAsString);
             //setUserData as the string representing the field so that we can easily delete the field later if need be.
             nextTextField.setUserData(fieldAsString);
@@ -366,12 +348,11 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
                 dataFieldTextFields.getChildren().remove(fieldRow);
                 e.consume();
             });
+            
             fieldRow.getChildren().addAll(deleteField, nextTextField);
             linkTextFieldToDataField(fieldRow);
             dataFieldTextFields.getChildren().add(fieldRow);
-            nextText = new StringBuilder();
         }
-        return;
     }
     /**
      * update is responsible for redrawing the classBox every time a data field or method is added or removed.
