@@ -63,8 +63,7 @@ public class GuiController implements UMLGuiController {
      * This is called after initialize. 
      * This is because some things are not fully initialized during the call of 'initialize'.
      */
-    public void lateInitialization()
-    {
+    public void lateInitialization() {
         GuiResizeManager.bindToSizeUpdates();
         GuiCamera.setupCamera();
         GuiKeyBinds.setupKeyBinds();
