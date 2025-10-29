@@ -81,13 +81,13 @@
          <children>
             <Group fx:id="world">
                <children>
-                  <Text fill="#534b3e" layoutX="20.0" layoutY="200.0" strokeType="OUTSIDE" strokeWidth="0.0" text="WORKSPACE" textAlignment="CENTER">
+                  <Text fx:id="workspaceText" fill="#534b3e" layoutX="34.0" layoutY="214.0" strokeType="OUTSIDE" strokeWidth="0.0" text="WORKSPACE" textAlignment="CENTER">
                      <font>
                         <Font name="Bodoni MT" size="93.0" />
                      </font>
                   </Text>
                </children></Group>
-            <Button defaultButton="true" focusTraversable="false" layoutX="14.0" layoutY="80.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="50.0" text="+R" textAlignment="CENTER" />
+            <Button fx:id="addRelationshipButton" defaultButton="true" focusTraversable="false" layoutX="14.0" layoutY="80.0" mnemonicParsing="false" onAction="#addRelationshipButtonPushed" prefHeight="50.0" prefWidth="50.0" text="+R" textAlignment="CENTER" />
             <Button fx:id="addClassButton" defaultButton="true" focusTraversable="false" layoutX="14.0" layoutY="14.0" mnemonicParsing="false" onAction="#addClassButtonPushed" prefHeight="50.0" prefWidth="50.0" text="+C" textAlignment="CENTER" />
          </children>
       </Pane>
