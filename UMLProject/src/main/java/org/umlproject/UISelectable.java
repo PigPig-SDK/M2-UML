@@ -32,4 +32,9 @@ public interface UISelectable {
      * @return true if an intersection occurs.
      */
     boolean intersects(Rectangle2D selectionRectangle);
+    /**
+     * Updates the selection animation.
+     * @param time The current 'time' of the world
+     */
+    void selectionAnimationUpdate(float time);
 }

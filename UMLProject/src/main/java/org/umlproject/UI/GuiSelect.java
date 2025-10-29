@@ -3,9 +3,6 @@ package org.umlproject.UI;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
-import javafx.scene.paint.Color;
 import org.umlproject.Main;
 import org.umlproject.UMLClass;
 import org.umlproject.UMLDocument;
@@ -13,26 +10,37 @@ import org.umlproject.UMLRelationship;
 
 import java.util.ArrayList;
 import java.util.Optional;
+import javafx.animation.AnimationTimer;
+import static org.umlproject.UI.GuiCamera.getUserInputDirection;
+import static org.umlproject.UI.GuiCamera.setCameraLocation;
+import org.umlproject.UIListener;
+import org.umlproject.UISelectable;
 
 public class GuiSelect {
 
     private static GuiSelect instance;
 
-    private static ArrayList<UMLRelationship> selectedRelationships;
-
-    private static ArrayList<GuiClass> selectedGUIClasses;
-
+    private static ArrayList<UISelectable> selectedObjects;
 
     /**
      * Singleton GuiSelect constructor. Creates three relevant ArrayLists and sets a condition on clicking the scene.
      */
     private GuiSelect(){
-        selectedRelationships = new ArrayList<>();
-        selectedGUIClasses = new ArrayList<>();
+        selectedObjects = new ArrayList<>();
         Main.currentScene.setOnMouseClicked(e -> {
-            GuiSelect.getInstance().resetSelect(e);
+            GuiSelect.getInstance().checkResetSelect(e);
             e.consume();
         });
+        AnimationTimer selectionAnimationTimer = new AnimationTimer() {
+            @Override
+            public void handle(long now){
+                for(UISelectable selectable : selectedObjects)
+                {
+                    selectable.selectionAnimationUpdate(now);
+                }
+            }
+        };
+        selectionAnimationTimer.start();//Runs forever...
     }
 
     /**
@@ -53,47 +61,23 @@ public class GuiSelect {
      * testClassSelect method. Selects or deselects a passed in class.
      *
      * @param e - Event checked for ctrl being held
-     * @param GUIClassIn - Class being selected/deselected
+     * @param selectable - Class being selected/deselected
      */
-    public void classSelect(MouseEvent e, GuiClass GUIClassIn) {
+    public void selectUiElement(MouseEvent e, UISelectable selectable) {
         //Checks if control is being held. If not, returns.
         if (!e.isControlDown()) {
             return;
         }
         //Checks if class is already selected. If so, deselects it.
-        if(selectedGUIClasses.contains(GUIClassIn)){
-            GUIClassIn.parentVBox.setBackground(new Background(new BackgroundFill(Color.MINTCREAM, null, null)));
-            selectedGUIClasses.remove(GUIClassIn);
+        if(selectedObjects.contains(selectable)){
+            selectable.setSelected(false);
+            selectedObjects.remove(selectable);
             return;
         }
 
         //Selects class if not already selected.
-        selectedGUIClasses.add(GUIClassIn);
-        //Sets to selected color.
-        GUIClassIn.parentVBox.setBackground(new Background(new BackgroundFill(GuiColor.SELECTION_COLOR, null, null)));
-
-        //Testing
-        System.out.println(selectedGUIClasses);
-        System.out.println(selectedRelationships);
-        System.out.println("Test Passed");
-
-    }
-
-    /**
-     * Unimplemented selection method for relationships.
-     *
-     * @param e
-     * @param relationshipIn
-     */
-    public void relationshipSelect(MouseEvent e, UMLRelationship relationshipIn) {
-        if (!e.isControlDown()) {
-            return;
-        }
-        selectedRelationships.add(relationshipIn);
-        System.out.println(selectedGUIClasses);
-        System.out.println(selectedRelationships);
-        System.out.println("Test Passed");
-
+        selectedObjects.add(selectable);
+        selectable.setSelected(true);
     }
 
     /**
@@ -102,60 +86,72 @@ public class GuiSelect {
      *
      * @param e - Event to check for ctrl.
      */
-    public void resetSelect(MouseEvent e){
+    public void checkResetSelect(MouseEvent e){
         if(!e.isControlDown()){
-            for(GuiClass gClass : selectedGUIClasses){
-                gClass.parentVBox.setBackground(new Background(new BackgroundFill(Color.MINTCREAM, null, null)));
-            }
-            selectedRelationships.clear();
-            selectedGUIClasses.clear();
+            resetSelect();
         }
-
     }
-
+    /**
+     * Deselects all elements
+     */
+    public void resetSelect()
+    {
+        for(UISelectable selectable : selectedObjects){
+                selectable.setSelected(false);
+            }
+        selectedObjects.clear();
+    }
     /**
      * deleteAllSelected method. Checks if classes are selected. If so, deletes all selected classes and relationships.
      */
     public void deleteAllSelected(){
 
         //Checks if any items are selected
-        if(selectedGUIClasses.isEmpty() && selectedRelationships.isEmpty()){
-            System.out.println("No items selected");
+        if(selectedObjects.isEmpty()){
             return;
         }
-
         //Displays confirmation box for deletion
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setContentText("Are you sure you want to delete " + (selectedGUIClasses.size()
-                + selectedRelationships.size()) + " items?");
+        alert.setContentText(String.format("Are you sure you want to delete %d items?", selectedObjects.size()));
         Optional choice = alert.showAndWait();
 
         if(choice.get() == ButtonType.CANCEL){
             return;
         }
-
         //Deletes all classes.
         UMLClass errorClass;
-        for(GuiClass GUIClassIn : selectedGUIClasses){
-            errorClass = UMLDocument.getInstance().removeClass(GUIClassIn.getParentClass().getClassName());
-            if(errorClass == null){
-                System.out.println("An error occurred removing class " + GUIClassIn.getParentClass().getClassName());
+        for(UISelectable selectable : selectedObjects){
+            
+            if(selectable instanceof GuiClass guiClass)//Manage deletion of classes
+            {
+                String className = guiClass.getParentClass().getClassName();
+                errorClass = UMLDocument.getInstance().removeClass(className);
+                if(errorClass == null)
+                    System.out.println("An error occurred removing class ");
+            }
+            else if (selectable instanceof GuiRelationship guiRelationship)//Handle deletion of relationships
+            {
+                UMLRelationship relationship = guiRelationship.getRelationship();
+                if(relationship == null)//This is a 100% valid possibility. Classes removes relationship before we do.
+                    continue;
+                UMLDocument.getInstance().removeRelationship(relationship.getSourceName(), relationship.getDestinationName());
             }
         }
-
-        //Deletes all relationships
-        boolean errorRelationship;
-        for(UMLRelationship URelationship : selectedRelationships){
-            errorRelationship = UMLDocument.getInstance().removeRelationship(URelationship.getSourceName(), URelationship.getDestinationName());
-            if(!errorRelationship){
-                System.out.println("An error occurred removing relationship " + URelationship);
-            }
-        }
-
-        selectedRelationships.clear();
-        selectedGUIClasses.clear();
-
+        selectedObjects.clear();
     }
-
-
+    /**
+     * Selects all elements
+     */
+    public void selectAll()
+    {
+        resetSelect();
+        for(UIListener listner : UMLDocument.getInstance().getUIListeners())
+        {
+            if(listner instanceof UISelectable selectable)
+            {
+                selectable.setSelected(true);
+                selectedObjects.add(selectable);
+            }
+        }
+    }
 }
