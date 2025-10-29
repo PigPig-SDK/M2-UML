@@ -14,6 +14,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
+import org.umlproject.RelationshipType;
 import org.umlproject.TerminalHandler;
 import org.umlproject.UMLClass;
 import org.umlproject.UMLDocument;
@@ -240,8 +241,13 @@ public class GuiController implements UMLGuiController {
             destinationBox.setValue("...");
             
             ComboBox<String> typebox = new ComboBox<>();
-            typebox.getItems().addAll("Aggregation", "Composition", "Generalization", "Realization");
-            typebox.setValue("Composition");
+            //Populate combo box with types.
+            for(RelationshipType rType : RelationshipType.values())
+            {
+                if(rType != RelationshipType.OTHER)
+                    typebox.getItems().add(rType.name());
+            }
+            typebox.setValue(RelationshipType.AGGREGATION.name());
             
             grid.add(new Label("Source"), 0, 0);
             grid.add(startBox, 1, 0);
