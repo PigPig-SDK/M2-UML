@@ -152,17 +152,17 @@ public class GuiController implements UMLGuiController {
     @FXML
     private void deleteEditMenuAction()
     {
-        System.out.println("Delete edit click");
+        GuiSelect.getInstance().deleteAllSelected();
     }
     @FXML
     public void selectAllEditMenuAction()
     {
-        System.out.println("SelectAll edit click");
+        GuiSelect.getInstance().selectAll();
     }
     @FXML
     public void unSelectAllEditMenuAction()
     {
-        System.out.println("SelectAll but like backwards edit click");
+        GuiSelect.getInstance().resetSelect();
     }
     @FXML
     private void aboutHelpMenuAction()
