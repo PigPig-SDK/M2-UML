@@ -51,7 +51,7 @@ public class Main extends Application
                 //Terminal Launch: Assumes that terminalscript.cmd, javafxlibrary, and jar are in the same directory
                 String location = Main.class.getProtectionDomain().getCodeSource().
                         getLocation().getPath();
-                location = location.substring(1, location.indexOf("UMLProject.jar")) + "terminalscript.cmd";
+                location = location.substring(6, location.indexOf("!")) + " -terminal";
                 System.out.println(location);
                 Runtime.getRuntime().exec("cmd /c start " + location);
 

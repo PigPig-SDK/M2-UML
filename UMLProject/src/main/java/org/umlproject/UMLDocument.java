@@ -191,7 +191,8 @@ public class UMLDocument
     public boolean addRelationship(String className, String destinationName, String relationshipTypeString){
         if(!classSet.containsKey(className) && !classSet.containsKey(destinationName))
             return false;
-
+        if(Objects.equals(className,destinationName))//Cannot have same source/destination.
+            return false;
         if(!relationshipList.containsKey(className))
             relationshipList.put(className, new ArrayList<UMLRelationship>());
         
