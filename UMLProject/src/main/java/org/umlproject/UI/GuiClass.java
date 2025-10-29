@@ -26,6 +26,9 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
     VBox methodTextFields;
     //VBox that holds className TextField and VBoxes for data fields and methods.
     VBox parentVBox;
+    Rectangle background;
+    
+    private boolean isSelected = false;
     /**
      * Constructor for GuiClass responsible for building the initial class box and setting all the proper
      * actions on its nodes. TextFields will be editable and those edits will be reflected in the underlying
@@ -60,9 +63,8 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         });
         //Used for selection
         nodeBackground.setOnMouseClicked(e -> {
-            GuiSelect.getInstance().classSelect(e, this);
+            GuiSelect.getInstance().selectUiElement(e, this);
             e.consume(); // Prevent event from propagating to other nodes
-
         });
 
         this.nodeBackground.setOnMouseDragged(e -> {
@@ -211,7 +213,7 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         background.setStroke(Color.BLACK);
         background.widthProperty().bind(this.parentVBox.widthProperty().add(20));
         background.heightProperty().bind(this.parentVBox.heightProperty().add(20));
-
+        this.background = background;
         //Create modifiable className and put into VBox
         TextField classNameField = new TextField(parentClass.getClassName());
         classNameField.setStyle("-fx-font-size: 10px; -fx-font-weight: bold");
@@ -258,6 +260,7 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         this.world.getChildren().add(this.nodeBackground);
         this.world.requestFocus();
         updateAllRelationships(desiredElement);
+        setSelected(isSelected);//Update our selected state
     }
     /**
      * Helper function for update() that converts a hashMap of data fields into a String[] array
@@ -343,12 +346,25 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
     @Override
     public void setSelected(boolean isSelected) {
         
+        this.isSelected = isSelected;
+        if(isSelected)
+        {
+            this.background.setFill(GuiColor.GENERIC_LINE_COLOR);//Idk it looks good.
+            this.background.setStroke(GuiColor.SELECTION_COLOR);
+            this.background.setStrokeWidth(5);
+            this.background.getStrokeDashArray().addAll(30.0, 15.0);
+        }
+        else
+        {
+            this.background.setFill(Color.MINTCREAM);
+            this.background.setStrokeWidth(0);
+        }
     }
 
     @Override
     public boolean getSelected() {
         
-        return false;
+        return this.isSelected;
     }
 
     public UMLClass getParentClass(){
@@ -397,5 +413,13 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
     @Override
     public String toString(){
         return this.getParentClass().toString();
+    }
+
+    @Override
+    public void selectionAnimationUpdate(float time) {
+        if(this.background == null)
+            return;
+        this.background.setStrokeWidth(5+ 2*Math.sin(time * 0.00000001));
+        this.background.setStrokeDashOffset(10*Math.sin(time * 0.000000001));
     }
 }

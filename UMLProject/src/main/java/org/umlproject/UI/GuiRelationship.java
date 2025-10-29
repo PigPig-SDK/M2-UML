@@ -23,6 +23,7 @@ import org.umlproject.UMLRelationship;
 
 public final class GuiRelationship implements UIListener<UMLRelationship>, UISelectable{
 
+    private UMLRelationship relationship;
     private Group world;
     private Line lineMain, lineOutline, selectionOutline;
     private boolean isSelected = false;
@@ -37,9 +38,15 @@ public final class GuiRelationship implements UIListener<UMLRelationship>, UISel
     public GuiRelationship(Group world, UMLRelationship umlRelationship)
     {
         this.world = world;
+        this.relationship = umlRelationship;
         update(umlRelationship);
     }
 
+    public UMLRelationship getRelationship()
+    {
+        return this.relationship;
+    }
+    
     @Override
     public void update(UMLRelationship desiredElement) {
         cleanUp();
@@ -77,18 +84,25 @@ public final class GuiRelationship implements UIListener<UMLRelationship>, UISel
         this.lineMain.setStroke(GuiColor.GENERIC_LINE_COLOR);
         this.lineOutline.setStroke(Color.BLACK);
         this.selectionOutline.setStroke(GuiColor.SELECTION_COLOR);
+        this.selectionOutline.getStrokeDashArray().addAll(30.0,30.0);
         
         if(desiredElement.getRelationshipType() == GENERALIZATION)
         {
             this.lineMain.getStrokeDashArray().addAll(30.0,15.0);
             this.lineOutline.getStrokeDashArray().addAll(30.0,15.0);
-            this.selectionOutline.getStrokeDashArray().addAll(30.0,15.0);
         }
         placeText(desiredElement);
         placeRelationshipMarker(endClass, desiredElement.getRelationshipType());
         
         
         world.getChildren().addAll(lineMain, lineOutline, selectionOutline);
+        
+        //Add clickableness...
+        lineMain.setOnMouseClicked(e -> {
+            GuiSelect.getInstance().selectUiElement(e, this);
+            e.consume(); // Prevent event from propagating to other nodes
+        });
+        setSelected(isSelected);//Update our selected state
     }
     double getLineDistance(Line line)
     {
@@ -277,7 +291,7 @@ public final class GuiRelationship implements UIListener<UMLRelationship>, UISel
     }
     @Override
     public boolean getSelected() {
-        return isSelected;
+        return this.isSelected;
     }
 
     @Override
@@ -288,6 +302,15 @@ public final class GuiRelationship implements UIListener<UMLRelationship>, UISel
     @Override
     public boolean intersects(Rectangle2D selectionRectangle) {
         return false; //TODO: Implement
+    }
+
+    @Override
+    public void selectionAnimationUpdate(float time) {
+        if(this.selectionOutline == null)
+            return;
+        this.selectionOutline.setStrokeWidth(23+ 2*Math.sin(time * 0.00000001));
+        this.selectionOutline.setStrokeDashOffset(10*Math.sin(time * 0.000000001));
+        
     }
     
 }
