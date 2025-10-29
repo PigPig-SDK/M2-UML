@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Objects;
 
 
 public class UMLDocument
@@ -185,7 +186,8 @@ public class UMLDocument
     public boolean addRelationship(String className, String destinationName, String relationshipTypeString){
         if(!classSet.containsKey(className) && !classSet.containsKey(destinationName))
             return false;
-
+        if(Objects.equals(className,destinationName))//Cannot have same source/destination.
+            return false;
         if(!relationshipList.containsKey(className))
             relationshipList.put(className, new ArrayList<UMLRelationship>());
         

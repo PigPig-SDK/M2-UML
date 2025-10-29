@@ -177,7 +177,6 @@ public final class GuiRelationship implements UIListener<UMLRelationship>, UISel
         double vectorLength = Math.min(hypotLength, hypotHeight) + SYMBOL_DISTANCE_BUFFER;//Find the smallest sidelength
         vectorLength = Math.max(vectorLength, SYMBOL_MIN_DISTANCE);
         
-        System.out.println(vectorLength == SYMBOL_MIN_DISTANCE);
         
         Point2D endPoint = new Point2D(cos * vectorLength, sin * vectorLength).add(endClass.getLocation());
         
