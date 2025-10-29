@@ -55,6 +55,8 @@ public class UMLClass extends UMLDiagramElement {
         if(className == null || className.isEmpty() || fields == null || methods == null){
             throw new IllegalArgumentException("The arguments provided are invalid!");
         }
+        
+        
         this.className = className;
         this.fields = fields;
         this.methods = methods;
@@ -490,7 +492,7 @@ public class UMLClass extends UMLDiagramElement {
     public String findValidFieldDummySignature()
     {
         final String dummySignature = "PRIVATE INT ";
-        final String dummyName = "dummyField";
+        final String dummyName = "Dummy";
         //print the fields so we can see whats happening
         ArrayList<String> fieldList = new ArrayList<>(fields.keySet());
         System.out.println("printing dummy fields in existence");
@@ -515,7 +517,7 @@ public class UMLClass extends UMLDiagramElement {
     public String findValidMethodDummySignature()
     {
         final String dummyName = "method";
-        final String dummySignature = " INT PARAM1";
+        final String dummySignature = " INT P1";
         int increment = 1;
         while(true)
         {
