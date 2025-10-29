@@ -271,6 +271,11 @@ public class GuiController implements UMLGuiController {
     //This method will bind a guiClass listener to the new umlClass
     @Override
     public void onClassAdded(UMLClass umlClass) {
+        if(umlClass.getLocation().getX() == 0 || umlClass.getLocation().getY() == 0)
+        {
+            umlClass.setLocation(GuiCamera.getScreenCenter());
+        }
+        System.out.println(umlClass.getLocation());
         GuiClass guiClass = new GuiClass(world, umlClass);
         umlClass.setListener(guiClass);
     }

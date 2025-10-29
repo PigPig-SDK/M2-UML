@@ -7,6 +7,7 @@ import javafx.scene.control.TextInputControl;
 import javafx.scene.input.KeyEvent;
 import static javafx.scene.input.MouseButton.MIDDLE;
 import javafx.scene.input.ScrollEvent;
+import javafx.scene.layout.Pane;
 import org.umlproject.Main;
 
 public class GuiCamera {
@@ -119,6 +120,19 @@ public class GuiCamera {
             //We click onto a type of textbox, do not remove selection.
             if (!(event.getTarget() instanceof TextInputControl)) GuiController.singleton.getViewPane().requestFocus();
         });
+    }
+    public static Point2D getScreenCenter()
+    {
+        Pane pain = GuiController.singleton.getViewPane();
+        
+        
+        double dWidth = pain.getWidth()/2;
+        double dHeight = pain.getHeight()/2;
+        
+        dWidth -= camLocation.getX();
+        dHeight -= camLocation.getY();
+        
+        return new Point2D(dWidth,dHeight);
     }
     public static void setupCamera()
     {

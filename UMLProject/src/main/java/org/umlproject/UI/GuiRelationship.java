@@ -144,7 +144,7 @@ public final class GuiRelationship implements UIListener<UMLRelationship>, UISel
         this.relationshipText = new TextField(desiredElement.getRelationshipName());
         this.relationshipText.setRotate(Math.toDegrees(angle));
         this.relationshipText.setLayoutX(midpoint.getX() - 75);//Magical number for offsetting correctly
-        this.relationshipText.setLayoutY(midpoint.getY() - 10);//Magical number for offsetting correctly
+        this.relationshipText.setLayoutY(midpoint.getY() - 12.5);//Magical number for offsetting correctly
         this.relationshipText.setViewOrder(40);//Send to back..
         //Text update
         //When the user gives our textbox a new value, we push the data and that causes a redraw...
