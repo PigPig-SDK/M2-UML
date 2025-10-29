@@ -1,26 +1,17 @@
 package org.umlproject.UI;
 
-import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
-import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.input.KeyCode;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.text.Text;
 import org.umlproject.*;
 
 
 import java.util.*;
-import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import javafx.geometry.Bounds;
 import javafx.geometry.Rectangle2D;
@@ -28,7 +19,6 @@ import javafx.geometry.Rectangle2D;
 public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositional {
     private Group world;
     private UMLClass parentClass;
-
     double mouseAnchorX;
     double mouseAnchorY;
     StackPane nodeBackground;
@@ -67,6 +57,12 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
             this.mouseAnchorX = e.getSceneX() - nodeBackground.getLayoutX();
             this.mouseAnchorY = e.getSceneY() - nodeBackground.getLayoutY();
             e.consume(); // Prevent event from propagating to other nodes
+        });
+        //Used for selection
+        nodeBackground.setOnMouseClicked(e -> {
+            GuiSelect.getInstance().classSelect(e, this);
+            e.consume(); // Prevent event from propagating to other nodes
+
         });
 
         this.nodeBackground.setOnMouseDragged(e -> {
@@ -319,19 +315,6 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         for(UMLRelationship relationship : list)//Update all relationship GUI
             relationship.updateGUI();
     }
-    /**
-     * Runs after user input, removing the chosen class from the model
-     *
-     * @param input - Input class to be removed from model
-     */
-    public void updateRemove(UMLClass input){
-        UMLClass checkClass = UMLDocument.getInstance().removeClass(input.getClassName());
-        if(checkClass == null) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Unable To Remove Class Error");
-            alert.showAndWait();
-        }
-    }
 
     /**
      * Runs after user input, renaming the chosen class from the model
@@ -367,6 +350,10 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         return false;
     }
 
+    public UMLClass getParentClass(){
+        return this.parentClass;
+    }
+
     @Override
     public boolean contains(Point2D selectionPoint) {
         return false;
@@ -390,7 +377,7 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
             return;
         parentClass.setLocation(location);
     }
-    
+
     public Rectangle2D getRectBounds()
     {
         if(this.parentVBox == null)
@@ -404,5 +391,10 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
                 bounds.getHeight()
             );
         return rect;
+    }
+
+    @Override
+    public String toString(){
+        return this.getParentClass().toString();
     }
 }

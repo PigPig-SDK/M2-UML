@@ -23,6 +23,7 @@ public class GuiKeyBinds {
         addAccelerator(new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN), "Save As…");
         addAccelerator(new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN), "New");
         addAccelerator(new KeyCodeCombination(KeyCode.A, KeyCombination.CONTROL_DOWN), "Select All");
+        addAccelerator(new KeyCodeCombination(KeyCode.DELETE, KeyCombination.CONTROL_DOWN), "Delete All");
         
         Main.currentScene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
             if(GuiController.singleton == null)//Cannot execute quickbind. The menu dosn't exist.
@@ -53,6 +54,11 @@ public class GuiKeyBinds {
                 //Open file (CTRL+O)
                 case O -> {
                     GuiController.singleton.openFileMenuAction();
+                    event.consume();
+                }
+                //Delete all (CTRL+DELETE)
+                case DELETE -> {
+                    GuiSelect.getInstance().deleteAllSelected();
                     event.consume();
                 }
             }
