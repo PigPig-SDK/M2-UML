@@ -1,6 +1,8 @@
 package org.umlproject.UI;
 
 import java.io.File;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Optional;
@@ -11,6 +13,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
 import javafx.scene.Group;
 import javafx.scene.control.*;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
@@ -25,6 +28,14 @@ public class GuiController implements UMLGuiController {
     
     public static GuiController singleton;
     
+    @FXML
+    public AnchorPane consolePane;
+    @FXML
+    public AnchorPane consoleOutPane;
+    @FXML
+    public CheckMenuItem viewTerminalMenuItem;
+    @FXML
+    public TextArea consoleOut;
     @FXML
     private Group world;//'World' is where all UI objects should live.
     @FXML
@@ -57,6 +68,10 @@ public class GuiController implements UMLGuiController {
         System.out.println("Setup GUI!");
         singleton = this;
 
+        PrintStream ps = new PrintStream(new GuiConsole(consoleOut));
+        System.setOut(ps);
+        System.setErr(ps); // Optionally redirect System.err as well
+        
         //Make sure addClassButton is not set to default so that way it doesn't
         //trigger everytime enter is pressed.
         addClassButton.setDefaultButton(false);
@@ -72,6 +87,7 @@ public class GuiController implements UMLGuiController {
         GuiResizeManager.bindToSizeUpdates();
         GuiCamera.setupCamera();
         GuiKeyBinds.setupKeyBinds();
+        GuiConsole.setupConsole();
     }
     //----------------- Menu bar callbacks -----------------
     /**
@@ -286,5 +302,6 @@ public class GuiController implements UMLGuiController {
         
         
     }
+    
     
 }
