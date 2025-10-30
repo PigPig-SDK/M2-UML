@@ -37,12 +37,7 @@ public class UMLClass extends UMLDiagramElement {
      * @param className string representing class name.
      */
     public UMLClass(String className) {
-        if (className == null || className.isEmpty()) {
-            throw new IllegalArgumentException("class name cannot be null or empty");
-        }
-        this.className = className;
-        this.fields = new HashMap<>();
-        this.methods = new HashMap<>();
+        this(className, new HashMap<>(), new HashMap<>());
     }
 
     /**
@@ -55,8 +50,6 @@ public class UMLClass extends UMLDiagramElement {
         if(className == null || className.isEmpty() || fields == null || methods == null){
             throw new IllegalArgumentException("The arguments provided are invalid!");
         }
-        
-        
         this.className = className;
         this.fields = fields;
         this.methods = methods;
