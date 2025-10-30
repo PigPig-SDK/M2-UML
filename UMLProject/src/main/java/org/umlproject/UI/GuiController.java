@@ -13,6 +13,8 @@ import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
 import javafx.scene.Group;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
@@ -67,6 +69,8 @@ public class GuiController implements DocumentListner {
         menubar.setViewOrder(-100);
         console.setViewOrder(-100);
         workspaceText.setViewOrder(1000000);//To the back of the universe
+        
+        
     }
     /**
      * This is called after initialize. 
@@ -76,6 +80,9 @@ public class GuiController implements DocumentListner {
         GuiResizeManager.bindToSizeUpdates();
         GuiCamera.setupCamera();
         GuiKeyBinds.setupKeyBinds();
+        //Setup button icons.
+        applyIconsToButtons(addClassButton,"/org/umlproject/icons/new_class.png");
+        applyIconsToButtons(addRelationshipButton,"/org/umlproject/icons/new_relationship.png");
     }
     //----------------- Menu bar callbacks -----------------
     /**
@@ -322,5 +329,25 @@ public class GuiController implements DocumentListner {
     @Override
     public void onRelationshipRemove(UMLRelationship umlRelationship) {
         umlRelationship.disposeOfGuiListener();
+    }
+    
+    private void applyIconsToButtons(Button button, String iconDirectory)
+    {
+        Image icon = new Image(getClass().getResource(iconDirectory).toExternalForm());
+        button.setText("");//Clear text...
+        ImageView iconView = new ImageView(icon);
+        iconView.setFitWidth(50);
+        iconView.setFitHeight(50);
+        iconView.setPreserveRatio(true);
+        //Remove background...
+        button.setStyle(
+            "-fx-background-color: transparent;" + "-fx-border-color: transparent;"
+        );
+        //Make the icon dim when mousing over.
+        iconView.setOpacity(0.7);
+        button.setOnMouseEntered(e -> iconView.setOpacity(1.0));
+        button.setOnMouseExited(e -> iconView.setOpacity(0.7));
+        //Set graphic
+        button.setGraphic(iconView);
     }
 }
