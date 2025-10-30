@@ -320,7 +320,7 @@ public class GuiController implements DocumentListner {
         umlClass.disposeOfGuiListener();
     }
     @Override
-    public void onRelationshipRemove(UMLRelationship umlClass) {
-        umlClass.disposeOfGuiListener();
+    public void onRelationshipRemove(UMLRelationship umlRelationship) {
+        umlRelationship.disposeOfGuiListener();
     }
 }
