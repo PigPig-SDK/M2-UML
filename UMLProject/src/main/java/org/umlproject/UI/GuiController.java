@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
@@ -14,14 +16,16 @@ import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
+import javafx.util.Duration;
 import org.umlproject.RelationshipType;
 import org.umlproject.TerminalHandler;
 import org.umlproject.UMLClass;
 import org.umlproject.UMLDocument;
-import org.umlproject.UMLGuiController;
 import org.umlproject.UMLRelationship;
+import org.umlproject.DocumentListner;
+import org.umlproject.UIListener;
 
-public class GuiController implements UMLGuiController {
+public class GuiController implements DocumentListner {
     
     public static GuiController singleton;
     
@@ -53,7 +57,7 @@ public class GuiController implements UMLGuiController {
     @FXML
     private void initialize() {
         //Bind to umldocument
-        UMLDocument.guiController = this;
+        UMLDocument.documentListners.add(this);
         System.out.println("Setup GUI!");
         singleton = this;
 
@@ -270,26 +274,53 @@ public class GuiController implements UMLGuiController {
     }
     //This method will bind a guiClass listener to the new umlClass
     @Override
-    public void onClassAdded(UMLClass umlClass) {
-        if(umlClass.getLocation().getX() == 0 || umlClass.getLocation().getY() == 0)
+    public void onClassAdded(UMLClass umlClass, boolean isLoading) {
+        if(!isLoading)//The class addition is from 'newclass button'
         {
             umlClass.setLocation(GuiCamera.getScreenCenter());
         }
-        System.out.println(umlClass.getLocation());
         GuiClass guiClass = new GuiClass(world, umlClass);
         umlClass.setListener(guiClass);
     }
 
     @Override
-    public void onRelationshipAdded(UMLRelationship umlRelationship) {
+    public void onRelationshipAdded(UMLRelationship umlRelationship, boolean isLoading) {
         GuiRelationship guiRelationship = new GuiRelationship(world, umlRelationship);
         umlRelationship.setListener(guiRelationship);
     }
-
+    /**
+     * Calls to redraw all relationships.
+     */
+    private void redrawAllRelationships()
+    {
+        for(UIListener uIListener : UMLDocument.getInstance().getUIListeners())
+        {
+            if(uIListener instanceof GuiRelationship rgui)
+            {
+                UMLRelationship relationship = rgui.getRelationship();
+                if(relationship != null) rgui.update(relationship);
+            }
+        }
+    }
     @Override
-    public void redrawScreen(UMLDocument umlDocument) {
+    public void loadFile(UMLDocument umlDocument) {
         
+        //This is called 0.1 seconds later due to a GUI race condition. Really lame.
+        Timeline timeline = new Timeline(
+            new KeyFrame(Duration.seconds(0.1), e -> {
+                redrawAllRelationships();
+            })
+        );
+        timeline.setCycleCount(1);
+        timeline.play();
         
     }
-    
+    @Override
+    public void onClassRemove(UMLClass umlClass) {
+        umlClass.disposeOfGuiListener();
+    }
+    @Override
+    public void onRelationshipRemove(UMLRelationship umlClass) {
+        umlClass.disposeOfGuiListener();
+    }
 }

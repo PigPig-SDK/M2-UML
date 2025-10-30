@@ -59,7 +59,6 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
       */
     private void makeDraggable(StackPane nodeBackground) {
         nodeBackground.setOnMousePressed(e -> {
-            System.out.println("Mouse pressed on StackPane at: " + e.getSceneX() + ", " + e.getSceneY());
             this.mouseAnchorX = e.getSceneX() - nodeBackground.getLayoutX();
             this.mouseAnchorY = e.getSceneY() - nodeBackground.getLayoutY();
             e.consume(); // Prevent event from propagating to other nodes
@@ -71,10 +70,8 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         });
 
         this.nodeBackground.setOnMouseDragged(e -> {
-            //System.out.println("Mouse dragged on StackPane to: " + e.getSceneX() + ", " + e.getSceneY());
             double newX = e.getSceneX() - this.mouseAnchorX;
             double newY = e.getSceneY() - this.mouseAnchorY;
-            //System.out.println("Setting UMLClass location to: " + newX + ", " + newY);
             this.parentClass.setLocation(new Point2D(newX, newY));
             this.nodeBackground.getParent().requestLayout(); // Force layout update
             e.consume(); // Prevent event from propagating to other nodes
@@ -115,17 +112,13 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
             TextField newDummyMethod = new TextField(parentClass.findValidMethodDummySignature());
             String[] newDummyMethodAsArray = newDummyMethod.getText().split(" ");
             String dummyName = newDummyMethodAsArray[0];
-            System.out.println("dummyName: " + dummyName);
             String dummyParamTypeAsString = newDummyMethodAsArray[1];
-            System.out.println("dummyParam Type: " + dummyParamTypeAsString);
             DataType dummyParamDataType = DataType.stringToDatatype(dummyParamTypeAsString);
             String dummyParamName = newDummyMethodAsArray[2];
-            System.out.println("dummy param Name: " + dummyParamName);
             UMLParameter dummyParam = new UMLParameter(dummyParamName, dummyParamDataType, null);
             ArrayList<UMLParameter> dummyParamList = new ArrayList<>();
             dummyParamList.add(dummyParam);
             UMLMethod dummyMethod = new UMLMethod(dummyName, dummyParamList);
-            System.out.println("The method being added is: " + dummyMethod.toString());
             parentClass.addMethod(dummyMethod);
             //at this point update is called
             e.consume();

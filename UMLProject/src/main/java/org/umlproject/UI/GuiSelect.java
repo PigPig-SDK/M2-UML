@@ -14,7 +14,6 @@ import javafx.animation.AnimationTimer;
 import static org.umlproject.UI.GuiCamera.getUserInputDirection;
 import static org.umlproject.UI.GuiCamera.setCameraLocation;
 import org.umlproject.UIListener;
-import org.umlproject.UISelectable;
 
 public class GuiSelect {
 
