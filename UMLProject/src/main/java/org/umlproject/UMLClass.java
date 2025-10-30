@@ -275,7 +275,7 @@ public class UMLClass extends UMLDiagramElement {
      */
     public boolean addMethod(UMLMethod method) {
         //make sure method argument is not null and has a valid name
-        if (method == null || method.getMethodName() == null || method.getMethodName().isEmpty()) {
+        if (method == null) {
             return false;
         }
 

@@ -52,10 +52,20 @@ public class UMLDocumentTests
         // Arrange
         UMLDocument umldocument = new UMLDocument("test");
         // Act
+        umldocument.addClass("testclass1");
+        // Assert
+        assertNotNull(umldocument.removeClass("testclass1"));
+        assertNull(umldocument.getClass("testclass1"));
+    }
+    @Test
+    public void addClass_removesSpaces_success()
+    {
+        // Arrange
+        UMLDocument umldocument = new UMLDocument("test");
+        // Act
         umldocument.addClass("test class 1");
         // Assert
-        assertNotNull(umldocument.removeClass("test class 1"));
-        assertNull(umldocument.getClass("test class 1"));
+        assertNotNull(umldocument.removeClass("testclass1"));
     }
     @Test
     public void deleteClass_classDoesntExist_success()
@@ -95,13 +105,13 @@ public class UMLDocumentTests
         // Arrange
         UMLDocument umldocument = new UMLDocument("test");
         // Act
-        umldocument.addClass("test class 1");
-        umldocument.renameClass("test class 1", "test class 2");
+        umldocument.addClass("testclass1");
+        umldocument.renameClass("testclass1", "testclass2");
         // Assert
 
         //Currently non-functioning until addClass has functionality to add class to relationshipList
-        assertNull(umldocument.getClass("test class 1"));
-        assertNotNull(umldocument.getClass("test class 2"));
+        assertNull(umldocument.getClass("testclass1"));
+        assertNotNull(umldocument.getClass("testclass2"));
     }
     @Test
     public void getClass_doesntExist_success()
@@ -109,8 +119,8 @@ public class UMLDocumentTests
         // Arrange
         UMLDocument umldocument = new UMLDocument("test");
         // Act
-        UMLClass testclass1 = umldocument.addClass("test class");
-        UMLClass testclass2 = umldocument.getClass("test class");
+        UMLClass testclass1 = umldocument.addClass("testclass");
+        UMLClass testclass2 = umldocument.getClass("testclass");
         // Assert
         assertEquals(testclass1,testclass2);
         assertNull(umldocument.getClass("this class isnt real"));
