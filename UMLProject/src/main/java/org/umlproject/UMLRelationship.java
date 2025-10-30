@@ -15,19 +15,23 @@ public class UMLRelationship  extends UMLDiagramElement
     //-------------------------------- Main class -----------------------------------
     public UMLRelationship(String sourceName, String destinationName, RelationshipType relationshipType, String customNameType)
     {
+        this(sourceName, destinationName, relationshipType);
+        if (this.relationshipType == RelationshipType.OTHER) 
+        {
+            if(customNameType == null || customNameType.isEmpty()) throw new IllegalArgumentException("Custom name is required for OTHER data type");
+            
+            this.customNameType = customNameType;
+        }
+        else
+            this.customNameType = null;
+    }
+    public UMLRelationship(String sourceName, String destinationName, RelationshipType relationshipType)
+    {
         this.sourceName = sourceName;
         this.destinationName = destinationName;
         this.relationshipType = relationshipType;
-        if (this.relationshipType == RelationshipType.OTHER) {
-            if(customNameType == null || customNameType.isEmpty()){
-                throw new IllegalArgumentException("Custom name is required for OTHER data type");
-            }
-            this.customNameType = customNameType;
-        }
-        else{
-            this.customNameType = null;
-        }
     }
+    
     public String getSourceName()
     {
         return this.sourceName;
@@ -37,7 +41,9 @@ public class UMLRelationship  extends UMLDiagramElement
         return this.destinationName;
     }
     public RelationshipType getRelationshipType(){return this.relationshipType;}
+    
     public String getCustomNameType(){return this.customNameType;}
+    
     public String getRelationshipName()
     {
         if(this.relationshipType == OTHER)
