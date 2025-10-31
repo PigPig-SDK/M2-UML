@@ -28,7 +28,8 @@ public class UMLDocument
     public static final String FILEEXTENT_STRING = ".json";
     private static final String DEFAULT_FILEDIRECTORY = "Documents" + File.separator + "NewUMLDocument";
 
-    public static UMLGuiController guiController = null;
+    public static List<DocumentListner> documentListners = new ArrayList<>();
+    
     
     /**
      * Used to return all selectable objects
@@ -113,7 +114,7 @@ public class UMLDocument
         if(removeRelationships)
         {
             removeClassKeyFromRelationships(className);
-            removed.disposeOfGuiListener();
+            documentListners.forEach(o->o.onClassRemove(removed));
         }
         classSet.remove(className);
         return removed;
@@ -201,8 +202,7 @@ public class UMLDocument
         RelationshipType relationshipType = RelationshipType.stringToRelationshipType(relationshipTypeString);
         UMLRelationship relationship = new UMLRelationship(className, destinationName, relationshipType, (relationshipType == RelationshipType.OTHER) ? relationshipTypeString : null);
         relationshipList.get(className).add(relationship);
-        if(guiController != null)
-            guiController.onRelationshipAdded(relationship);
+        documentListners.forEach(o->o.onRelationshipAdded(relationship,false));
         return true;
     }
     /**
@@ -232,7 +232,7 @@ public class UMLDocument
         if(index == -1)
             return false;
         UMLRelationship relationship = relationshipList.get(className).remove(index);
-        relationship.disposeOfGuiListener();
+        documentListners.forEach(o->o.onRelationshipRemove(relationship));
         return true;
     }
 
@@ -251,7 +251,7 @@ public class UMLDocument
         ArrayList<UMLRelationship> myRelationships = relationshipList.get(className);
         for(UMLRelationship relationship : myRelationships)
         {
-            relationship.disposeOfGuiListener();
+            documentListners.forEach(o->o.onRelationshipRemove(relationship));
         }
         relationshipList.remove(className);
         //need to ensure className is removed as a destination value in all other relationships
@@ -262,7 +262,8 @@ public class UMLDocument
                 {
                     if(!relationships.get(i).getDestinationName().equals(className))
                         continue;
-                    relationships.get(i).disposeOfGuiListener();
+                    UMLRelationship relationship = relationships.get(i);
+                    documentListners.forEach(o->o.onRelationshipRemove(relationship));
                     relationships.remove(i);
                 }
             }
@@ -427,20 +428,16 @@ public class UMLDocument
      */
     private void suggestGuiControllerRedraw()
     {
-        if(guiController != null)
-        {
-            for(UMLClass umlc : classSet.values()) { 
-                guiController.onClassAdded(umlc);
-            }
-            for(ArrayList<UMLRelationship> relationshipList : relationshipList.values())
-            {
-                for(UMLRelationship umlr : relationshipList){
-                    guiController.onRelationshipAdded(umlr);
-                }
-            }
-            guiController.redrawScreen(this);
+        for(UMLClass umlc : classSet.values()) { 
+            documentListners.forEach(o-> o.onClassAdded(umlc, true));
         }
-        
+        for(ArrayList<UMLRelationship> relationshipList : relationshipList.values())
+        {
+            for(UMLRelationship umlr : relationshipList){
+                documentListners.forEach(o -> o.onRelationshipAdded(umlr, true));
+            }
+        }
+        documentListners.forEach(o -> o.loadFile(this));
     }
     /**
      * Clears out the current file.
@@ -478,8 +475,7 @@ public class UMLDocument
         classSet.put(className, umlclass);
         ArrayList<UMLRelationship> newList = new ArrayList<>();
         relationshipList.put(className, newList);
-        if(guiController != null)
-            guiController.onClassAdded(umlclass);
+        documentListners.forEach(o -> o.onClassAdded(umlclass, false));
         return umlclass;
     }
 
