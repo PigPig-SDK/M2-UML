@@ -15,6 +15,8 @@ import javafx.scene.Group;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Background;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
@@ -41,6 +43,8 @@ public class GuiController implements DocumentListner {
     private Pane viewpane;
     @FXML 
     private Text workspaceText;
+    @FXML
+    private AnchorPane consoleAnchorPane;
 
     /**  This datafield is an internal program reference to the +C clickable button in
      * the FXML document.
@@ -60,17 +64,16 @@ public class GuiController implements DocumentListner {
     private void initialize() {
         //Bind to umldocument
         UMLDocument.documentListners.add(this);
-        System.out.println("Setup GUI!");
         singleton = this;
 
         //Make sure addClassButton is not set to default so that way it doesn't
         //trigger everytime enter is pressed.
-        addClassButton.setDefaultButton(false);
-        menubar.setViewOrder(-100);
-        console.setViewOrder(-100);
-        workspaceText.setViewOrder(1000000);//To the back of the universe
+        this.addClassButton.setDefaultButton(false);
+        this.menubar.setViewOrder(-100);
+        this.console.setViewOrder(-100);
+        this.workspaceText.setViewOrder(1000000);//To the back of the universe
         
-        
+        setTerminalVisibility(false);
     }
     /**
      * This is called after initialize. 
@@ -101,6 +104,7 @@ public class GuiController implements DocumentListner {
         Optional<ButtonType> result = alert.showAndWait();
         
         if (result.isPresent() && result.get() == yesButton) {
+            saveLocationSet = false;
             GuiCamera.setCameraLocation(Point2D.ZERO);//Reset camera...
             UMLDocument.getInstance().clearFile();
         }
@@ -151,16 +155,6 @@ public class GuiController implements DocumentListner {
         Platform.exit();
     }
     @FXML
-    private void copyEditMenuAction()
-    {
-        System.out.println("Copy edit click");
-    }
-    @FXML
-    private void pasteEditMenuAction()
-    {
-        System.out.println("Paste edit click");
-    }
-    @FXML
     private void deleteEditMenuAction()
     {
         GuiSelect.getInstance().deleteAllSelected();
@@ -176,9 +170,9 @@ public class GuiController implements DocumentListner {
         GuiSelect.getInstance().resetSelect();
     }
     @FXML
-    private void aboutHelpMenuAction()
+    private void infoHelpMenuAction()
     {
-        System.out.println("about");
+        GuiHelp.showHelp();
     }
     @FXML
     private void consoleSubmit()
@@ -349,5 +343,15 @@ public class GuiController implements DocumentListner {
         button.setOnMouseExited(e -> iconView.setOpacity(0.7));
         //Set graphic
         button.setGraphic(iconView);
+    }
+    /**
+     * Used for hiding console.
+     * @param isShown : If the console should be displayed
+     */
+    public void setTerminalVisibility(boolean isShown)
+    {
+        this.console.setVisible(isShown);
+        this.console.setManaged(isShown);
+        this.consoleAnchorPane.setVisible(isShown);
     }
 }
