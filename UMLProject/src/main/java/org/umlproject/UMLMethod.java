@@ -156,12 +156,15 @@ public class UMLMethod
     @Override
     public String toString() {
         
-        String s = "(";
+        StringBuilder s = new StringBuilder();
         for (UMLParameter item : parameters) {
-            s+= item.toString() + " ";
+            s.append(" ");
+            s.append(item.toString());
+
         }
-        s += ")";
-        return String.format("%s %s", methodName, s);
+
+        String paramList = s.toString();
+        return String.format("%s%s", methodName, paramList);
     }
 
 
