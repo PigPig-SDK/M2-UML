@@ -8,6 +8,7 @@ import com.google.gson.GsonBuilder;
 import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
 import org.umlproject.UI.GuiClass;
+import org.umlproject.UI.GuiController;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -19,6 +20,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
+
+import static org.umlproject.UI.GuiController.extractGuiClasses;
+import static org.umlproject.UI.GuiController.findSafeLocation;
 
 
 public class UMLDocument
@@ -480,7 +484,7 @@ public class UMLDocument
         
         UMLClass umlclass = new UMLClass(className);
         //determine non-overlapping location for new class.
-        Point2D safeLocation = findSafeLocation(extractGuiClasses());
+        Point2D safeLocation = GuiController.findSafeLocation(GuiController.extractGuiClasses());
         umlclass.setLocation(safeLocation);
         classSet.put(className, umlclass);
         ArrayList<UMLRelationship> newList = new ArrayList<>();
@@ -535,66 +539,7 @@ public class UMLDocument
         }
     }
 
-    /**
-     * Helper method for determining an acceptable location for a newly added class. It extracts
-     * a list of GuiClass listeners from the Map of UMLClasses in the UMLDocument singleton.
-     * @return, list of GuiClasses.
-     */
-    public List<GuiClass> extractGuiClasses(){
-        Map<String, UMLClass> umlClassMap = this.getClassSet();
-        ArrayList<String> umlClassKeys = new ArrayList<>(umlClassMap.keySet());
-        List<GuiClass> guiClasses = new ArrayList<GuiClass>();
-        for(String umlClass : umlClassKeys){
-            guiClasses.add((GuiClass)umlClassMap.get(umlClass).getUIListener());
 
-        }
-        return guiClasses;
-    }
-
-    /**
-     * This method will compare a test Rectangles dimensions and location against that of every
-     * Rectangle background in each of the GuiClass objects that already exist. If there is no intersection
-     * between the test Rectangle and an existion one, then the location of the test Rectangle will be returned.
-     * @param existingClasses, list of existing GuiClasses
-     * @return, safe location for a new class box
-     */
-    public Point2D findSafeLocation(List<GuiClass> existingClasses){
-        final double NEW_CLASS_WIDTH = 250.0;
-        final double NEW_CLASS_HEIGHT = 150.0;
-        final double PADDING = 20.0;
-
-        double currentX = PADDING;
-        double currentY = PADDING;
-        final double STEP = NEW_CLASS_WIDTH + PADDING;
-
-        final int MAX_COLUMNS = 5;
-        int currentColumn = 0;
-
-        while(true){
-            Rectangle2D newRect = new Rectangle2D(currentX, currentY, NEW_CLASS_WIDTH, NEW_CLASS_HEIGHT);
-            boolean overlaps = false;
-
-            for(GuiClass existingClass : existingClasses){
-                Rectangle2D existingBounds = existingClass.getRectBounds();
-                if(existingBounds != null && newRect.intersects(existingBounds)){
-                    overlaps = true;
-                    break;
-                }
-            }
-
-            if(!overlaps){
-                return new Point2D(currentX, currentY);
-            }
-
-            currentX += STEP;
-            currentColumn++;
-            if(currentColumn >= MAX_COLUMNS){
-                currentX = PADDING;
-                currentY += STEP;
-                currentColumn = 0;
-            }
-        }
-    }
 
     @Override
     public boolean equals(Object obj) {
