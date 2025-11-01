@@ -1,0 +1,8 @@
+Welcome to the Microsoft 2 UML Editor!
+
+To create a class, click the 'add class' icon in the top left of the main viewport.
+
+To create a relationship, click the 'add relationship' icon in the top left of the main viewport.
+· In order to edit relationship types, ensure both source and destination classes are far enough apart to display the textbox.
+
+To delete a class or relationship, select it using Ctrl+Click, then press Ctrl+Delete to remove it.
