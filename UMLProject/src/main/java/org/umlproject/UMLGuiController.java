@@ -21,5 +21,6 @@ public interface UMLGuiController {
      * @param umlDocument Calls addClass() and addRelationship() on all the umlDocuments.
      */
     void redrawScreen(UMLDocument umlDocument);
+
 }
 

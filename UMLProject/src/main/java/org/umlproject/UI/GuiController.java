@@ -9,10 +9,13 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
+import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import org.umlproject.RelationshipType;
 import org.umlproject.TerminalHandler;
@@ -35,7 +38,11 @@ public class GuiController implements UMLGuiController {
     private Pane viewpane;
     @FXML 
     private Text workspaceText;
+    @FXML
+    private VBox rootVBox;
 
+    final double initialClassBoxWidthOffset = 100;
+    final double initialClassBoxHeightOffset = 100;
     /**  This datafield is an internal program reference to the +C clickable button in
      * the FXML document.
      */
@@ -57,6 +64,13 @@ public class GuiController implements UMLGuiController {
         System.out.println("Setup GUI!");
         singleton = this;
 
+        world.setLayoutX(0.0);
+        world.setLayoutY(0.0);
+        VBox.setVgrow(viewpane, Priority.ALWAYS);
+        if(rootVBox != null){
+            this.rootVBox.setAlignment(Pos.TOP_LEFT);
+        }
+
         //Make sure addClassButton is not set to default so that way it doesn't
         //trigger everytime enter is pressed.
         addClassButton.setDefaultButton(false);
@@ -72,6 +86,8 @@ public class GuiController implements UMLGuiController {
         GuiResizeManager.bindToSizeUpdates();
         GuiCamera.setupCamera();
         GuiKeyBinds.setupKeyBinds();
+        Point2D initialCameraOffset = new Point2D(initialClassBoxWidthOffset, initialClassBoxHeightOffset);
+        GuiCamera.setCameraLocation(initialCameraOffset);
     }
     //----------------- Menu bar callbacks -----------------
     /**
@@ -176,6 +192,8 @@ public class GuiController implements UMLGuiController {
         console.setText("");
     }
     //----------------- UMLGuiController Interface -----------------
+
+
 
     /** This method will listen for when +C is pushed inside gui. It then retrieves the
      * UMLDocument instance and calls addClass() with findValidDummyName() as the argument. This argument

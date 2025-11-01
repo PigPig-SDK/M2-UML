@@ -85,10 +85,8 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         });
 
         this.nodeBackground.setOnMouseDragged(e -> {
-            //System.out.println("Mouse dragged on StackPane to: " + e.getSceneX() + ", " + e.getSceneY());
             double newX = e.getSceneX() - this.mouseAnchorX;
             double newY = e.getSceneY() - this.mouseAnchorY;
-            //System.out.println("Setting UMLClass location to: " + newX + ", " + newY);
             this.parentClass.setLocation(new Point2D(newX, newY));
             this.nodeBackground.getParent().requestLayout(); // Force layout update
             e.consume(); // Prevent event from propagating to other nodes
@@ -96,7 +94,7 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
     }
 
     /**
-     * Helper function that lets the user rename the class name TextField
+     * Helper function that lets the user rename the class name TextField.
      * @param classNameField, TextField object representing the current class name/
      */
     private void makeClassNameRenamable(TextField classNameField){
@@ -116,11 +114,9 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
 
 
     /**
-     * Helper method that sets the action on the addMethod button. This method will
-     * create a method TextField with the argument: Visibility ReturnType MethodName Type param1 Type param2 ...
-     * indicating that the user should enter a visibility followed by a space, then a return type followed by a space
-     * and so on to generate a method signature. Set an action on the TextField to make it create the new method
-     * if the input is valid and the signature isn't a duplicate.
+     * Helper method that sets the action on the addMethod button. The action will
+     * generate a dummy method with a unique name, for example: method1 INT PARAM1,
+     * and then insert it into the UMLDocument singleton.
      * @param addMethod, button to set an action on.
      */
     public void addMethodButtonClickable(Button addMethod){
@@ -147,9 +143,10 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
     }
 
     /**
-     * Method updates underlying UMLMethod whenever the method TextField is updated with an acceptable
+     * Method sets actions on the methodRow TextField that
+     * updates underlying UMLMethod whenever the method TextField is updated with an acceptable
      * value.
-     * @param methodRow
+     * @param methodRow, HBox containing a delete button and a TextField representing a method signature.
      */
     public void linkTextFieldToMethod(HBox methodRow){
         if(methodRow == null || methodRow.getChildren().isEmpty()){
@@ -173,8 +170,9 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
     }
 
     /**
-     * Hellper method for the linkTextFieldToMethod function. It will generate a new UMLMethod object
-     * front TextField input after Enter is pressed or the user clicks somewhere else in the UML editor.
+     * Helper method for the linkTextFieldToMethod function. It will generate a new UMLMethod object
+     * from TextField input after Enter is pressed or the user clicks somewhere else in the UML editor taking
+     * focus away from the TextField.
      * @param newMethodTextField, TextField containing the Method data.
      * @param methodRow, HBox used to hold the TextField and a delete button.
      */
@@ -229,7 +227,7 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
     }
 
     /**Helper method for the Update function.
-     * Needs to cycle through the hashmap of method arrayLists and construct HBoxes each consisting of
+     * Needs to cycle through the hashmap of method arrayLists and construct HBoxes. Each HBox will consist of
      * a delete button and a TextField matching the method signature. These HBoxes are then inserted into
      * methodTextFields VBox and the method returns.
      * @param methods, hashmap of UMLMethod array lists.
@@ -391,7 +389,6 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         Collections.sort(keyList);
         String[] sortedKeys = keyList.toArray(new String[0]);
         //test print
-        //System.out.println("length of sorted keys is: " + sortedKeys.length);
         for (String sortedKey : sortedKeys) {
             HBox fieldRow = new HBox(10);
             UMLDataField nextField = UMLDataFields.get(sortedKey);
@@ -416,7 +413,7 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
     }
     /**
      * update is responsible for redrawing the classBox every time a data field or method is added or removed.
-     * It will recreate the class box with the update nodes in a fashion reminiscent of the GuiClass constructor.
+     * It will recreate the class box with the updated nodes in a fashion reminiscent of the GuiClass constructor.
      * @param desiredElement, the UMLClass object that the GuiClass instance listens to.
      */
     @Override
@@ -495,6 +492,8 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         updateAllRelationships(desiredElement);
         setSelected(isSelected);//Update our selected state
     }
+
+
 
     /**This method will update the location of the gui element representing
      *the umlClass. That is, any calls to this function will visibly move
@@ -595,6 +594,12 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         parentClass.setLocation(location);
     }
 
+    /**
+     * Helper method to prevent classbox overlap when making a new method.
+     * It is used to construct a rectangle representing an existing GuiClass Object.
+     *
+     * @return, rectangle representing the dimensions of an existing GuiClass object.
+     */
     public Rectangle2D getRectBounds()
     {
         if(this.parentVBox == null)
@@ -602,7 +607,7 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         Bounds bounds = this.parentVBox.getBoundsInLocal();
         Point2D offset = getLocation();
         Rectangle2D rect = new Rectangle2D(
-                bounds.getMinX() + offset.getX(), 
+                bounds.getMinX() + offset.getX(),
                 bounds.getMinY() + offset.getY(), 
                 bounds.getWidth(), 
                 bounds.getHeight()
