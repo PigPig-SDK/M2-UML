@@ -3,6 +3,8 @@ package org.umlproject.UI;
 import java.io.File;
 import java.util.*;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
@@ -11,19 +13,25 @@ import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Background;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import javafx.util.Duration;
 import org.umlproject.RelationshipType;
 import org.umlproject.TerminalHandler;
 import org.umlproject.UMLClass;
 import org.umlproject.UMLDocument;
-import org.umlproject.UMLGuiController;
 import org.umlproject.UMLRelationship;
+import org.umlproject.DocumentListner;
+import org.umlproject.UIListener;
 
-public class GuiController implements UMLGuiController {
+public class GuiController implements DocumentListner {
     
     public static GuiController singleton;
     
@@ -37,6 +45,8 @@ public class GuiController implements UMLGuiController {
     private Pane viewpane;
     @FXML 
     private Text workspaceText;
+    @FXML
+    private AnchorPane consoleAnchorPane;
     @FXML
     private VBox rootVBox;
 
@@ -59,13 +69,13 @@ public class GuiController implements UMLGuiController {
     @FXML
     private void initialize() {
         //Bind to umldocument
-        UMLDocument.guiController = this;
-        System.out.println("Setup GUI!");
+        UMLDocument.documentListners.add(this);
+
         singleton = this;
 
         world.setLayoutX(0.0);
         world.setLayoutY(0.0);
-        
+
         VBox.setVgrow(viewpane, Priority.ALWAYS);
         if(rootVBox != null){
             this.rootVBox.setAlignment(Pos.TOP_LEFT);
@@ -74,10 +84,12 @@ public class GuiController implements UMLGuiController {
 
         //Make sure addClassButton is not set to default so that way it doesn't
         //trigger everytime enter is pressed.
-        addClassButton.setDefaultButton(false);
-        menubar.setViewOrder(-100);
-        console.setViewOrder(-100);
-        workspaceText.setViewOrder(1000000);//To the back of the universe
+        this.addClassButton.setDefaultButton(false);
+        this.menubar.setViewOrder(-100);
+        this.console.setViewOrder(-100);
+        this.workspaceText.setViewOrder(1000000);//To the back of the universe
+
+        setTerminalVisibility(false);
     }
     /**
      * This is called after initialize. 
@@ -87,6 +99,9 @@ public class GuiController implements UMLGuiController {
         GuiResizeManager.bindToSizeUpdates();
         GuiCamera.setupCamera();
         GuiKeyBinds.setupKeyBinds();
+        //Setup button icons.
+        applyIconsToButtons(addClassButton,"/org/umlproject/icons/new_class.png");
+        applyIconsToButtons(addRelationshipButton,"/org/umlproject/icons/new_relationship.png");
         Point2D initialCameraOffset = new Point2D(initialClassBoxWidthOffset, initialClassBoxHeightOffset);
         GuiCamera.setCameraLocation(initialCameraOffset);
     }
@@ -107,6 +122,7 @@ public class GuiController implements UMLGuiController {
         Optional<ButtonType> result = alert.showAndWait();
         
         if (result.isPresent() && result.get() == yesButton) {
+            saveLocationSet = false;
             GuiCamera.setCameraLocation(Point2D.ZERO);//Reset camera...
             UMLDocument.getInstance().clearFile();
         }
@@ -157,16 +173,6 @@ public class GuiController implements UMLGuiController {
         Platform.exit();
     }
     @FXML
-    private void copyEditMenuAction()
-    {
-        System.out.println("Copy edit click");
-    }
-    @FXML
-    private void pasteEditMenuAction()
-    {
-        System.out.println("Paste edit click");
-    }
-    @FXML
     private void deleteEditMenuAction()
     {
         GuiSelect.getInstance().deleteAllSelected();
@@ -182,9 +188,9 @@ public class GuiController implements UMLGuiController {
         GuiSelect.getInstance().resetSelect();
     }
     @FXML
-    private void aboutHelpMenuAction()
+    private void infoHelpMenuAction()
     {
-        System.out.println("about");
+        GuiHelp.showHelp();
     }
     @FXML
     private void consoleSubmit()
@@ -289,12 +295,11 @@ public class GuiController implements UMLGuiController {
     }
     //This method will bind a guiClass listener to the new umlClass
     @Override
-    public void onClassAdded(UMLClass umlClass) {
-        if(umlClass.getLocation().getX() == 0 || umlClass.getLocation().getY() == 0)
+    public void onClassAdded(UMLClass umlClass, boolean isLoading) {
+        if(!isLoading)//The class addition is from 'newclass button'
         {
             umlClass.setLocation(GuiCamera.getScreenCenter());
         }
-        System.out.println(umlClass.getLocation());
         GuiClass guiClass = new GuiClass(world, umlClass);
         umlClass.setListener(guiClass);
     }
@@ -356,15 +361,73 @@ public class GuiController implements UMLGuiController {
     }
 
     @Override
-    public void onRelationshipAdded(UMLRelationship umlRelationship) {
+    public void onRelationshipAdded(UMLRelationship umlRelationship, boolean isLoading) {
         GuiRelationship guiRelationship = new GuiRelationship(world, umlRelationship);
         umlRelationship.setListener(guiRelationship);
     }
-
-    @Override
-    public void redrawScreen(UMLDocument umlDocument) {
-        
-        
+    /**
+     * Calls to redraw all relationships.
+     */
+    private void redrawAllRelationships()
+    {
+        for(UIListener uIListener : UMLDocument.getInstance().getUIListeners())
+        {
+            if(uIListener instanceof GuiRelationship rgui)
+            {
+                UMLRelationship relationship = rgui.getRelationship();
+                if(relationship != null) rgui.update(relationship);
+            }
+        }
     }
-    
+    @Override
+    public void loadFile(UMLDocument umlDocument) {
+        
+        //This is called 0.1 seconds later due to a GUI race condition. Really lame.
+        Timeline timeline = new Timeline(
+            new KeyFrame(Duration.seconds(0.1), e -> {
+                redrawAllRelationships();
+            })
+        );
+        timeline.setCycleCount(1);
+        timeline.play();
+
+    }
+    @Override
+    public void onClassRemove(UMLClass umlClass) {
+        umlClass.disposeOfGuiListener();
+    }
+    @Override
+    public void onRelationshipRemove(UMLRelationship umlRelationship) {
+        umlRelationship.disposeOfGuiListener();
+    }
+
+    private void applyIconsToButtons(Button button, String iconDirectory)
+    {
+        Image icon = new Image(getClass().getResource(iconDirectory).toExternalForm());
+        button.setText("");//Clear text...
+        ImageView iconView = new ImageView(icon);
+        iconView.setFitWidth(50);
+        iconView.setFitHeight(50);
+        iconView.setPreserveRatio(true);
+        //Remove background...
+        button.setStyle(
+            "-fx-background-color: transparent;" + "-fx-border-color: transparent;"
+        );
+        //Make the icon dim when mousing over.
+        iconView.setOpacity(0.7);
+        button.setOnMouseEntered(e -> iconView.setOpacity(1.0));
+        button.setOnMouseExited(e -> iconView.setOpacity(0.7));
+        //Set graphic
+        button.setGraphic(iconView);
+    }
+    /**
+     * Used for hiding console.
+     * @param isShown : If the console should be displayed
+     */
+    public void setTerminalVisibility(boolean isShown)
+    {
+        this.console.setVisible(isShown);
+        this.console.setManaged(isShown);
+        this.consoleAnchorPane.setVisible(isShown);
+    }
 }

@@ -62,8 +62,6 @@
         </Menu>
         <Menu mnemonicParsing="false" text="Edit">
           <items>
-            <MenuItem mnemonicParsing="false" onAction="#copyEditMenuAction" text="Copy" />
-            <MenuItem mnemonicParsing="false" onAction="#pasteEditMenuAction" text="Paste" />
             <MenuItem mnemonicParsing="false" onAction="#deleteEditMenuAction" text="Delete" />
             <SeparatorMenuItem mnemonicParsing="false" />
             <MenuItem mnemonicParsing="false" onAction="#selectAllEditMenuAction" text="Select All" />
@@ -72,7 +70,7 @@
         </Menu>
         <Menu mnemonicParsing="false" text="Help">
           <items>
-            <MenuItem mnemonicParsing="false" onAction="#aboutHelpMenuAction" text="About " />
+            <MenuItem mnemonicParsing="false" onAction="#infoHelpMenuAction" text="Info" />
           </items>
         </Menu>
       </menus>
@@ -81,9 +79,9 @@
          <children>
             <Group fx:id="world">
                <children>
-                  <Text fx:id="workspaceText" fill="#534b3e" layoutX="34.0" layoutY="214.0" strokeType="OUTSIDE" strokeWidth="0.0" text="WORKSPACE" textAlignment="CENTER">
+                  <Text fx:id="workspaceText" fill="#534b3e" layoutY="214.0" strokeType="OUTSIDE" strokeWidth="0.0" text="WORKSPACE" textAlignment="CENTER" wrappingWidth="640.28173828125">
                      <font>
-                        <Font name="Bodoni MT" size="93.0" />
+                        <Font name="Monospaced Regular" size="93.0" />
                      </font>
                   </Text>
                </children></Group>
@@ -91,7 +89,7 @@
             <Button fx:id="addClassButton" defaultButton="true" focusTraversable="false" layoutX="14.0" layoutY="14.0" mnemonicParsing="false" onAction="#addClassButtonPushed" prefHeight="50.0" prefWidth="50.0" text="+C" textAlignment="CENTER" />
          </children>
       </Pane>
-      <AnchorPane prefHeight="29.0" prefWidth="666.0" style="-fx-background-color: #2D2D30;" stylesheets="@stylesheet.css">
+      <AnchorPane fx:id="consoleAnchorPane" prefHeight="29.0" prefWidth="666.0" style="-fx-background-color: #33312d;">
          <children>
             <TextField fx:id="console" focusTraversable="false" layoutY="3.0" onAction="#consoleSubmit" prefHeight="29.0" prefWidth="640.0" promptText="Console Input" stylesheets="@stylesheet.css" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
          </children>

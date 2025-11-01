@@ -12,10 +12,10 @@ public class GuiResizeManager
     {
         Main.mainStage.widthProperty().addListener((obs, oldVal, newVal) -> {GuiResizeManager.sizeUpdate(); });
         Main.mainStage.heightProperty().addListener((obs, oldVal, newVal) -> {GuiResizeManager.sizeUpdate(); });
+        sizeUpdate();//Call once to update locations of stuff.
     }
     public static void sizeUpdate()
     {
-        System.out.println("Resizse");
         Pane p = GuiController.singleton.getViewPane();
         p.setPrefHeight(Main.mainStage.getHeight());
         p.setPrefWidth(Main.mainStage.getWidth());
