@@ -20,6 +20,7 @@ import java.util.*;
 import java.util.Set;
 import javafx.geometry.Bounds;
 import javafx.geometry.Rectangle2D;
+import org.umlproject.UMLClass;
 
 public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositional {
     private Group world;
