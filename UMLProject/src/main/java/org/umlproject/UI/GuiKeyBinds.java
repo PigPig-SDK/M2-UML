@@ -30,7 +30,7 @@ public class GuiKeyBinds {
         Main.currentScene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
             if(GuiController.singleton == null)//Cannot execute quickbind. The menu dosn't exist.
                 return;
-            //All commands must have CTRL held down!
+          
             switch(event.getCode())
             {
                 case F2->
