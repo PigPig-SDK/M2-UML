@@ -5,6 +5,8 @@ import javafx.geometry.Point2D;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -18,6 +20,7 @@ import java.util.*;
 import java.util.Set;
 import javafx.geometry.Bounds;
 import javafx.geometry.Rectangle2D;
+import org.umlproject.UMLClass;
 
 public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositional {
     private Group world;
@@ -45,6 +48,17 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         this.world = world;
         world.setFocusTraversable(true);//lets world request focus.
         this.parentClass = parentClass;
+        this.world.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
+            // Only request focus if the click is NOT on the GuiClass element itself.
+            // This prevents interference with dragging and selecting the class box.
+            if (e.getTarget() == this.world) {
+                this.world.requestFocus();
+                e.consume();
+            }
+        });
+        // --- END OF BLOCK ---
+
+
         update(parentClass);
     }
 
@@ -61,11 +75,12 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         nodeBackground.setOnMousePressed(e -> {
             this.mouseAnchorX = e.getSceneX() - nodeBackground.getLayoutX();
             this.mouseAnchorY = e.getSceneY() - nodeBackground.getLayoutY();
+            nodeBackground.requestFocus();
             e.consume(); // Prevent event from propagating to other nodes
         });
         //Used for selection
         nodeBackground.setOnMouseClicked(e -> {
-            GuiSelect.getInstance().selectUiElement(e, this);
+            GuiSelect.getInstance().clickUiElement(e, this);
             e.consume(); // Prevent event from propagating to other nodes
         });
 
@@ -77,9 +92,8 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
             e.consume(); // Prevent event from propagating to other nodes
         });
     }
-
     /**
-     * Helper function that lets the user rename the class name TextField
+     * Helper function that lets the user rename the class name TextField.
      * @param classNameField, TextField object representing the current class name/
      */
     private void makeClassNameRenamable(TextField classNameField){
@@ -96,14 +110,10 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         });
     }
 
-
-
     /**
-     * Helper method that sets the action on the addMethod button. This method will
-     * create a method TextField with the argument: Visibility ReturnType MethodName Type param1 Type param2 ...
-     * indicating that the user should enter a visibility followed by a space, then a return type followed by a space
-     * and so on to generate a method signature. Set an action on the TextField to make it create the new method
-     * if the input is valid and the signature isn't a duplicate.
+     * Helper method that sets the action on the addMethod button. The action will
+     * generate a dummy method with a unique name, for example: method1 INT PARAM1,
+     * and then insert it into the UMLDocument singleton.
      * @param addMethod, button to set an action on.
      */
     public void addMethodButtonClickable(Button addMethod){
@@ -126,9 +136,10 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
     }
 
     /**
-     * Method updates underlying UMLMethod whenever the method TextField is updated with an acceptable
+     * Method sets actions on the methodRow TextField that
+     * updates underlying UMLMethod whenever the method TextField is updated with an acceptable
      * value.
-     * @param methodRow
+     * @param methodRow, HBox containing a delete button and a TextField representing a method signature.
      */
     public void linkTextFieldToMethod(HBox methodRow){
         if(methodRow == null || methodRow.getChildren().isEmpty()){
@@ -140,62 +151,76 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         //Array must have an odd length.
         TextField newMethodTextField = (TextField)methodRow.getChildren().get(1);
         newMethodTextField.setOnAction(e ->{
-            String[] newMethodAsStringArray = newMethodTextField.getText().split(" ");
-            if(newMethodAsStringArray.length % 2 == 0){
-                System.out.println("Invalid number of arguments!");
-                //reset text
-                newMethodTextField.setText(newMethodTextField.getText());
-                return;
-            }
-            String newMethodName = newMethodAsStringArray[0];
-            //if there is a list of parameters, construct an arrayList of UMLParameter objects
-            ArrayList<UMLParameter> params = new ArrayList<UMLParameter>();
-            for(int i = 1; i < newMethodAsStringArray.length; i+=2){
-                String type = newMethodAsStringArray[i];
-                String customTypeName;
-                DataType paramType = DataType.stringToDatatype(type);
-                if(paramType == DataType.OTHER){
-                    customTypeName = type;
-                }
-                else{
-                    customTypeName = null;
-                }
-                String paramName = newMethodAsStringArray[i + 1];
-                UMLParameter newParam = new UMLParameter(paramName, paramType, customTypeName);
-                params.add(newParam);
-            }
-            UMLMethod newMethod = new UMLMethod(newMethodName, params);
-            //attempt to add method
-            boolean methodAddSuccessful = parentClass.addMethod(newMethod);
-            if(!methodAddSuccessful){
-                System.out.println("Method is a duplicate or invalid!");
-                newMethodTextField.setText((String)newMethodTextField.getUserData());
-                return;
-            }
-            // delete old method if new input can be successfully added to UMLClass, set user data of newMethodTextField
-            //to be the most recently entered string. Then set userData of methodRow to be the new method name and index
-            //in ArrayList.
-            String oldName;
-            int oldIndex;
-            String[] oldUserDataAsString = (String[])methodRow.getUserData();
-            System.out.println("length of old data " + oldUserDataAsString.length);
-            if(oldUserDataAsString != null && oldUserDataAsString.length == 2 && !(oldUserDataAsString[0].isEmpty() ||
-                    oldUserDataAsString[1].isEmpty())) {
-                //old method name is 0th index, index of old method to remove is 1st index.
-                oldName = oldUserDataAsString[0];
-                oldIndex = Integer.parseInt(oldUserDataAsString[1]);
-                System.out.println("the old user data is: " + oldName + ", " + oldIndex);
-                parentClass.removeMethod(oldName, oldIndex);
-            }
-            //return focus to world
+            handleMethodUpdate(newMethodTextField, methodRow);
             e.consume();
-            world.requestFocus();
         });
+        newMethodTextField.focusedProperty().addListener((obs, oldVal, newVal) ->{
+            if(!newVal) {
+                handleMethodUpdate(newMethodTextField, methodRow);
+            }
+        });
+        world.requestFocus();
+    }
 
+    /**
+     * Helper method for the linkTextFieldToMethod function. It will generate a new UMLMethod object
+     * from TextField input after Enter is pressed or the user clicks somewhere else in the UML editor taking
+     * focus away from the TextField.
+     * @param newMethodTextField, TextField containing the Method data.
+     * @param methodRow, HBox used to hold the TextField and a delete button.
+     */
+    public void handleMethodUpdate(TextField newMethodTextField, HBox methodRow){
+        String[] newMethodAsStringArray = newMethodTextField.getText().split(" ");
+        if(newMethodAsStringArray.length % 2 == 0){
+            System.out.println("Invalid number of arguments!");
+            //reset text
+            newMethodTextField.setText(newMethodTextField.getText());
+            return;
+        }
+        String newMethodName = newMethodAsStringArray[0];
+        //if there is a list of parameters, construct an arrayList of UMLParameter objects
+        ArrayList<UMLParameter> params = new ArrayList<UMLParameter>();
+        for(int i = 1; i < newMethodAsStringArray.length; i+=2){
+            String type = newMethodAsStringArray[i];
+            String customTypeName;
+            DataType paramType = DataType.stringToDatatype(type);
+            if(paramType == DataType.OTHER){
+                customTypeName = type;
+            }
+            else{
+                customTypeName = null;
+            }
+            String paramName = newMethodAsStringArray[i + 1];
+            UMLParameter newParam = new UMLParameter(paramName, paramType, customTypeName);
+            params.add(newParam);
+        }
+        UMLMethod newMethod = new UMLMethod(newMethodName, params);
+        //attempt to add method
+        boolean methodAddSuccessful = parentClass.addMethod(newMethod);
+        if(!methodAddSuccessful){
+            System.out.println("Method is a duplicate or invalid!");
+            newMethodTextField.setText((String)newMethodTextField.getUserData());
+            return;
+        }
+        // delete old method if new input can be successfully added to UMLClass, set user data of newMethodTextField
+        //to be the most recently entered string. Then set userData of methodRow to be the new method name and index
+        //in ArrayList.
+        String oldName;
+        int oldIndex;
+        String[] oldUserDataAsString = (String[])methodRow.getUserData();
+        System.out.println("length of old data " + oldUserDataAsString.length);
+        if(oldUserDataAsString != null && oldUserDataAsString.length == 2 && !(oldUserDataAsString[0].isEmpty() ||
+                oldUserDataAsString[1].isEmpty())) {
+            //old method name is 0th index, index of old method to remove is 1st index.
+            oldName = oldUserDataAsString[0];
+            oldIndex = Integer.parseInt(oldUserDataAsString[1]);
+            System.out.println("the old user data is: " + oldName + ", " + oldIndex);
+            parentClass.removeMethod(oldName, oldIndex);
+        }
     }
 
     /**Helper method for the Update function.
-     * Needs to cycle through the hashmap of method arrayLists and construct HBoxes each consisting of
+     * Needs to cycle through the hashmap of method arrayLists and construct HBoxes. Each HBox will consist of
      * a delete button and a TextField matching the method signature. These HBoxes are then inserted into
      * methodTextFields VBox and the method returns.
      * @param methods, hashmap of UMLMethod array lists.
@@ -243,7 +268,7 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         addDataField.setOnAction(e -> {
             String dummyFieldSignature = parentClass.findValidFieldDummySignature();
             System.out.println("the dummyFieldSignature is: " + dummyFieldSignature);
-            TextField newField = new TextField(dummyFieldSignature);
+
             //create a new UMLDataFIeld object and insert into parent class
             String[] dummyFieldAsArray = dummyFieldSignature.split(" ");
             Visibility dummyVisibility = Visibility.stringVisibility(dummyFieldAsArray[0]);
@@ -258,7 +283,8 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
 
     /**Sets an action on the data field TextFields of class box, so that when a new string representing
      * a datafield is entered, it will be parsed and transformed into a UMLDataField and then inserted
-     * into the parent class.
+     * into the parent class. Responds to either pressing Enter within the textbox or clicking away from the
+     * text box, i.e. taking focus away.
      * @param fieldRow, the HBox containing the old DataField attributes as a string.
      */
     public void linkTextFieldToDataField(HBox fieldRow){
@@ -268,51 +294,74 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         }
         TextField newField = (TextField)fieldRow.getChildren().get(1);
         newField.setOnAction(e ->{
-            String dataFieldText = newField.getText();
-            String[] textAsArray = dataFieldText.split(" ");
-            if(textAsArray.length != 3){
-
-                System.out.println("Invalid number of arguments! Enter Visibility DataType Name.");
-                newField.setText("Visibility Type Name");
-                return;
-            }
-            
-            String visibilityString = textAsArray[0];
-            String typeString = textAsArray[1];
-            String dataFieldName = textAsArray[2];
-
-            //make sure the user entered a valid Visibility value.
-            if(!Visibility.acceptableVisibility(visibilityString)){
-                System.out.println("Invalid visibility type! Enter: Public, Private, Protected, or Package.");
-                newField.setText("Visibility Type Name");
-                return;
-            }
-            Visibility visibility = Visibility.stringVisibility(visibilityString);
-            DataType dataType = DataType.stringToDatatype(typeString);
-            
-            UMLDataField dataField = new UMLDataField(dataFieldName, (dataType == DataType.OTHER)? textAsArray[1] : null , dataType, visibility);
-            //attempt to add the field
-            boolean success = this.parentClass.addField(dataField);
-            if(success){
-                //Must delete old data field from UMLDocument
-                UMLDataField oldField = (UMLDataField)fieldRow.getUserData();
-                if(oldField != null) {
-                    this.parentClass.removeField(oldField.getName());
-                }
-                //set newField and fieldRow user data to their new values.
-                newField.setUserData(newField.getText());
-                fieldRow.setUserData(dataField);
-                System.out.println("Field was added and class box will be updated!");
-                //update is automatically called by UMLClass to redraw class box.
-            }
-            else{
-                //if addField fails we need to reset the TextField to have its previous text.
-                System.out.println("Datafield is a duplicate or invalid!");
-                newField.setText(newField.getText());
-            }
-            world.requestFocus();
+            handleDataFieldUpdate(newField, fieldRow);
+            e.consume();
         });
-        //Platform.runLater(() -> world.requestFocus());
+        //make it so when the textField loses focus, then the handleDataFieldUpdate() method is called aswell
+        //with whatever text the user has typed in.
+        //newVal and oldVal are booleans representing the focus of the textField. When clicked, oldVal == false
+        //newVal == true. When click away from TextField, their values switch. Thus when TextField loses focus,
+        //handleDataFieldUpdate() is called.
+        newField.focusedProperty().addListener((obs, oldVal, newVal)->{
+            if(!newVal){
+                handleDataFieldUpdate(newField, fieldRow);
+            }
+        });
+        world.requestFocus();
+
+    }
+
+    /**Helper method for linkTextFieldToDataField method. This will be the setOnAction and focusedProperty().addListener()
+     * method that gets assigned to a given TextField. The method will parse the contents of the TextField and
+     * attempt to create a new UMLDataField object and insert it into the UMLDocument. If it succeeds, then the old
+     * UMLDataField object will be deleted, and the corresponding TextBox will be deleted from the dataFieldsVBox
+     * @param newField, TextField representing new user input.
+     * @param fieldRow, Hbox which will hold the newField and delete button aswell as a copy of the UMLDataField for
+     *                  future deletion.
+     */
+    public void handleDataFieldUpdate(TextField newField, HBox fieldRow){
+        String dataFieldText = newField.getText();
+        String[] textAsArray = dataFieldText.split(" ");
+        if(textAsArray.length != 3){
+
+            System.out.println("Invalid number of arguments! Enter Visibility DataType Name.");
+            newField.setText("Visibility Type Name");
+            return;
+        }
+
+        String visibilityString = textAsArray[0];
+        String typeString = textAsArray[1];
+        String dataFieldName = textAsArray[2];
+
+        //make sure the user entered a valid Visibility value.
+        if(!Visibility.acceptableVisibility(visibilityString)){
+            System.out.println("Invalid visibility type! Enter: Public, Private, Protected, or Package.");
+            newField.setText("Visibility Type Name");
+            return;
+        }
+        Visibility visibility = Visibility.stringVisibility(visibilityString);
+        DataType dataType = DataType.stringToDatatype(typeString);
+
+        UMLDataField dataField = new UMLDataField(dataFieldName, (dataType == DataType.OTHER)? textAsArray[1] : null , dataType, visibility);
+        //attempt to add the field
+        boolean success = this.parentClass.addField(dataField);
+        if(success){
+            //Must delete old data field from UMLDocument
+            UMLDataField oldField = (UMLDataField)fieldRow.getUserData();
+            if(oldField != null) {
+                this.parentClass.removeField(oldField.getName());
+            }
+            //set newField and fieldRow user data to their new values.
+            newField.setUserData(newField.getText());
+            fieldRow.setUserData(dataField);
+            System.out.println("Field was added and class box will be updated!");
+            //update is automatically called by UMLClass to redraw class box.
+        }
+        else{
+            //if addField fails we need to reset the TextField to have its previous text.
+            System.out.println("Datafield is a duplicate or invalid!");
+            newField.setText(newField.getText());
+        }
 
     }
 
@@ -333,7 +382,6 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         Collections.sort(keyList);
         String[] sortedKeys = keyList.toArray(new String[0]);
         //test print
-        //System.out.println("length of sorted keys is: " + sortedKeys.length);
         for (String sortedKey : sortedKeys) {
             HBox fieldRow = new HBox(10);
             UMLDataField nextField = UMLDataFields.get(sortedKey);
@@ -358,7 +406,7 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
     }
     /**
      * update is responsible for redrawing the classBox every time a data field or method is added or removed.
-     * It will recreate the class box with the update nodes in a fashion reminiscent of the GuiClass constructor.
+     * It will recreate the class box with the updated nodes in a fashion reminiscent of the GuiClass constructor.
      * @param desiredElement, the UMLClass object that the GuiClass instance listens to.
      */
     @Override
@@ -377,12 +425,15 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         this.nodeBackground = new StackPane();
         this.nodeBackground.setManaged(false);
 
+
         //create a rectangle background for the class.
         Rectangle background = new Rectangle();
         background.setFill(Color.MINTCREAM);
         background.setStroke(Color.BLACK);
         background.widthProperty().bind(this.parentVBox.widthProperty().add(20));
         background.heightProperty().bind(this.parentVBox.heightProperty().add(20));
+        //Strip TextFields of focus if we click on rectangle.
+
         this.background = background;
         //Create modifiable className and put into VBox
         TextField classNameField = new TextField(parentClass.getClassName());
@@ -434,40 +485,9 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         updateAllRelationships(desiredElement);
         setSelected(isSelected);//Update our selected state
     }
-    /**
-     * Helper function for update() that converts a hashMap of data fields into a String[] array
-     * where each entry represents a data field according to the TextField format: Visibility Type Name.
-     * @param UMLDataFields, hashmap of datafields
-     * @return ArrayList<String> representing each of the dataFields
-     */
-    public ArrayList<String> convertDataFieldsToStrings(HashMap<String, UMLDataField> UMLDataFields){
-        if(UMLDataFields == null){
-            System.out.println("invalidInput");
-            return null;
-        }
-        ArrayList<String> fieldsAsStrings = new ArrayList<String>();
-        Set<String> dataFieldKeys = UMLDataFields.keySet();
-        List<String> keyList = new ArrayList<>(dataFieldKeys);
-        Collections.sort(keyList);
-        String[] sortedKeys = keyList.toArray(new String[0]);
-        StringBuilder nextText = new StringBuilder();
-        for(int i = 0; i < sortedKeys.length; i++){
-            UMLDataField nextField = UMLDataFields.get(sortedKeys[i]);
-            nextText.append(nextField.getVisibility());
-            nextText.append(" ");
-            if(nextField.getDataType() == DataType.OTHER){
-                nextText.append(nextField.getCustomNameType());
-            }
-            else{
-                nextText.append(nextField.getDataType());
-            }
-            nextText.append(" ");
-            nextText.append(nextField.getName());
-            fieldsAsStrings.add(nextText.toString());
-            nextText = new StringBuilder();
-        }
-        return fieldsAsStrings;
-    }
+
+
+
     /**This method will update the location of the gui element representing
      *the umlClass. That is, any calls to this function will visibly move
      *the class box on the screen.
@@ -567,20 +587,28 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         parentClass.setLocation(location);
     }
 
+    /**
+     * Helper method to prevent classbox overlap when making a new method.
+     * It is used to construct a rectangle representing an existing GuiClass Object.
+     *
+     * @return, rectangle representing the dimensions of an existing GuiClass object.
+     */
     public Rectangle2D getRectBounds()
     {
         if(this.parentVBox == null)
             return null;
         Bounds bounds = this.parentVBox.getBoundsInLocal();
+
         Point2D offset = getLocation();
         Rectangle2D rect = new Rectangle2D(
-                bounds.getMinX() + offset.getX(), 
+                bounds.getMinX() + offset.getX(),
                 bounds.getMinY() + offset.getY(), 
                 bounds.getWidth(), 
                 bounds.getHeight()
             );
         return rect;
     }
+
 
     @Override
     public String toString(){

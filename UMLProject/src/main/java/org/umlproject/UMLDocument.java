@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -29,7 +30,7 @@ public class UMLDocument
     private static final String DEFAULT_FILEDIRECTORY = "Documents" + File.separator + "NewUMLDocument";
 
     public static List<DocumentListner> documentListners = new ArrayList<>();
-    
+
     
     /**
      * Used to return all selectable objects
@@ -428,7 +429,7 @@ public class UMLDocument
      */
     private void suggestGuiControllerRedraw()
     {
-        for(UMLClass umlc : classSet.values()) { 
+        for(UMLClass umlc : classSet.values()) {
             documentListners.forEach(o-> o.onClassAdded(umlc, true));
         }
         for(ArrayList<UMLRelationship> relationshipList : relationshipList.values())
@@ -472,6 +473,7 @@ public class UMLDocument
         if (classSet.containsKey(className)) return null;
         
         UMLClass umlclass = new UMLClass(className);
+
         classSet.put(className, umlclass);
         ArrayList<UMLRelationship> newList = new ArrayList<>();
         relationshipList.put(className, newList);
