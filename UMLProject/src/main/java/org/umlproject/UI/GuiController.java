@@ -90,6 +90,13 @@ public class GuiController implements DocumentListner {
 
         setTerminalVisibility(false);
     }
+
+
+    @FXML
+    private void aboutHelpMenuAction() {
+        AboutWindow.showAbout();
+    }
+
     /**
      * This is called after initialize. 
      * This is because some things are not fully initialized during the call of 'initialize'.

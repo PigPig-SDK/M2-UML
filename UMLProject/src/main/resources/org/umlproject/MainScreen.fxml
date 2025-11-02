@@ -68,11 +68,12 @@
             <MenuItem mnemonicParsing="false" onAction="#unSelectAllEditMenuAction" text="Unselect All" />
           </items>
         </Menu>
-        <Menu mnemonicParsing="false" text="Help">
-          <items>
-            <MenuItem mnemonicParsing="false" onAction="#infoHelpMenuAction" text="Info" />
-          </items>
-        </Menu>
+          <Menu mnemonicParsing="false" text="Help">
+              <items>
+                  <MenuItem mnemonicParsing="false" onAction="#infoHelpMenuAction" text="Info" />
+                  <MenuItem mnemonicParsing="false" onAction="#aboutHelpMenuAction" text="About UML Editor" />
+              </items>
+          </Menu>
       </menus>
     </MenuBar>
       <Pane fx:id="viewpane" prefHeight="398.0" prefWidth="640.0" style="-fx-background-color: #33312d;">
