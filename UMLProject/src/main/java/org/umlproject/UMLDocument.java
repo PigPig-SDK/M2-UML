@@ -480,13 +480,21 @@ public class UMLDocument
         if (classSet.containsKey(className)) return null;
         
         UMLClass umlclass = new UMLClass(className);
-        //determine non-overlapping location for new class.
-        Point2D safeLocation = GuiController.findSafeLocation(GuiController.extractGuiClasses());
-        umlclass.setLocation(safeLocation);
+
+        System.out.println("list of all current class locations");
+        List<String> classes = new ArrayList<String>(this.getClassSet().keySet());
+        for(int i = 0; i < classes.size(); i++){
+            System.out.println(classSet.get(classes.get(i)).getLocation());
+        }
+
         classSet.put(className, umlclass);
         ArrayList<UMLRelationship> newList = new ArrayList<>();
         relationshipList.put(className, newList);
         documentListners.forEach(o -> o.onClassAdded(umlclass, false));
+        //determine non-overlapping location for new class.
+        Point2D safeLocation = GuiController.findSafeLocation(GuiController.extractGuiClasses());
+
+        umlclass.setLocation(safeLocation);
         return umlclass;
     }
 

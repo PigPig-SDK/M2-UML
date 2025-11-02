@@ -298,7 +298,9 @@ public class GuiController implements DocumentListner {
     public void onClassAdded(UMLClass umlClass, boolean isLoading) {
         if(!isLoading)//The class addition is from 'newclass button'
         {
+
             umlClass.setLocation(GuiCamera.getScreenCenter());
+
         }
         GuiClass guiClass = new GuiClass(world, umlClass);
         umlClass.setListener(guiClass);
@@ -330,6 +332,12 @@ public class GuiController implements DocumentListner {
         final double NEW_CLASS_WIDTH = 250.0;
         final double NEW_CLASS_HEIGHT = 150.0;
         final double PADDING = 20.0;
+        /**
+        System.out.println("current locations: ");
+        for(int i = 0; i < existingClasses.size(); i++){
+            System.out.println(existingClasses.get(i).getParentClass().getLocation());
+        }
+         */
 
         double currentX = PADDING;
         double currentY = PADDING;
@@ -348,6 +356,7 @@ public class GuiController implements DocumentListner {
                 }
             }
             if(!overlaps){
+                System.out.println("rectangle placed at: " + currentX + ", " + currentY);
                 return new Point2D(currentX, currentY);
             }
             currentX += STEP;

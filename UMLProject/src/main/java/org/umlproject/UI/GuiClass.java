@@ -600,7 +600,10 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         if(this.parentVBox == null)
             return null;
         Bounds bounds = this.parentVBox.getBoundsInLocal();
+
         Point2D offset = getLocation();
+        System.out.println("x: " + bounds.getMinX() + offset.getX());
+        System.out.println("y: " + bounds.getMinY() + offset.getY());
         Rectangle2D rect = new Rectangle2D(
                 bounds.getMinX() + offset.getX(),
                 bounds.getMinY() + offset.getY(), 
@@ -609,6 +612,7 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
             );
         return rect;
     }
+
 
     @Override
     public String toString(){
