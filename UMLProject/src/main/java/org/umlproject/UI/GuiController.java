@@ -339,8 +339,9 @@ public class GuiController implements DocumentListner {
         }
          */
 
-        double currentX = PADDING;
-        double currentY = PADDING;
+        Point2D currentScreenScenter = GuiCamera.getScreenCenter();
+        double currentX = currentScreenScenter.getX();
+        double currentY = currentScreenScenter.getY();
         final double STEP = NEW_CLASS_WIDTH + PADDING;
         final int MAX_COLUMNS = 5;
         int currentColumn = 0;
