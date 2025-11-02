@@ -1,6 +1,5 @@
 package org.umlproject.UI;
 
-import javafx.animation.AnimationTimer;
 import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
