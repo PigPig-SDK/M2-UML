@@ -101,8 +101,6 @@ public class GuiController implements DocumentListner {
         //Setup button icons.
         applyIconsToButtons(addClassButton,"/org/umlproject/icons/new_class.png");
         applyIconsToButtons(addRelationshipButton,"/org/umlproject/icons/new_relationship.png");
-        Point2D initialCameraOffset = new Point2D(initialClassBoxWidthOffset, initialClassBoxHeightOffset);
-        GuiCamera.setCameraLocation(initialCameraOffset);
     }
     //----------------- Menu bar callbacks -----------------
     /**
@@ -296,6 +294,11 @@ public class GuiController implements DocumentListner {
         }
         GuiClass guiClass = new GuiClass(world, umlClass);
         umlClass.setListener(guiClass);
+        if(!isLoading)//Calls this late so items are setup...
+        {
+            GuiSelect.getInstance().resetSelect();//Clear our selection...
+            GuiSelect.getInstance().selectUiElement(guiClass);
+        }
     }
     /**
      * Helper method for determining an acceptable location for a newly added class. It extracts

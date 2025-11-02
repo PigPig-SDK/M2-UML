@@ -79,7 +79,7 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         });
         //Used for selection
         nodeBackground.setOnMouseClicked(e -> {
-            GuiSelect.getInstance().selectUiElement(e, this);
+            GuiSelect.getInstance().clickUiElement(e, this);
             e.consume(); // Prevent event from propagating to other nodes
         });
 
@@ -602,8 +602,6 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         Bounds bounds = this.parentVBox.getBoundsInLocal();
 
         Point2D offset = getLocation();
-        System.out.println("x: " + bounds.getMinX() + offset.getX());
-        System.out.println("y: " + bounds.getMinY() + offset.getY());
         Rectangle2D rect = new Rectangle2D(
                 bounds.getMinX() + offset.getX(),
                 bounds.getMinY() + offset.getY(), 
