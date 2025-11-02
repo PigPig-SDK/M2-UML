@@ -5,10 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import javafx.geometry.Point2D;
-import javafx.geometry.Rectangle2D;
-import org.umlproject.UI.GuiClass;
-import org.umlproject.UI.GuiController;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -20,9 +16,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
-
-import static org.umlproject.UI.GuiController.extractGuiClasses;
-import static org.umlproject.UI.GuiController.findSafeLocation;
 
 
 public class UMLDocument
@@ -481,20 +474,10 @@ public class UMLDocument
         
         UMLClass umlclass = new UMLClass(className);
 
-        System.out.println("list of all current class locations");
-        List<String> classes = new ArrayList<String>(this.getClassSet().keySet());
-        for(int i = 0; i < classes.size(); i++){
-            System.out.println(classSet.get(classes.get(i)).getLocation());
-        }
-
         classSet.put(className, umlclass);
         ArrayList<UMLRelationship> newList = new ArrayList<>();
         relationshipList.put(className, newList);
         documentListners.forEach(o -> o.onClassAdded(umlclass, false));
-        //determine non-overlapping location for new class.
-        Point2D safeLocation = GuiController.findSafeLocation(GuiController.extractGuiClasses());
-
-        umlclass.setLocation(safeLocation);
         return umlclass;
     }
 

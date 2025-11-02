@@ -16,7 +16,6 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.Background;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
@@ -213,15 +212,9 @@ public class GuiController implements DocumentListner {
         UMLClass checkClass = doc.addClass(doc.findValidDummyName());
         if(checkClass == null) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Dummy Creation Error");
+            alert.setTitle("Class Creation Error");
             alert.showAndWait();
-            System.out.println("Class add failed");
         }
-        else{
-            System.out.println("Class was added");
-        }
-        System.out.println("+C was called");
-
     }
     /**
      * This method listens for the +R button inside the main GUI.
@@ -298,9 +291,8 @@ public class GuiController implements DocumentListner {
     public void onClassAdded(UMLClass umlClass, boolean isLoading) {
         if(!isLoading)//The class addition is from 'newclass button'
         {
-
-            umlClass.setLocation(GuiCamera.getScreenCenter());
-
+            Point2D safeLocation = findSafeLocation(GuiCamera.getScreenCenter(), extractGuiClasses());
+            umlClass.setLocation(safeLocation);
         }
         GuiClass guiClass = new GuiClass(world, umlClass);
         umlClass.setListener(guiClass);
@@ -328,20 +320,13 @@ public class GuiController implements DocumentListner {
      * @param existingClasses, list of existing GuiClasses
      * @return, safe location for a new class box
      */
-    public static Point2D findSafeLocation(List<GuiClass> existingClasses){
+    public static Point2D findSafeLocation(Point2D location, List<GuiClass> existingClasses){
         final double NEW_CLASS_WIDTH = 250.0;
         final double NEW_CLASS_HEIGHT = 150.0;
         final double PADDING = 20.0;
-        /**
-        System.out.println("current locations: ");
-        for(int i = 0; i < existingClasses.size(); i++){
-            System.out.println(existingClasses.get(i).getParentClass().getLocation());
-        }
-         */
 
-        Point2D currentScreenScenter = GuiCamera.getScreenCenter();
-        double currentX = currentScreenScenter.getX();
-        double currentY = currentScreenScenter.getY();
+        double currentX = location.getX();
+        double currentY = location.getY();
         final double STEP = NEW_CLASS_WIDTH + PADDING;
         final int MAX_COLUMNS = 5;
         int currentColumn = 0;
@@ -350,6 +335,8 @@ public class GuiController implements DocumentListner {
             Rectangle2D newRect = new Rectangle2D(currentX, currentY, NEW_CLASS_WIDTH, NEW_CLASS_HEIGHT);
             boolean overlaps = false;
             for(GuiClass existingClass : existingClasses){
+                if(existingClass == null)
+                    continue;
                 Rectangle2D existingBounds = existingClass.getRectBounds();
                 if(existingBounds != null && newRect.intersects(existingBounds)){
                     overlaps = true;
@@ -357,7 +344,6 @@ public class GuiController implements DocumentListner {
                 }
             }
             if(!overlaps){
-                System.out.println("rectangle placed at: " + currentX + ", " + currentY);
                 return new Point2D(currentX, currentY);
             }
             currentX += STEP;
