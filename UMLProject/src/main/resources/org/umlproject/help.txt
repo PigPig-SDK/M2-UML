@@ -1,5 +1,3 @@
-Welcome to the Microsoft 2 UML Editor!
-
 To create a class, click the 'add class' icon in the top left of the main viewport.
 
 To create a relationship, click the 'add relationship' icon in the top left of the main viewport.

@@ -92,7 +92,6 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
             e.consume(); // Prevent event from propagating to other nodes
         });
     }
-
     /**
      * Helper function that lets the user rename the class name TextField.
      * @param classNameField, TextField object representing the current class name/
@@ -110,8 +109,6 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
             world.requestFocus();
         });
     }
-
-
 
     /**
      * Helper method that sets the action on the addMethod button. The action will

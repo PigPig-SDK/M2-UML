@@ -70,7 +70,7 @@
         </Menu>
           <Menu mnemonicParsing="false" text="Help">
               <items>
-                  <MenuItem mnemonicParsing="false" onAction="#infoHelpMenuAction" text="Info" />
+                  <MenuItem mnemonicParsing="false" onAction="#infoHelpMenuAction" text="Help" />
                   <MenuItem mnemonicParsing="false" onAction="#aboutHelpMenuAction" text="About UML Editor" />
               </items>
           </Menu>

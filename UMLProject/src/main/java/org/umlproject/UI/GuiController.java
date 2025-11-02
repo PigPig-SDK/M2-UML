@@ -93,7 +93,7 @@ public class GuiController implements DocumentListner {
 
 
     @FXML
-    private void aboutHelpMenuAction() {
+    public void aboutHelpMenuAction() {
         AboutWindow.showAbout();
     }
 
@@ -192,7 +192,7 @@ public class GuiController implements DocumentListner {
         GuiSelect.getInstance().resetSelect();
     }
     @FXML
-    private void infoHelpMenuAction()
+    public void infoHelpMenuAction()
     {
         GuiHelp.showHelp();
     }

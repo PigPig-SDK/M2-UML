@@ -24,11 +24,26 @@ public class GuiKeyBinds {
         addAccelerator(new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN), "New");
         addAccelerator(new KeyCodeCombination(KeyCode.A, KeyCombination.CONTROL_DOWN), "Select All");
         addAccelerator(new KeyCodeCombination(KeyCode.DELETE, KeyCombination.CONTROL_DOWN), "Delete");
+        addAccelerator(new KeyCodeCombination(KeyCode.F1), "Help");
+        addAccelerator(new KeyCodeCombination(KeyCode.F2), "About UML Editor");
         
         Main.currentScene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
             if(GuiController.singleton == null)//Cannot execute quickbind. The menu dosn't exist.
                 return;
             //All commands must have CTRL held down!
+            switch(event.getCode())
+            {
+                case F2->
+                {
+                    GuiController.singleton.aboutHelpMenuAction();
+                }
+                case F1->
+                {
+                    GuiController.singleton.infoHelpMenuAction();
+                }
+            }
+            
+            
             if (!event.isControlDown())
                 return;
             
