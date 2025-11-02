@@ -8,6 +8,7 @@ import javafx.scene.input.KeyEvent;
 import static javafx.scene.input.MouseButton.MIDDLE;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
 import org.umlproject.Main;
 
 public class GuiCamera {
@@ -99,7 +100,6 @@ public class GuiCamera {
         Main.currentScene.setOnMouseDragged(event -> {
             double currentX = event.getScreenX();
             double currentY = event.getScreenY();
-
             switch (event.getButton()) {
                 case MIDDLE:
                 case PRIMARY:
@@ -123,16 +123,17 @@ public class GuiCamera {
     }
     public static Point2D getScreenCenter()
     {
-        Pane pain = GuiController.singleton.getViewPane();
+        Pane view = GuiController.singleton.getViewPane();
+        Group world = GuiController.singleton.getWorld();
+
+        double centerX = view.getWidth() / 2;
+        double centerY = view.getHeight() / 2;
         
-        
-        double dWidth = pain.getWidth()/2;
-        double dHeight = pain.getHeight()/2;
-        
-        dWidth -= camLocation.getX();
-        dHeight -= camLocation.getY();
-        
-        return new Point2D(dWidth,dHeight);
+        Point2D sceneCenter = view.localToScene(centerX, centerY);
+
+        Point2D worldCenter = world.sceneToLocal(sceneCenter);
+
+        return worldCenter;
     }
     public static void setupCamera()
     {
