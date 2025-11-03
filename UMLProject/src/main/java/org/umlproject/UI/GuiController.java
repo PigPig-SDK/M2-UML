@@ -95,7 +95,7 @@ public class GuiController implements DocumentListner {
 
     @FXML
     public void aboutHelpMenuAction() {
-        AboutWindow.showAbout();
+        GuiAboutWindow.showAbout();
     }
 
     /**
