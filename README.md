@@ -1,6 +1,25 @@
 # Welcome to the Microsoft2 UML Editor
 **Team Members:** Adam, Aidan, Keetyn, Michelle, Sean, Ty Greene
-# Basic commands
+
+# Downloading the program (No compilation required)
+1. **Install Java Development Kit (JDK) (Specifically Java 25)**  
+   Download and install the latest JDK from [Oracle Java Downloads](https://www.oracle.com/java/technologies/downloads/).
+2. **Download the executable**  
+   [2.0 Release](https://www.oracle.com/java/technologies/downloads/)
+
+   Enjoy!
+
+# Compiling the program 
+1. **Install Java Development Kit (JDK)**  
+   Download and install the latest JDK from [Oracle Java Downloads](https://www.oracle.com/java/technologies/downloads/).
+2. **Clone the Repository**  
+3. **Build the Project**  
+In the cloned repository, open your terminal and run  
+`./mvnw clean package`  
+Alternatively, if you only want to compile and run the project  
+Execute `compilenrun.sh`
+
+# Terminal commands
 > **Note:** `_` represents a blank space.  
 > Items in quotation marks, e.g., `'item'`, indicate runtime identifiers.
 
@@ -15,27 +34,3 @@
 | `save <'file directory',_>` | Saves the current UML document to disk. |
 | `quit` | Exits the UML editor application. |
 
-# Compiling & Running the program
-1. **Install Java Development Kit (JDK)**  
-   Download and install the latest JDK from [Oracle Java Downloads](https://www.oracle.com/java/technologies/downloads/).
-2. **Clone the Repository**  
-3. **Build the Project**  
-In the cloned repository, navigate to the 'UMLProject' directory and open the terminal  
-Run the following command on your terminal.
-
-| Operating System | Command |
-|-----------------|---------------------|
-| Windows         | `.\mvnw package`     |
-| Mac / Linux     | `./mvnw package`     |
-
-6. **Navigate to the 'Target' Sub-directory**
-```bash
-cd target
-```
-7. **Run the application**
-```bash
-java -jar UMLProject-1.0-SNAPSHOT.jar
-```
-8.**Verify that this process didn’t totally blow your socks off.**
-
-Success! You should have compiled the app and successfully opened it in your terminal

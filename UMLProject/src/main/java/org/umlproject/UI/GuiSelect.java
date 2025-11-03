@@ -11,8 +11,6 @@ import org.umlproject.UMLRelationship;
 import java.util.ArrayList;
 import java.util.Optional;
 import javafx.animation.AnimationTimer;
-import static org.umlproject.UI.GuiCamera.getUserInputDirection;
-import static org.umlproject.UI.GuiCamera.setCameraLocation;
 import org.umlproject.UIListener;
 
 public class GuiSelect {

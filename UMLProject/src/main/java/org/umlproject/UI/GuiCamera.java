@@ -8,7 +8,6 @@ import javafx.scene.input.KeyEvent;
 import static javafx.scene.input.MouseButton.MIDDLE;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Pane;
-import javafx.scene.paint.Color;
 import org.umlproject.Main;
 
 public class GuiCamera {
@@ -17,7 +16,7 @@ public class GuiCamera {
     private static final int ARROWKEY_SPEED = 4500;
     private static boolean up, down, left, right;
     private static final double ZOOM_SCALE_AMMOUNT = 0.005f;
-    private static final double ZOOM_SCALE_MIN = 0.1f;
+    private static final double ZOOM_SCALE_MIN = 0.5f;
     private static final double ZOOM_SCALE_MAX = 3f;
 
     private static long lastTime = 0;
@@ -58,7 +57,6 @@ public class GuiCamera {
         
         Point2D after = world.sceneToLocal(event.getSceneX(), event.getSceneY());//Get realitive.
         Point2D delta =  after.subtract(before);
-        //System.out.println("delta : " + delta.getX() + " | " + delta.getY());
         setCameraLocation(new Point2D(world.getTranslateX() + delta.getX() * newZoom, world.getTranslateY() + delta.getY() * newZoom));
         cameraZoom = newZoom;
     }
