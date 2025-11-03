@@ -29,10 +29,7 @@ public class UMLDataField {
      * @param customNameType of UMLDataFIeld
      */
     public UMLDataField(String name, String customNameType){
-        this.visibility = Visibility.PRIVATE;
-        this.dataType = DataType.OTHER;
-        this.name = name;
-        this.customNameType = customNameType;
+        this(name, customNameType, DataType.OTHER, Visibility.PRIVATE);
     }
     /**
      * This constructor is the holy trinity of UMLDataField... because customNameType may or may not be used.
@@ -45,7 +42,16 @@ public class UMLDataField {
         this.visibility = visibility;
         this.dataType = dataType;
         this.name = name;
-        if(dataType.equals(DataType.OTHER)) this.customNameType = customNameType;
+        if(dataType.equals(DataType.OTHER) && customNameType == null){
+            System.out.println("customNameType cannot be null for DataType == OTHER");
+            throw new IllegalArgumentException();
+        }
+        else if(dataType.equals(DataType.OTHER)){
+            this.customNameType = customNameType;
+        }
+        else{
+            this.customNameType = null;
+        }
     }
     
     /**
@@ -56,16 +62,7 @@ public class UMLDataField {
      * @param dataType of UMLDataField
      */
     public UMLDataField(String name, DataType dataType){
-        this.visibility = Visibility.PRIVATE;
-        this.name = name;
-        this.dataType = dataType;
-        if(this.dataType == DataType.OTHER){
-
-            //throw exception  since dataType == OTHER. This allows caller to
-            //request a user specified name as the data type.
-            throw new IllegalArgumentException("Custom type name is required for OTHER data type");
-
-        }
+        this(name, null, dataType, Visibility.PRIVATE);
     }
 
     /**
@@ -125,6 +122,14 @@ public class UMLDataField {
         if(name == null || name.isEmpty())
             return;
         this.name = name;
+    }
+
+    /**
+     * getter to return customNameType
+     * @return String representing the custom name.
+     */
+    public String getCustomNameType(){
+        return this.customNameType;
     }
 
     /**setter to reset the customNameType ONLY if dataType == OTHER, otherwises prints message

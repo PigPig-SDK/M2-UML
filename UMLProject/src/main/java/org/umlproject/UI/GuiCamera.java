@@ -1,0 +1,151 @@
+package org.umlproject.UI;
+
+import javafx.animation.AnimationTimer;
+import javafx.geometry.Point2D;
+import javafx.scene.Group;
+import javafx.scene.control.TextInputControl;
+import javafx.scene.input.KeyEvent;
+import static javafx.scene.input.MouseButton.MIDDLE;
+import javafx.scene.input.ScrollEvent;
+import javafx.scene.layout.Pane;
+import org.umlproject.Main;
+
+public class GuiCamera {
+    private static Point2D camLocation = new Point2D(0,0);
+    private static double cameraZoom = 1;
+    private static final int ARROWKEY_SPEED = 4500;
+    private static boolean up, down, left, right;
+    private static final double ZOOM_SCALE_AMMOUNT = 0.005f;
+    private static final double ZOOM_SCALE_MIN = 0.5f;
+    private static final double ZOOM_SCALE_MAX = 3f;
+
+    private static long lastTime = 0;
+    
+    private static double startDragX = 0;
+    private static double startDragY = 0;
+    
+    public static void setCameraLocation(Point2D location)
+    {
+        Group world = GuiController.singleton.getWorld();
+        camLocation = location;
+        world.setTranslateX(camLocation.getX());
+        world.setTranslateY(camLocation.getY());
+    }
+    public static Point2D getUserInputDirection(double deltaTime)
+    {
+        double x = 0;
+        double y = 0;
+
+        double speedCalc = ARROWKEY_SPEED / Math.max(cameraZoom,5);
+        
+        if (left && !right)  x = speedCalc * deltaTime;
+        else if (right && !left) x = -speedCalc * deltaTime;
+
+        if (up && !down) y = speedCalc * deltaTime;
+        else if (down && !up) y = -speedCalc * deltaTime;
+
+        return new Point2D(x, y);
+    }
+    private static void setZoom(double newZoom, ScrollEvent event) {
+        if (newZoom < ZOOM_SCALE_MIN) newZoom = ZOOM_SCALE_MIN;
+        if (newZoom > ZOOM_SCALE_MAX) newZoom = ZOOM_SCALE_MAX;
+        Group world = GuiController.singleton.getWorld();
+        Point2D before = world.sceneToLocal(event.getSceneX(), event.getSceneY());//Get og realitive
+        
+        world.setScaleX(newZoom);
+        world.setScaleY(newZoom);
+        
+        Point2D after = world.sceneToLocal(event.getSceneX(), event.getSceneY());//Get realitive.
+        Point2D delta =  after.subtract(before);
+        setCameraLocation(new Point2D(world.getTranslateX() + delta.getX() * newZoom, world.getTranslateY() + delta.getY() * newZoom));
+        cameraZoom = newZoom;
+    }
+    private static void manageCameraInput()
+    {
+        if(Main.currentScene == null)
+            return;
+        //Key down
+        Main.currentScene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+            if (event.isControlDown())
+                return;
+            
+            switch (event.getCode()) {
+                case UP, W -> {up = true;event.consume();}
+                case DOWN, S -> {down = true;event.consume();}
+                case LEFT, A -> {left = true;event.consume();}
+                case RIGHT, D -> {right = true;event.consume();}
+            }
+        });
+        //Key up
+        Main.currentScene.addEventHandler(KeyEvent.KEY_RELEASED, event -> {
+            switch (event.getCode()) {
+                case UP, W -> {up = false;event.consume();}
+                case DOWN, S -> {down = false;event.consume();}
+                case LEFT, A -> {left = false;event.consume();}
+                case RIGHT, D -> {right = false;event.consume();}
+            }
+        });
+        //Mouse zoom
+        Main.currentScene.setOnScroll(event ->{
+            double zoomAmmount = event.getDeltaY();
+            
+            if(zoomAmmount == 0)
+                return;
+            setZoom(cameraZoom + zoomAmmount * ZOOM_SCALE_AMMOUNT, event);
+        });
+        
+        //Logic to drag the camera around
+        Main.currentScene.setOnMouseDragged(event -> {
+            double currentX = event.getScreenX();
+            double currentY = event.getScreenY();
+            switch (event.getButton()) {
+                case MIDDLE:
+                case PRIMARY:
+                    Point2D offset = new Point2D(currentX - startDragX, currentY - startDragY);
+                    setCameraLocation(camLocation.add(offset));
+                    break;
+                default:
+                    break;
+            }
+            startDragX = currentX;
+            startDragY = currentY; 
+        });
+        //Clicking into the void deselects any textbox...
+        Main.currentScene.setOnMousePressed(event -> {
+            //Reset our current drag distance.
+            startDragX = event.getScreenX();
+            startDragY = event.getScreenY(); 
+            //We click onto a type of textbox, do not remove selection.
+            if (!(event.getTarget() instanceof TextInputControl)) GuiController.singleton.getViewPane().requestFocus();
+        });
+    }
+    public static Point2D getScreenCenter()
+    {
+        Pane view = GuiController.singleton.getViewPane();
+        Group world = GuiController.singleton.getWorld();
+
+        double centerX = view.getWidth() / 2;
+        double centerY = view.getHeight() / 2;
+        
+        Point2D sceneCenter = view.localToScene(centerX, centerY);
+
+        Point2D worldCenter = world.sceneToLocal(sceneCenter);
+
+        return worldCenter;
+    }
+    public static void setupCamera()
+    {
+        
+        AnimationTimer cameraTimer = new AnimationTimer() {
+            @Override
+            public void handle(long now){
+                double deltaTime = (now - lastTime) / 1000000000.0;
+                lastTime = now;
+                //Now push the camera based on the input.
+                setCameraLocation(camLocation.add(getUserInputDirection(deltaTime)));
+            }
+        };
+        manageCameraInput();//Update input
+        cameraTimer.start();
+    }
+}

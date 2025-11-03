@@ -1,5 +1,9 @@
 package com.unittests;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
@@ -48,10 +52,20 @@ public class UMLDocumentTests
         // Arrange
         UMLDocument umldocument = new UMLDocument("test");
         // Act
+        umldocument.addClass("testclass1");
+        // Assert
+        assertNotNull(umldocument.removeClass("testclass1"));
+        assertNull(umldocument.getClass("testclass1"));
+    }
+    @Test
+    public void addClass_removesSpaces_success()
+    {
+        // Arrange
+        UMLDocument umldocument = new UMLDocument("test");
+        // Act
         umldocument.addClass("test class 1");
         // Assert
-        assertNotNull(umldocument.removeClass("test class 1"));
-        assertNull(umldocument.getClass("test class 1"));
+        assertNotNull(umldocument.removeClass("testclass1"));
     }
     @Test
     public void deleteClass_classDoesntExist_success()
@@ -91,13 +105,13 @@ public class UMLDocumentTests
         // Arrange
         UMLDocument umldocument = new UMLDocument("test");
         // Act
-        umldocument.addClass("test class 1");
-        umldocument.renameClass("test class 1", "test class 2");
+        umldocument.addClass("testclass1");
+        umldocument.renameClass("testclass1", "testclass2");
         // Assert
 
         //Currently non-functioning until addClass has functionality to add class to relationshipList
-        assertNull(umldocument.getClass("test class 1"));
-        assertNotNull(umldocument.getClass("test class 2"));
+        assertNull(umldocument.getClass("testclass1"));
+        assertNotNull(umldocument.getClass("testclass2"));
     }
     @Test
     public void getClass_doesntExist_success()
@@ -105,8 +119,8 @@ public class UMLDocumentTests
         // Arrange
         UMLDocument umldocument = new UMLDocument("test");
         // Act
-        UMLClass testclass1 = umldocument.addClass("test class");
-        UMLClass testclass2 = umldocument.getClass("test class");
+        UMLClass testclass1 = umldocument.addClass("testclass");
+        UMLClass testclass2 = umldocument.getClass("testclass");
         // Assert
         assertEquals(testclass1,testclass2);
         assertNull(umldocument.getClass("this class isnt real"));
@@ -115,12 +129,12 @@ public class UMLDocumentTests
     public void addRelationship_nonExisting_success()
     {
         // Arrange
-        String fileString = "test.json";
+        String fileString = "test";
         UMLDocument umldocument = new UMLDocument(fileString);
         umldocument.addClass("test");
         umldocument.addClass("endpoint");
         // Act
-        umldocument.addRelationship("test", "endpoint");
+        umldocument.addRelationship("test", "endpoint", "aggregation");
         // Assert
         assertTrue(umldocument.hasRelationship("test","endpoint"));
     }
@@ -134,8 +148,8 @@ public class UMLDocumentTests
         umldocument.addClass("b");
         umldocument.addClass("c");
         // Act
-        umldocument.addRelationship("a", "b");
-        umldocument.addRelationship("a", "c");
+        umldocument.addRelationship("a", "b", "aggregation");
+        umldocument.addRelationship("a", "c", "aggregation");
         // Assert
         assertTrue(umldocument.hasRelationship("a","b"));
         assertTrue(umldocument.hasRelationship("a","c"));
@@ -153,8 +167,8 @@ public class UMLDocumentTests
         umldocument.addClass("b");
         umldocument.addClass("c");
         // Act
-        umldocument.addRelationship("a", "b");
-        umldocument.addRelationship("a", "c");
+        umldocument.addRelationship("a", "b", "aggregation");
+        umldocument.addRelationship("a", "c", "aggregation");
         // Assert
         assertEquals(2,umldocument.getAllRelationships("a").size());
 
@@ -171,14 +185,14 @@ public class UMLDocumentTests
     public void getAllRelationships_multiple_success()
     {
         // Arrange
-        String fileString = "test.json";
+        String fileString = "test";
         UMLDocument umldocument = new UMLDocument(fileString);
         umldocument.addClass("a");
         umldocument.addClass("b");
         umldocument.addClass("c");
         // Act
-        umldocument.addRelationship("a", "b");
-        umldocument.addRelationship("a", "c");
+        umldocument.addRelationship("a", "b", "aggregation");
+        umldocument.addRelationship("a", "c", "aggregation");
         // Assert
         assertEquals(2,umldocument.getAllRelationships("a").size());
     }
@@ -192,8 +206,8 @@ public class UMLDocumentTests
         umldocument.addClass("b");
         umldocument.addClass("c");
         // Act
-        umldocument.addRelationship("a", "b");
-        umldocument.addRelationship("a", "c");
+        umldocument.addRelationship("a", "b", "aggregation");
+        umldocument.addRelationship("a", "c", "aggregation");
         // Assert
         assertEquals(2,umldocument.getAllRelationships("a").size());
         assertTrue(umldocument.removeClassKeyFromRelationships("a"));
@@ -203,14 +217,14 @@ public class UMLDocumentTests
     public void addRelationship_duplicate_failure()
     {
         // Arrange
-        String fileString = "test.json";
+        String fileString = "test";
         UMLDocument umldocument = new UMLDocument(fileString);
         umldocument.addClass("a");
         umldocument.addClass("b");
         umldocument.addClass("c");
         // Act/Assert
-        assertTrue(umldocument.addRelationship("a", "b"));
-        assertFalse(umldocument.addRelationship("a", "b"));
+        assertTrue(umldocument.addRelationship("a", "b", "aggregation"));
+        assertFalse(umldocument.addRelationship("a", "b", "aggregation"));
         assertEquals(1,umldocument.getAllRelationships("a").size());
     }
        @Test 
@@ -230,13 +244,36 @@ public class UMLDocumentTests
         assertNotNull(umldocument2.getAllRelationships("a"));
         assertEquals(umldocument, umldocument2);
     }
-        @Test 
-        public void isFileLocationValid_Success()
+    @Test 
+    public void isFileLocationValid_IsValid_Success()
     {
         // Arrange
         String fileString = "test";
         UMLDocument umldocument = new UMLDocument(fileString);
-        // Act/Assert
+        // Act
+        umldocument.save();
+        // Assert
         assertTrue(umldocument.isFileLocationValid());
+    }
+    @Test 
+    public void isFileLocationValid_FileNotValid_False()
+    {
+        // Arrange
+        String fileString = "noFileCalledThisExists";
+        UMLDocument umldocument = new UMLDocument(fileString);
+        // Act
+        // Assert
+        assertFalse(umldocument.isFileLocationValid());
+    }
+    @AfterEach
+    public void killAnnoyingFiles() {
+        //God i hate these files. Die.
+        Path file1 = Paths.get("ello.json");
+        Path file2 = Paths.get("test.json");
+        try{
+            Files.deleteIfExists(file1);
+            Files.deleteIfExists(file2);
+        }
+        catch(Exception e){}
     }
 }

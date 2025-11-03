@@ -1,16 +1,37 @@
 package org.umlproject;
 
 import java.util.Objects;
+import javafx.geometry.Point2D;
+import javafx.geometry.Rectangle2D;
+import static org.umlproject.RelationshipType.OTHER;
 
-public class UMLRelationship 
+public class UMLRelationship  extends UMLDiagramElement
 {
     private String sourceName;
     private String destinationName;
-    public UMLRelationship(String sourceName, String destinationName)
+    private RelationshipType relationshipType;
+    private String customNameType;
+    
+    //-------------------------------- Main class -----------------------------------
+    public UMLRelationship(String sourceName, String destinationName, RelationshipType relationshipType, String customNameType)
+    {
+        this(sourceName, destinationName, relationshipType);
+        if (this.relationshipType == RelationshipType.OTHER) 
+        {
+            if(customNameType == null || customNameType.isEmpty()) throw new IllegalArgumentException("Custom name is required for OTHER data type");
+            
+            this.customNameType = customNameType;
+        }
+        else
+            this.customNameType = null;
+    }
+    public UMLRelationship(String sourceName, String destinationName, RelationshipType relationshipType)
     {
         this.sourceName = sourceName;
         this.destinationName = destinationName;
+        this.relationshipType = relationshipType;
     }
+    
     public String getSourceName()
     {
         return this.sourceName;
@@ -19,17 +40,40 @@ public class UMLRelationship
     {
         return this.destinationName;
     }
-    public void setDestinationName(String newName)
+    public RelationshipType getRelationshipType(){return this.relationshipType;}
+    
+    public String getCustomNameType(){return this.customNameType;}
+    
+    public String getRelationshipName()
     {
-        this.destinationName = newName;
+        if(this.relationshipType == OTHER)
+            return getCustomNameType();
+        
+        return this.relationshipType.toString();
     }
     public void setSourceName(String newName)
     {
         this.sourceName = newName;
+        updateGUI();
+    }
+    public void setDestinationName(String newName)
+    {
+        this.destinationName = newName;
+        updateGUI();
+    }
+    public void setRelationshipType(RelationshipType newType){
+        this.relationshipType = newType;
+        updateGUI();
+    }
+    public void setCustomNameType(String newTypeCustom){
+        this.relationshipType = OTHER;
+        this.customNameType = newTypeCustom;
+        updateGUI();
     }
     @Override
     public String toString() {
-        return String.format("%s -> %s", sourceName, destinationName);
+        if(this.relationshipType.equals(RelationshipType.OTHER)) return String.format("%s -> %s : %s", sourceName, destinationName, this.customNameType);
+        return String.format("%s -> %s : %s", sourceName, destinationName, this.relationshipType);
     }
     @Override
     public boolean equals(Object  obj) 
@@ -42,7 +86,8 @@ public class UMLRelationship
         UMLRelationship castedObject = (UMLRelationship)obj;
         //Bare bones implementation.
         //TODO: When you add more to the class, maintain this equals function.
-        return castedObject.sourceName.equals(this.sourceName) && castedObject.destinationName.equals(this.destinationName);
+        return castedObject.sourceName.equals(this.sourceName) && castedObject.destinationName.equals(this.destinationName)
+                && castedObject.customNameType.equals(this.customNameType);
     }
 
     @Override
@@ -51,6 +96,7 @@ public class UMLRelationship
         int hash = 7;
         hash = 29 * hash + Objects.hashCode(this.sourceName);
         hash = 29 * hash + Objects.hashCode(this.destinationName);
+        hash = 29 * hash + Objects.hashCode(this.customNameType);
         return hash;
     }
 }

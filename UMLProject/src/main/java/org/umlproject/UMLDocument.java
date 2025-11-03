@@ -5,11 +5,17 @@ import java.util.HashMap;
 import java.util.Map;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Objects;
 
 
 public class UMLDocument
@@ -20,9 +26,36 @@ public class UMLDocument
     private Map<String, UMLClass> classSet = new HashMap<>();
     private Map<String,ArrayList<UMLRelationship>> relationshipList = new HashMap<>();
     
-    private static final String FILEEXTENT_STRING = ".json";
+    public static final String FILEEXTENT_STRING = ".json";
     private static final String DEFAULT_FILEDIRECTORY = "Documents" + File.separator + "NewUMLDocument";
 
+    public static List<DocumentListner> documentListners = new ArrayList<>();
+
+    
+    /**
+     * Used to return all selectable objects
+     * To be used by a 'UMLGuiController' when requested
+     * @return all UMLSelectables from both the classSet and relationshipList
+     */
+    public List<UIListener> getUIListeners()
+    {
+        List<UIListener> allListeners = new ArrayList();
+        for(UMLClass umlclass : classSet.values())
+        {
+            if(umlclass == null || umlclass.listener == null) continue;
+            allListeners.add(umlclass.listener);
+        }
+        for(ArrayList<UMLRelationship> allRealtionshipLists : relationshipList.values())
+        {
+            if(allRealtionshipLists == null) continue;
+            for(UMLRelationship relationship : allRealtionshipLists)
+            {
+                if(relationship == null || relationship.listener == null) continue;
+                allListeners.add(relationship.listener);
+            }
+        }
+        return allListeners;
+    }
     
     /**
      * Returns the current singleton, else creates it
@@ -78,8 +111,12 @@ public class UMLDocument
     {
         UMLClass removed = getClass(className);
         if (removed == null) return null;
+        
         if(removeRelationships)
+        {
             removeClassKeyFromRelationships(className);
+            documentListners.forEach(o->o.onClassRemove(removed));
+        }
         classSet.remove(className);
         return removed;
     }
@@ -100,8 +137,17 @@ public class UMLDocument
      * */
     public boolean renameClass(String originClassName, String newName)
     {
+        Objects.requireNonNull(originClassName, "originClassName cannot be null");
+        Objects.requireNonNull(newName, "newName cannot be null");
+        
+        originClassName = originClassName.replaceAll("\\s+", "");//Remove spaces
+        newName = newName.replaceAll("\\s+", "");//Remove spaces
         //Ensure the newname location isnt taken.
         if(classSet.containsKey(newName) || relationshipList.containsKey(newName)) return false;
+        
+        //add class Car
+        //add relationship car dest awre
+        
         
         //Validation
         ArrayList<UMLRelationship> tempRelationshipsPointer = getAllRelationships(originClassName);
@@ -144,12 +190,20 @@ public class UMLDocument
      *
      * @return boolean - True if the class was added
      * */
-    public boolean addRelationship(String className, String destinationName){
+    public boolean addRelationship(String className, String destinationName, String relationshipTypeString){
+        if(!classSet.containsKey(className) && !classSet.containsKey(destinationName))
+            return false;
+        if(Objects.equals(className,destinationName))//Cannot have same source/destination.
+            return false;
         if(!relationshipList.containsKey(className))
             relationshipList.put(className, new ArrayList<UMLRelationship>());
+        
         if(hasRelationship(className,destinationName))
             return  false;
-        relationshipList.get(className).add(new UMLRelationship(className, destinationName));
+        RelationshipType relationshipType = RelationshipType.stringToRelationshipType(relationshipTypeString);
+        UMLRelationship relationship = new UMLRelationship(className, destinationName, relationshipType, (relationshipType == RelationshipType.OTHER) ? relationshipTypeString : null);
+        relationshipList.get(className).add(relationship);
+        documentListners.forEach(o->o.onRelationshipAdded(relationship,false));
         return true;
     }
     /**
@@ -178,7 +232,8 @@ public class UMLDocument
         int index = getRelationshipIndex(className, destinationName);
         if(index == -1)
             return false;
-        relationshipList.get(className).remove(index);
+        UMLRelationship relationship = relationshipList.get(className).remove(index);
+        documentListners.forEach(o->o.onRelationshipRemove(relationship));
         return true;
     }
 
@@ -194,12 +249,24 @@ public class UMLDocument
     {
         if(!relationshipList.containsKey(className))
             return false;
+        ArrayList<UMLRelationship> myRelationships = relationshipList.get(className);
+        for(UMLRelationship relationship : myRelationships)
+        {
+            documentListners.forEach(o->o.onRelationshipRemove(relationship));
+        }
         relationshipList.remove(className);
         //need to ensure className is removed as a destination value in all other relationships
         for(String source : new ArrayList<>(relationshipList.keySet())){
             ArrayList<UMLRelationship> relationships = relationshipList.get(source);
             if(relationships != null){
-                relationships.removeIf(relationship -> relationship.getDestinationName().equals(className));
+                for(int i = relationships.size() - 1; i >= 0; i--)
+                {
+                    if(!relationships.get(i).getDestinationName().equals(className))
+                        continue;
+                    UMLRelationship relationship = relationships.get(i);
+                    documentListners.forEach(o->o.onRelationshipRemove(relationship));
+                    relationships.remove(i);
+                }
             }
         }
         return true;
@@ -238,7 +305,30 @@ public class UMLDocument
             return null;
         return relationshipList.get(className);
     }
-
+    /**
+     * Returns the list of relationships belonging to a given class in the master relationship list
+     *
+     * @param className The source checked
+     *
+     * @return ArrayList - An ArrayList containing all relationships belonging to the given class,
+     * null if class name is not found
+     *  */
+    public ArrayList<UMLRelationship> getAllRelationshipsInstanceOf(String className)
+    {
+        ArrayList<UMLRelationship> list = new ArrayList();
+        if(relationshipList.containsKey(className))
+            list.addAll(relationshipList.get(className));
+        
+        for(ArrayList<UMLRelationship> tempList : relationshipList.values())
+        {
+            for(UMLRelationship relationship : tempList)
+            {
+                if(relationship.getDestinationName().equals(className))
+                    list.add(relationship);
+            }
+        }
+        return list;
+    }
     /**
      * Helper function. Iterates through the given class name provided in the map, searching for relationships
      * that have a matching className and destinationName, and returns a matching index if a relationship is found.
@@ -272,18 +362,16 @@ public class UMLDocument
     {
         return classSet.get(className);
     }
+    /**
+     * Gets if the file location is valid.
+     */
     public boolean isFileLocationValid()
     {
         if (this.fileLocation == null || this.fileLocation.trim().isEmpty()) {
             return false;
         }
-        File file = new File(this.fileLocation);
-        try {
-            file.createNewFile();
-        } catch (IOException ex) {
-            System.getLogger(UMLDocument.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
-        }
-        return file.exists();
+        Path path = Paths.get(this.fileLocation + FILEEXTENT_STRING);
+        return Files.exists(path);
     }
     /**
      * Calls save on the
@@ -315,10 +403,13 @@ public class UMLDocument
     }
     public boolean load(String filename)
     {
+        
         Gson gson = new Gson();
         try (BufferedReader reader = new BufferedReader(new FileReader(filename + FILEEXTENT_STRING))) {
             // Deserialize the JSON into your Java object
             var data = gson.fromJson(reader, UMLDocument.class);
+            //Successful loading, before we update our information, clear all GUI listeners.
+            cleanUpAllGuiListeners();
             this.classSet=data.classSet;
             this.fileLocation=data.fileLocation;
             this.relationshipList=data.relationshipList;
@@ -327,9 +418,46 @@ public class UMLDocument
             return false;
         }
         this.fileLocation=filename;
+        //Send new information to our GUIListener...
+        suggestGuiControllerRedraw();
         return true;
     }
-
+    /**
+     * Rebinds every UMLClass,UMLRelationship... so on ... with the guiController.
+     * 
+     * Useful for when a UMLDocument is switched out.
+     */
+    private void suggestGuiControllerRedraw()
+    {
+        for(UMLClass umlc : classSet.values()) {
+            documentListners.forEach(o-> o.onClassAdded(umlc, true));
+        }
+        for(ArrayList<UMLRelationship> relationshipList : relationshipList.values())
+        {
+            for(UMLRelationship umlr : relationshipList){
+                documentListners.forEach(o -> o.onRelationshipAdded(umlr, true));
+            }
+        }
+        documentListners.forEach(o -> o.loadFile(this));
+    }
+    /**
+     * Clears out the current file.
+     * Used for a quick reset
+     */
+    public void clearFile()
+    {
+        cleanUpAllGuiListeners();
+        classSet.clear();
+        relationshipList.clear();
+    }
+    private void cleanUpAllGuiListeners()
+    {
+        List<UIListener> allListeners = getUIListeners();
+        for(UIListener listener : allListeners)
+        {
+            listener.cleanUp();
+        }
+    }
     /**
      * Adds a class to the classSet map.
      *
@@ -338,11 +466,18 @@ public class UMLDocument
      * @return UMLClass - Returns created class, or null if class already exists
      */
     public UMLClass addClass(String className){
+        
+        Objects.requireNonNull(className, "newName cannot be null");
+        className = className.replaceAll("\\s+", "");//Remove spaces
+        
         if (classSet.containsKey(className)) return null;
+        
         UMLClass umlclass = new UMLClass(className);
+
         classSet.put(className, umlclass);
         ArrayList<UMLRelationship> newList = new ArrayList<>();
         relationshipList.put(className, newList);
+        documentListners.forEach(o -> o.onClassAdded(umlclass, false));
         return umlclass;
     }
 
@@ -370,6 +505,24 @@ public class UMLDocument
      */
     public Map<String, ArrayList<UMLRelationship>> getRelationshipList() {
         return this.relationshipList;
+    }
+
+    /**
+     * Returns the first available spot for a new class when added through GUI
+     *
+     * @return String - The first available name
+     */
+    public String findValidDummyName()
+    {
+        final String dummyName = "NewClass";
+        int increment = 1;
+        while(true)
+        {
+            String testName = dummyName + increment;
+            if(!classSet.containsKey(testName))//Name is not taken
+                return testName;
+            increment++;
+        }
     }
 
     @Override

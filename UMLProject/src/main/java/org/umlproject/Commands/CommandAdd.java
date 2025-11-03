@@ -142,9 +142,9 @@ public class CommandAdd extends BaseCommand
     */
     private void addRelationship(String[] args)
     {
-        if(args.length == 3)
+        if(args.length == 4)
         {
-            boolean isActionValid = UMLDocument.getInstance().addRelationship(args[1], args[2]);
+            boolean isActionValid = UMLDocument.getInstance().addRelationship(args[1], args[2], args[3]);
             if(isActionValid)
             {
                 System.out.println(String.format("add relationship | Relationship between %s and %s has been made!",args[1],args[2]));
@@ -157,8 +157,13 @@ public class CommandAdd extends BaseCommand
         else 
         {
             System.out.println("""
-                                    add relationship | Please specify only two extra parameters
-                                                       EX: add relationship class1 class2""");
+                                    add relationship | Please specify three extra parameters
+                                                       EX: add relationship <class1> <class2> <relationship type>
+                                                            relationship types:
+                                                                                'aggregation'
+                                                                                'composition'
+                                                                                'generalization'
+                                                                                'realization'""");
         }
     }
     /**
@@ -228,7 +233,7 @@ public class CommandAdd extends BaseCommand
         return """
                Possible parameters for add:
                         class <classname> : Adds a class with a given classname
-                        relationship <source> <destination> : Adds a relationship between two classes
+                        relationship <source> <destination> <relationship type>: Adds a relationship between two classes
                         method <target class> <method name> <type1> <name1> ... <type10> <name10>: Adds a method to the target class
                         field <target class> <visibility> <type> <name> : Adds a field to the target class
                         param <target class> <method name> <type> <paramName> : Starts the process for adding a param to a classes method""";
