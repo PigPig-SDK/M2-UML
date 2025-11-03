@@ -1,12 +1,15 @@
 # Welcome to the Microsoft2 UML Editor
 **Team Members:** Adam, Aidan, Keetyn, Michelle, Sean, Ty Greene
 
-# Downloading the program
+# Downloading the program (No compilation required)
+1. **Install Java Development Kit (JDK) (Specifically Java 25)**  
+   Download and install the latest JDK from [Oracle Java Downloads](https://www.oracle.com/java/technologies/downloads/).
+2. **Download the executable**  
+   [2.0 Release](https://www.oracle.com/java/technologies/downloads/)
 
+   Enjoy!
 
-# Compiling the program
-You do not need this section unless you are a go-getter who wants to toy around. For most purpouses use the download link above.
-
+# Compiling the program 
 1. **Install Java Development Kit (JDK)**  
    Download and install the latest JDK from [Oracle Java Downloads](https://www.oracle.com/java/technologies/downloads/).
 2. **Clone the Repository**  
