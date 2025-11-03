@@ -17,6 +17,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import javafx.scene.layout.Pane;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -29,13 +30,13 @@ public class GuiClassTest {
 
     private GuiClass guiClass;
     private UMLClass parentClass;
-    private Group world;
+    private Pane world;
 
     @BeforeEach
     public void setUp() {
         // Initialize JavaFX runtime (needed even in headless mode)
         new JFXPanel();
-        world = new Group();
+        world = new Pane();
         parentClass = new UMLClass("TestClass");
         guiClass = new GuiClass(world, parentClass);
     }
@@ -75,7 +76,7 @@ public class GuiClassTest {
     public void testConvertDataFieldsToHBoxes() throws Exception {
         new JFXPanel(); // Initialize JavaFX environment
 
-        Group world = new Group();
+        Pane world = new Pane();
         UMLClass parent = new UMLClass("TestClass");
         GuiClass gui = new GuiClass(world, parent);
 
@@ -125,7 +126,7 @@ public class GuiClassTest {
     @Test
     public void testGetRectBoundsAfterUpdate() throws Exception {
         new JFXPanel(); // Initialize JavaFX runtime
-        Group world = new Group();
+        Pane world = new Pane();
         UMLClass parent = new UMLClass("RectTest");
         GuiClass gui = new GuiClass(world, parent);
 
