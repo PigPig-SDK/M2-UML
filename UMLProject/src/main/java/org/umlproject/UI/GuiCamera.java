@@ -26,7 +26,7 @@ public class GuiCamera {
     
     public static void setCameraLocation(Point2D location)
     {
-        Group world = GuiController.singleton.getWorld();
+        Pane world = GuiController.singleton.getWorld();
         camLocation = location;
         world.setTranslateX(camLocation.getX());
         world.setTranslateY(camLocation.getY());
@@ -49,7 +49,7 @@ public class GuiCamera {
     private static void setZoom(double newZoom, ScrollEvent event) {
         if (newZoom < ZOOM_SCALE_MIN) newZoom = ZOOM_SCALE_MIN;
         if (newZoom > ZOOM_SCALE_MAX) newZoom = ZOOM_SCALE_MAX;
-        Group world = GuiController.singleton.getWorld();
+        Pane world = GuiController.singleton.getWorld();
         Point2D before = world.sceneToLocal(event.getSceneX(), event.getSceneY());//Get og realitive
         
         world.setScaleX(newZoom);
@@ -119,20 +119,36 @@ public class GuiCamera {
             if (!(event.getTarget() instanceof TextInputControl)) GuiController.singleton.getViewPane().requestFocus();
         });
     }
+    /**
+     * Given a point2D in screen space, convert to 'world' space.
+     * This manages all the boring transformations, camera movement and scaling...
+     * @param screenSpace The location on the screen.
+     * @return the expected world coords
+     */
+    public static Point2D screenToWorld(Point2D screenSpace)
+    {
+        Pane view = GuiController.singleton.getViewPane();
+        Pane world = GuiController.singleton.getWorld();
+        
+        Point2D sceneLocation = view.localToScene(screenSpace);
+        Point2D worldLocation = world.sceneToLocal(sceneLocation);
+        return worldLocation;
+    }
+    /**
+     * @return The world space center of the camera
+     */
     public static Point2D getScreenCenter()
     {
         Pane view = GuiController.singleton.getViewPane();
-        Group world = GuiController.singleton.getWorld();
 
         double centerX = view.getWidth() / 2;
         double centerY = view.getHeight() / 2;
-        
-        Point2D sceneCenter = view.localToScene(centerX, centerY);
 
-        Point2D worldCenter = world.sceneToLocal(sceneCenter);
-
-        return worldCenter;
+        return screenToWorld(new Point2D(centerX, centerY));
     }
+    /**
+     * Initializes the camera
+     */
     public static void setupCamera()
     {
         
@@ -147,5 +163,15 @@ public class GuiCamera {
         };
         manageCameraInput();//Update input
         cameraTimer.start();
+    }
+    /**
+     * Returns camera zoom. 
+     * I comment my code. 
+     * Please give points now.
+     * @return cameraZoom.
+     */
+    public static double getCameraZoom()
+    {
+        return cameraZoom;
     }
 }
