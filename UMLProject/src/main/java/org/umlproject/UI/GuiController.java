@@ -35,7 +35,7 @@ public class GuiController implements DocumentListner {
     public static GuiController singleton;
     
     @FXML
-    private Group world;//'World' is where all UI objects should live.
+    private Pane world;//'World' is where all UI objects should live.
     @FXML
     private TextField console;
     @FXML
@@ -59,7 +59,7 @@ public class GuiController implements DocumentListner {
     @FXML
     private Button addRelationshipButton;
     
-    public Group getWorld(){return this.world;}
+    public Pane getWorld(){return this.world;}
     public TextField getTerminal(){return this.console;}
     public MenuBar getMenuBar(){return this.menubar;}
     public Pane getViewPane(){return this.viewpane;}
@@ -70,11 +70,12 @@ public class GuiController implements DocumentListner {
         //Bind to umldocument
         UMLDocument.documentListners.add(this);
 
-        singleton = this;
+        this.singleton = this;
 
-        world.setLayoutX(0.0);
-        world.setLayoutY(0.0);
-
+        this.world.setLayoutX(0.0);
+        this.world.setLayoutY(0.0);
+        this.world.setPickOnBounds(false);
+        
         VBox.setVgrow(viewpane, Priority.ALWAYS);
         if(rootVBox != null){
             this.rootVBox.setAlignment(Pos.TOP_LEFT);
@@ -94,7 +95,7 @@ public class GuiController implements DocumentListner {
 
     @FXML
     public void aboutHelpMenuAction() {
-        AboutWindow.showAbout();
+        GuiAboutWindow.showAbout();
     }
 
     /**

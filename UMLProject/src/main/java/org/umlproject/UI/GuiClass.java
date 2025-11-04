@@ -17,10 +17,11 @@ import java.util.*;
 import java.util.Set;
 import javafx.geometry.Bounds;
 import javafx.geometry.Rectangle2D;
+import javafx.scene.layout.Pane;
 import org.umlproject.UMLClass;
 
 public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositional {
-    private Group world;
+    private Pane world;
     private UMLClass parentClass;
     double mouseAnchorX;
     double mouseAnchorY;
@@ -40,7 +41,7 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
      * @param world, representing the group that holds all class boxes
      * @param parentClass, the UMLClass which a given GuiClass instance listens to.
      */
-    public GuiClass(Group world, UMLClass parentClass)
+    public GuiClass(Pane world, UMLClass parentClass)
     {
         this.world = world;
         world.setFocusTraversable(true);//lets world request focus.
@@ -70,8 +71,10 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
       */
     private void makeDraggable(StackPane nodeBackground) {
         nodeBackground.setOnMousePressed(e -> {
-            this.mouseAnchorX = e.getSceneX() - nodeBackground.getLayoutX();
-            this.mouseAnchorY = e.getSceneY() - nodeBackground.getLayoutY();
+            Point2D mouseWorldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
+            Point2D paneWorldSpace = new Point2D(nodeBackground.getLayoutX(), nodeBackground.getLayoutY());     
+            this.mouseAnchorX = mouseWorldSpace.getX() - paneWorldSpace.getX();
+            this.mouseAnchorY = mouseWorldSpace.getY() - paneWorldSpace.getY();
             nodeBackground.requestFocus();
             e.consume(); // Prevent event from propagating to other nodes
         });
@@ -82,9 +85,10 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         });
 
         this.nodeBackground.setOnMouseDragged(e -> {
-            double newX = e.getSceneX() - this.mouseAnchorX;
-            double newY = e.getSceneY() - this.mouseAnchorY;
-            this.parentClass.setLocation(new Point2D(newX, newY));
+            //I swear if i have to instantiate another immutable point2d im going to create a wrapper class.
+            Point2D worldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
+            Point2D selectionOffset = new Point2D(worldSpace.getX() - this.mouseAnchorX, worldSpace.getY() - this.mouseAnchorY);
+            this.parentClass.setLocation(selectionOffset);
             this.nodeBackground.getParent().requestLayout(); // Force layout update
             e.consume(); // Prevent event from propagating to other nodes
         });
