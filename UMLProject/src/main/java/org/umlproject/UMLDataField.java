@@ -223,7 +223,7 @@ public class UMLDataField implements Cloneable{
     @Override
     public UMLDataField clone()
     {
-        return new UMLDataField(this.name, this.dataType, this.visibility);
+        return new UMLDataField(this.name, this.customNameType,this.dataType, this.visibility);
     }
     
 }
