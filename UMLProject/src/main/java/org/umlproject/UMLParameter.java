@@ -7,7 +7,7 @@ import java.util.Objects;
  * UMLParameter objects will be created to populate array lists of parameters within
  * a given UMLMethod object
  */
-public class UMLParameter {
+public class UMLParameter implements Cloneable{
 
     private String name;
     private DataType dataType;
@@ -103,10 +103,8 @@ public class UMLParameter {
     public int hashCode(){
         return Objects.hash(name, dataType, customNameType);
     }
-
-
-
-
-
-
+    @Override
+    public UMLParameter clone() throws CloneNotSupportedException {
+        return new UMLParameter(this.name, this.dataType, this. customNameType);
+    }
 }
