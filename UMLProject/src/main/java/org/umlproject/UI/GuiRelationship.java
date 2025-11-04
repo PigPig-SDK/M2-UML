@@ -1,6 +1,5 @@
 package org.umlproject.UI;
 
-import javafx.animation.AnimationTimer;
 import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
@@ -16,7 +15,6 @@ import static org.umlproject.RelationshipType.GENERALIZATION;
 import static org.umlproject.RelationshipType.OTHER;
 import static org.umlproject.RelationshipType.REALIZATION;
 import org.umlproject.UIListener;
-import org.umlproject.UISelectable;
 import org.umlproject.UMLClass;
 import org.umlproject.UMLDocument;
 import org.umlproject.UMLRelationship;
@@ -50,7 +48,6 @@ public final class GuiRelationship implements UIListener<UMLRelationship>, UISel
     @Override
     public void update(UMLRelationship desiredElement) {
         cleanUp();
-        
         
         UMLClass startClass = UMLDocument.getInstance().getClass(desiredElement.getSourceName());
         UMLClass endClass = UMLDocument.getInstance().getClass(desiredElement.getDestinationName());
@@ -99,7 +96,7 @@ public final class GuiRelationship implements UIListener<UMLRelationship>, UISel
         
         //Add clickableness...
         lineMain.setOnMouseClicked(e -> {
-            GuiSelect.getInstance().selectUiElement(e, this);
+            GuiSelect.getInstance().clickUiElement(e, this);
             e.consume(); // Prevent event from propagating to other nodes
         });
         setSelected(isSelected);//Update our selected state
@@ -144,7 +141,7 @@ public final class GuiRelationship implements UIListener<UMLRelationship>, UISel
         this.relationshipText = new TextField(desiredElement.getRelationshipName());
         this.relationshipText.setRotate(Math.toDegrees(angle));
         this.relationshipText.setLayoutX(midpoint.getX() - 75);//Magical number for offsetting correctly
-        this.relationshipText.setLayoutY(midpoint.getY() - 10);//Magical number for offsetting correctly
+        this.relationshipText.setLayoutY(midpoint.getY() - 12.5);//Magical number for offsetting correctly
         this.relationshipText.setViewOrder(40);//Send to back..
         //Text update
         //When the user gives our textbox a new value, we push the data and that causes a redraw...
@@ -287,7 +284,8 @@ public final class GuiRelationship implements UIListener<UMLRelationship>, UISel
     @Override
     public void setSelected(boolean isSelected) {
         this.isSelected = isSelected;
-        this.selectionOutline.setStrokeWidth(isSelected? 20 : 0);
+        if(this.selectionOutline != null)
+            this.selectionOutline.setStrokeWidth(isSelected? 20 : 0);
     }
     @Override
     public boolean getSelected() {

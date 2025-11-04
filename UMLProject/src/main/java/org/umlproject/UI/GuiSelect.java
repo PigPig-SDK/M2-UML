@@ -11,10 +11,7 @@ import org.umlproject.UMLRelationship;
 import java.util.ArrayList;
 import java.util.Optional;
 import javafx.animation.AnimationTimer;
-import static org.umlproject.UI.GuiCamera.getUserInputDirection;
-import static org.umlproject.UI.GuiCamera.setCameraLocation;
 import org.umlproject.UIListener;
-import org.umlproject.UISelectable;
 
 public class GuiSelect {
 
@@ -63,23 +60,29 @@ public class GuiSelect {
      * @param e - Event checked for ctrl being held
      * @param selectable - Class being selected/deselected
      */
-    public void selectUiElement(MouseEvent e, UISelectable selectable) {
+    public void clickUiElement(MouseEvent e, UISelectable selectable) {
         //Checks if control is being held. If not, returns.
         if (!e.isControlDown()) {
             return;
         }
         //Checks if class is already selected. If so, deselects it.
         if(selectedObjects.contains(selectable)){
-            selectable.setSelected(false);
-            selectedObjects.remove(selectable);
+            deselectUiElement(selectable);
             return;
         }
-
         //Selects class if not already selected.
-        selectedObjects.add(selectable);
-        selectable.setSelected(true);
+        selectUiElement(selectable);
     }
-
+    public void deselectUiElement(UISelectable selectable)
+    {
+        selectable.setSelected(false);
+        selectedObjects.remove(selectable);
+    }
+    public void selectUiElement(UISelectable selectable)
+    {
+        selectable.setSelected(true);
+        selectedObjects.add(selectable);
+    }
     /**
      * resetSelect method. Checks if ctrl is being held when the scene is clicked. If so, clears the selections of
      * classes and relationships, and sets colours back to default.

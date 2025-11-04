@@ -34,12 +34,10 @@
 
 <?import javafx.scene.Group?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.CheckMenuItem?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.SeparatorMenuItem?>
-<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.Pane?>
@@ -47,7 +45,7 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<VBox maxHeight="400.0" maxWidth="640.0" prefHeight="400.0" prefWidth="640.0" stylesheets="@stylesheet.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.umlproject.UI.GuiController">
+<VBox fx:id="rootVBox" maxHeight="400.0" maxWidth="640.0" prefHeight="400.0" prefWidth="640.0" stylesheets="@stylesheet.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.umlproject.UI.GuiController">
   <children>
     <MenuBar fx:id="menubar" stylesheets="@stylesheet.css" VBox.vgrow="NEVER">
       <menus>
@@ -64,33 +62,27 @@
         </Menu>
         <Menu mnemonicParsing="false" text="Edit">
           <items>
-            <MenuItem mnemonicParsing="false" onAction="#copyEditMenuAction" text="Copy" />
-            <MenuItem mnemonicParsing="false" onAction="#pasteEditMenuAction" text="Paste" />
             <MenuItem mnemonicParsing="false" onAction="#deleteEditMenuAction" text="Delete" />
             <SeparatorMenuItem mnemonicParsing="false" />
             <MenuItem mnemonicParsing="false" onAction="#selectAllEditMenuAction" text="Select All" />
             <MenuItem mnemonicParsing="false" onAction="#unSelectAllEditMenuAction" text="Unselect All" />
           </items>
         </Menu>
-            <Menu mnemonicParsing="false" text="Settings">
-               <items>
-                  <CheckMenuItem fx:id="viewTerminalMenuItem" mnemonicParsing="false" text="View Terminal" />
-               </items>
-            </Menu>
-        <Menu mnemonicParsing="false" text="Help">
-          <items>
-            <MenuItem mnemonicParsing="false" onAction="#aboutHelpMenuAction" text="About " />
-          </items>
-        </Menu>
+          <Menu mnemonicParsing="false" text="Help">
+              <items>
+                  <MenuItem mnemonicParsing="false" onAction="#infoHelpMenuAction" text="Help" />
+                  <MenuItem mnemonicParsing="false" onAction="#aboutHelpMenuAction" text="About UML Editor" />
+              </items>
+          </Menu>
       </menus>
     </MenuBar>
       <Pane fx:id="viewpane" prefHeight="398.0" prefWidth="640.0" style="-fx-background-color: #33312d;">
          <children>
             <Group fx:id="world">
                <children>
-                  <Text fx:id="workspaceText" fill="#534b3e" layoutX="34.0" layoutY="214.0" strokeType="OUTSIDE" strokeWidth="0.0" text="WORKSPACE" textAlignment="CENTER">
+                  <Text fx:id="workspaceText" fill="#534b3e" layoutY="214.0" strokeType="OUTSIDE" strokeWidth="0.0" text="WORKSPACE" textAlignment="CENTER" wrappingWidth="640.28173828125">
                      <font>
-                        <Font name="Bodoni MT" size="93.0" />
+                        <Font name="Monospaced Regular" size="93.0" />
                      </font>
                   </Text>
                </children></Group>
@@ -98,12 +90,7 @@
             <Button fx:id="addClassButton" defaultButton="true" focusTraversable="false" layoutX="14.0" layoutY="14.0" mnemonicParsing="false" onAction="#addClassButtonPushed" prefHeight="50.0" prefWidth="50.0" text="+C" textAlignment="CENTER" />
          </children>
       </Pane>
-      <AnchorPane fx:id="consoleOutPane" prefHeight="73.0" prefWidth="640.0">
-         <children>
-            <TextArea fx:id="consoleOut" editable="false" prefHeight="78.0" prefWidth="640.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
-         </children>
-      </AnchorPane>
-      <AnchorPane fx:id="consolePane" prefHeight="29.0" prefWidth="666.0" style="-fx-background-color: #2D2D30;" stylesheets="@stylesheet.css">
+      <AnchorPane fx:id="consoleAnchorPane" prefHeight="29.0" prefWidth="666.0" style="-fx-background-color: #33312d;">
          <children>
             <TextField fx:id="console" focusTraversable="false" layoutY="3.0" onAction="#consoleSubmit" prefHeight="29.0" prefWidth="640.0" promptText="Console Input" stylesheets="@stylesheet.css" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
          </children>
