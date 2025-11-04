@@ -144,10 +144,9 @@ public class UMLMethod implements Cloneable
     /**setter method for list of parameters
      * @param parameters, the new list of paramters for the method
      */
-    public void setListParameters(ArrayList<UMLParameter> parameters){
-        this.parameters = parameters;
+    public void setListParameters(ArrayList<UMLParameter> parameters){        
+        this.parameters =(parameters == null)? new ArrayList<UMLParameter>(): parameters;
     }
-
 
     /** toString method will convert method into a string consisting of its name
      * and a list of its parameters

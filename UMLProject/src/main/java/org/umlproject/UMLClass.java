@@ -6,7 +6,7 @@ import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
 import org.umlproject.UI.GuiClass;
 
-public class UMLClass extends UMLDiagramElement {
+public class UMLClass extends UMLDiagramElement implements Cloneable{
     private String className;
     /**
      * use hashmap for UMLDataFields where a unique DataField name is the key
@@ -548,5 +548,33 @@ public class UMLClass extends UMLDiagramElement {
     @Override
     public int hashCode() {
         return this.className.hashCode();
+    }
+    
+    @Override
+    public UMLClass clone()
+    {
+        UMLClass umlc = new UMLClass(this.className);
+        for(UMLDataField dataField : this.fields.values())
+        {
+            umlc.addField(dataField.clone());
+        }
+        //private HashMap<String, ArrayList<UMLMethod>> methods;
+        for(String methodName : methods.keySet())
+        {
+            umlc.methods.put(methodName, new ArrayList<UMLMethod>());//Allocate the new memory for the item...
+            for(UMLMethod method : methods.get(methodName))
+            {
+                try
+                {
+                    umlc.methods.get(methodName).add(method.clone());
+                } 
+                catch (CloneNotSupportedException e)//Exception. Do skip over the class.
+                { 
+                    continue;
+                }
+            }
+        }
+        umlc.listener = this.listener;//NOTE THIS IS THE ONLY THING THAT SHOULDNT BE A DEEP COPY!
+        return umlc;
     }
 }
