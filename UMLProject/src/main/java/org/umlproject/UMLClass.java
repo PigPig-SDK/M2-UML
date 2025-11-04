@@ -50,6 +50,9 @@ public class UMLClass extends UMLDiagramElement {
         if(className == null || className.isEmpty() || fields == null || methods == null){
             throw new IllegalArgumentException("The arguments provided are invalid!");
         }
+
+        Main.autoScanner.addWordSet(fields.keySet());
+        Main.autoScanner.addWordSet(methods.keySet());
         this.className = className;
         this.fields = fields;
         this.methods = methods;

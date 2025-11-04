@@ -4,14 +4,17 @@ import org.fusesource.jansi.AnsiConsole;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.impl.completer.StringsCompleter;
+import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
 
 public class AutoComplete{
 
     private final ArrayList<String> autoWordList;
+
+    private Terminal terminal;
+
     private static LineReader reader;
 
     public AutoComplete(){
@@ -24,14 +27,14 @@ public class AutoComplete{
 
         reader = newLineReader();
 
-
     }
 
     private LineReader newLineReader(){
 
+        AnsiConsole.systemInstall();
         try {
-            AnsiConsole.systemInstall();
-            return LineReaderBuilder.builder().terminal(TerminalBuilder.builder().system(true).build())
+            if(terminal == null) terminal = TerminalBuilder.builder().system(true).build();
+            return LineReaderBuilder.builder().terminal(terminal)
                     .completer(new StringsCompleter(this.autoWordList)).build();
         }
         catch (Exception e){
@@ -40,19 +43,28 @@ public class AutoComplete{
         }
     }
 
-    public void updateLineReader(String in){
+    public void addWord(String in){
 
-        AnsiConsole.systemInstall();
         this.autoWordList.add(in);
-        try {
-            reader = LineReaderBuilder.builder().terminal(TerminalBuilder.builder().system(true).build())
-                    .completer(new StringsCompleter(this.autoWordList)).build();
-        }
-        catch (Exception e){
-            System.out.println("Error: " + e);
-        }
+        reader = newLineReader();
 
     }
+
+    public void addWordSet(Set<String> in){
+
+        this.autoWordList.addAll(in);
+        reader = newLineReader();
+
+    }
+
+    public void removeWord(String in){
+
+        this.autoWordList.remove(in);
+        reader = newLineReader();
+
+    }
+
+
 
     public String lineInConsole(){
         return reader.readLine();
