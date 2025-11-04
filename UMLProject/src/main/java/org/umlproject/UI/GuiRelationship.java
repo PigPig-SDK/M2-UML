@@ -1,6 +1,5 @@
 package org.umlproject.UI;
 
-import javafx.animation.AnimationTimer;
 import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
@@ -97,7 +96,7 @@ public final class GuiRelationship implements UIListener<UMLRelationship>, UISel
         
         //Add clickableness...
         lineMain.setOnMouseClicked(e -> {
-            GuiSelect.getInstance().selectUiElement(e, this);
+            GuiSelect.getInstance().clickUiElement(e, this);
             e.consume(); // Prevent event from propagating to other nodes
         });
         setSelected(isSelected);//Update our selected state

@@ -45,7 +45,7 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<VBox maxHeight="400.0" maxWidth="640.0" prefHeight="400.0" prefWidth="640.0" stylesheets="@stylesheet.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.umlproject.UI.GuiController">
+<VBox fx:id="rootVBox" maxHeight="400.0" maxWidth="640.0" prefHeight="400.0" prefWidth="640.0" stylesheets="@stylesheet.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.umlproject.UI.GuiController">
   <children>
     <MenuBar fx:id="menubar" stylesheets="@stylesheet.css" VBox.vgrow="NEVER">
       <menus>
@@ -68,11 +68,12 @@
             <MenuItem mnemonicParsing="false" onAction="#unSelectAllEditMenuAction" text="Unselect All" />
           </items>
         </Menu>
-        <Menu mnemonicParsing="false" text="Help">
-          <items>
-            <MenuItem mnemonicParsing="false" onAction="#infoHelpMenuAction" text="Info" />
-          </items>
-        </Menu>
+          <Menu mnemonicParsing="false" text="Help">
+              <items>
+                  <MenuItem mnemonicParsing="false" onAction="#infoHelpMenuAction" text="Help" />
+                  <MenuItem mnemonicParsing="false" onAction="#aboutHelpMenuAction" text="About UML Editor" />
+              </items>
+          </Menu>
       </menus>
     </MenuBar>
       <Pane fx:id="viewpane" prefHeight="398.0" prefWidth="640.0" style="-fx-background-color: #33312d;">

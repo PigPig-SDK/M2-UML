@@ -16,7 +16,7 @@ public class GuiCamera {
     private static final int ARROWKEY_SPEED = 4500;
     private static boolean up, down, left, right;
     private static final double ZOOM_SCALE_AMMOUNT = 0.005f;
-    private static final double ZOOM_SCALE_MIN = 0.1f;
+    private static final double ZOOM_SCALE_MIN = 0.5f;
     private static final double ZOOM_SCALE_MAX = 3f;
 
     private static long lastTime = 0;
@@ -57,7 +57,6 @@ public class GuiCamera {
         
         Point2D after = world.sceneToLocal(event.getSceneX(), event.getSceneY());//Get realitive.
         Point2D delta =  after.subtract(before);
-        //System.out.println("delta : " + delta.getX() + " | " + delta.getY());
         setCameraLocation(new Point2D(world.getTranslateX() + delta.getX() * newZoom, world.getTranslateY() + delta.getY() * newZoom));
         cameraZoom = newZoom;
     }
@@ -99,7 +98,6 @@ public class GuiCamera {
         Main.currentScene.setOnMouseDragged(event -> {
             double currentX = event.getScreenX();
             double currentY = event.getScreenY();
-
             switch (event.getButton()) {
                 case MIDDLE:
                 case PRIMARY:
@@ -123,16 +121,17 @@ public class GuiCamera {
     }
     public static Point2D getScreenCenter()
     {
-        Pane pain = GuiController.singleton.getViewPane();
+        Pane view = GuiController.singleton.getViewPane();
+        Group world = GuiController.singleton.getWorld();
+
+        double centerX = view.getWidth() / 2;
+        double centerY = view.getHeight() / 2;
         
-        
-        double dWidth = pain.getWidth()/2;
-        double dHeight = pain.getHeight()/2;
-        
-        dWidth -= camLocation.getX();
-        dHeight -= camLocation.getY();
-        
-        return new Point2D(dWidth,dHeight);
+        Point2D sceneCenter = view.localToScene(centerX, centerY);
+
+        Point2D worldCenter = world.sceneToLocal(sceneCenter);
+
+        return worldCenter;
     }
     public static void setupCamera()
     {
