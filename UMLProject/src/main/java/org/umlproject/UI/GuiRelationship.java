@@ -5,6 +5,7 @@ import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Polygon;
@@ -22,7 +23,7 @@ import org.umlproject.UMLRelationship;
 public final class GuiRelationship implements UIListener<UMLRelationship>, UISelectable{
 
     private UMLRelationship relationship;
-    private Group world;
+    private Pane world;
     private Line lineMain, lineOutline, selectionOutline;
     private boolean isSelected = false;
     private Node relationshipDiagramElement;
@@ -33,7 +34,7 @@ public final class GuiRelationship implements UIListener<UMLRelationship>, UISel
     private static final double MIN_LINE_DISTANCE_FOR_TEXT = 500;
     
     
-    public GuiRelationship(Group world, UMLRelationship umlRelationship)
+    public GuiRelationship(Pane world, UMLRelationship umlRelationship)
     {
         this.world = world;
         this.relationship = umlRelationship;
