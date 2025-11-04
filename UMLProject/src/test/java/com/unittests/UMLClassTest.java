@@ -272,4 +272,114 @@ public class UMLClassTest {
     void toString_containsClassName() {
         assertTrue(clazz.toString().contains("Person"));
     }
+    
+    /* ------------------------------------------------------------
+     * Cloning
+     * ------------------------------------------------------------ */
+    @Test
+    void clone_name_isDeepCopy() {
+        //Arrange
+        UMLClass tester = new UMLClass("test");
+        //Act
+        UMLClass testerClone = tester.clone();
+        testerClone.setClassName("test2");
+        //Assert
+        assertEquals("test", tester.getClassName());
+    }
+    @Test
+    void clone_methodRemove_isDeepCopy() {
+        //Arrange
+        String methodName = "foo";
+        
+        UMLClass tester = new UMLClass("test");
+        ArrayList<UMLParameter> parameters  = new ArrayList<>();
+        parameters.add(new UMLParameter("bar", DataType.DOUBLE, null));
+        tester.addMethod(new UMLMethod(methodName,parameters));
+        
+        //Act
+        UMLClass testerClone = tester.clone();
+        boolean isRemoved = testerClone.removeMethod(methodName, 0);//Remove the 0th item.
+        //Assert
+        assertTrue(isRemoved);
+        assertTrue(tester.getMethods(methodName) != null);//Was not removed from the base object.
+    }
+    @Test
+    void clone_methodAdjust_isDeepCopy() {
+        //Arrange
+        String methodName = "foo";
+        
+        UMLClass tester = new UMLClass("test");
+        ArrayList<UMLParameter> parameters  = new ArrayList<>();
+        parameters.add(new UMLParameter("bar", DataType.DOUBLE, null));
+        tester.addMethod(new UMLMethod(methodName,parameters));
+        
+        //Act
+        UMLClass testerClone = tester.clone();
+        var list = testerClone.getMethods(methodName);
+        list.get(0).setListParameters(null);
+        //Assert
+        assertNotEquals(tester.getMethods(methodName), testerClone.getMethods(methodName));
+    }
+    @Test
+    void clone_datafield_isDeepCopy() {
+        //Arrange
+        String dataFieldNameCustomType = "foo";
+        String dataFieldName = "bar";
+
+        UMLClass tester = new UMLClass("test");
+        tester.addField(new UMLDataField(dataFieldNameCustomType, "TestType"));
+        tester.addField(new UMLDataField(dataFieldName, DataType.BOOLEAN));
+        //Act
+        UMLClass testerClone = tester.clone();
+        testerClone.getFields(dataFieldNameCustomType).setCustomNameType("Edited");
+        testerClone.getFields(dataFieldName).setDataType(DataType.BYTE);
+
+        //Assert
+        assertNotEquals(tester.getFields(dataFieldNameCustomType).getCustomNameType(), testerClone.getFields(dataFieldNameCustomType).getCustomNameType());
+        assertNotEquals(tester.getFields(dataFieldName).getDataType(), testerClone.getFields(dataFieldName).getDataType());
+    }
+    @Test
+    void clone_datafieldList_isDeepCopy() {
+        //Arrange
+        String dataFieldName = "foo";
+
+        UMLClass tester = new UMLClass("test");
+        tester.addField(new UMLDataField(dataFieldName, "TestType"));
+        //Act
+        UMLClass testerClone = tester.clone();
+        testerClone.removeField(dataFieldName);
+        //Assert
+        assertNotEquals(tester.getFieldsAll().size(),  testerClone.getFieldsAll().size());
+        assertNull(testerClone.getFields(dataFieldName));
+        assertNotNull(tester.getFields(dataFieldName));
+    }
+    
+    //NOTE : This class is only to be used for testing!
+    static class DummyListener implements UIListener<UMLClass> {
+        public int timesUpdateCalled = 0;
+
+        @Override public void update(UMLClass desiredElement) { timesUpdateCalled++; }
+        @Override public void updateLocation(UMLClass desiredElement) {}
+        @Override public void cleanUp() {}
+    }
+    
+    @Test
+    void clone_UIListner_isShallowCopy() {
+        
+        //Arrange
+        
+        //Mock : used for testing.
+        UIListener<UMLClass> dummyListner = new DummyListener();
+        UMLClass tester = new UMLClass("test");
+        tester.setListener(dummyListner);
+        
+        //Act
+        UMLClass testerClone = tester.clone();
+        testerClone.updateGUI();//Calls update...
+        
+        //Assert
+        assertEquals(1, ((DummyListener)tester.getUIListener()).timesUpdateCalled);
+        assertEquals(tester.getUIListener(), testerClone.getUIListener());//How get the value of timesUpdateCalled?
+    }
+    
 }
