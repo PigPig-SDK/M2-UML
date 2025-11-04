@@ -6,7 +6,7 @@ import java.util.Scanner;
  *will consist of a name, visibility modifier, data type (custom or primitive)
  *as well as methods to set or get these values
  */
-public class UMLDataField {
+public class UMLDataField implements Cloneable{
     /** name of dataField
      */
     private String name;
@@ -220,4 +220,10 @@ public class UMLDataField {
     public int hashCode() {
         return this.name.hashCode();
     }
+    @Override
+    public UMLDataField clone()
+    {
+        return new UMLDataField(this.name, this.customNameType,this.dataType, this.visibility);
+    }
+    
 }
