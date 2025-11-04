@@ -16,11 +16,17 @@ import org.umlproject.*;
 import java.util.*;
 import java.util.Set;
 import javafx.geometry.Bounds;
+import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.layout.Pane;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontPosture;
+import javafx.scene.text.FontWeight;
 import org.umlproject.UMLClass;
 
 public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositional {
+    public static final Font DEFAULT_CLASS_FONT = Font.font("Monospaced", FontWeight.NORMAL, FontPosture.REGULAR, 18);
+    
     private Pane world;
     private UMLClass parentClass;
     double mouseAnchorX;
@@ -429,10 +435,12 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
 
         //create a rectangle background for the class.
         Rectangle background = new Rectangle();
-        background.setFill(Color.MINTCREAM);
+        background.setFill(GuiColor.CLASS_BACKGROUND_COLOR);
         background.setStroke(Color.BLACK);
         background.widthProperty().bind(this.parentVBox.widthProperty().add(20));
         background.heightProperty().bind(this.parentVBox.heightProperty().add(20));
+        background.setArcHeight(30);
+        background.setArcWidth(30);
         //Strip TextFields of focus if we click on rectangle.
 
         this.background = background;
@@ -448,7 +456,8 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         //set up dataFields
         //retrieve dataFields hashMap, retrieve keySet, convert into an array, then cycle through each
         //and create a textField and put in dataFieldsVBox.
-        Label dataFieldsLabel = new Label("Data Fields:");
+        Label dataFieldsLabel = new Label("Data Fields");
+        dataFieldsLabel.setFont(DEFAULT_CLASS_FONT);
         HashMap<String, UMLDataField> UMLDataFields = desiredElement.getFieldsAll();
         convertDataFieldsToHBoxes(UMLDataFields);
         //create AddField Button, set action to make a new DataField
@@ -461,13 +470,14 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
 
         //-------------------------------------------------------------------------------------------
         //create methods
-        Label methodsLabel = new Label("Methods:");
+        Label methodsLabel = new Label("Methods");
+        methodsLabel.setFont(DEFAULT_CLASS_FONT);
         HashMap<String, ArrayList<UMLMethod>> umlMethods = desiredElement.getMethodsAll();
         convertMethodsToHBoxes(umlMethods);
         Button addMethod = new Button("Add method");
         addMethodButtonClickable(addMethod);
         this.parentVBox.getChildren().addAll(methodsLabel, this.methodTextFields, addMethod);
-//-------------------------------------------------------------------------------------------------
+        //-------------------------------------------------------------------------------------------------
 
         this.nodeBackground.getChildren().addAll(background, this.parentVBox);
 
@@ -549,7 +559,7 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         }
         else
         {
-            this.background.setFill(Color.MINTCREAM);
+            this.background.setFill(GuiColor.CLASS_BACKGROUND_COLOR);
             this.background.setStrokeWidth(0);
         }
     }
