@@ -1,5 +1,6 @@
 package org.umlproject.UI;
 
+import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
@@ -26,6 +27,8 @@ public class GuiKeyBinds {
         addAccelerator(new KeyCodeCombination(KeyCode.DELETE, KeyCombination.CONTROL_DOWN), "Delete");
         addAccelerator(new KeyCodeCombination(KeyCode.F1), "Help");
         addAccelerator(new KeyCodeCombination(KeyCode.F2), "About UML Editor");
+        addAccelerator(new KeyCodeCombination(KeyCode.F12), GuiController.singleton.viewTerminalMenuItem);
+        
         
         Main.currentScene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
             if(GuiController.singleton == null)//Cannot execute quickbind. The menu dosn't exist.
@@ -41,8 +44,13 @@ public class GuiKeyBinds {
                 {
                     GuiController.singleton.infoHelpMenuAction();
                 }
+                case F12->
+                {
+                    CheckMenuItem terminalButton = GuiController.singleton.viewTerminalMenuItem;
+                    GuiConsole.terminalOverrideOut(!terminalButton.isSelected());//Override output, this is required due to a javafx bug...
+                    terminalButton.setSelected(!terminalButton.isSelected());
+                }
             }
-            
             
             if (!event.isControlDown())
                 return;
@@ -97,9 +105,20 @@ public class GuiKeyBinds {
             System.out.println(String.format("GuiKeyCodes::setupKeyCodes() : '%s' SUBMENU NOT FOUND!",menuItemName));
             return;
         }
-        KeyCombination saveKeybind = keyAccelerator;
-        saveMenuItem.setAccelerator(saveKeybind);
+        addAccelerator(keyAccelerator, saveMenuItem);
     }
+    /**
+     * PURELY DECORATION! No function comes from this!
+     * This will inform the user of specific keybinds in the main menu. (CTRL+S, ect...)
+     * @param keyAccelerator The key accelerator to add to the specified menu
+     * @param menuItem A MenuItem which the accelerator be applied.
+     */
+    public static void addAccelerator(KeyCodeCombination keyAccelerator, MenuItem menuItem)
+    {
+        KeyCombination saveKeybind = keyAccelerator;
+        menuItem.setAccelerator(saveKeybind);
+    }
+    
     /**
      * Realistically, there should be no need to search for these menus.
      * However, to limit people poking in the .FXML file, this has been created.
