@@ -1,6 +1,7 @@
 package org.umlproject.UI;
 
 import java.io.File;
+import java.io.PrintStream;
 import java.util.*;
 
 import javafx.animation.KeyFrame;
@@ -45,9 +46,13 @@ public class GuiController implements DocumentListner {
     @FXML 
     private Text workspaceText;
     @FXML
-    private AnchorPane consoleAnchorPane;
+    public AnchorPane consoleAnchorPane;
     @FXML
     private VBox rootVBox;
+    @FXML
+    public TextArea consoleOut;
+    @FXML
+    public CheckMenuItem viewTerminalMenuItem;
 
     final double initialClassBoxWidthOffset = 100;
     final double initialClassBoxHeightOffset = 100;
@@ -72,6 +77,10 @@ public class GuiController implements DocumentListner {
 
         singleton = this;
 
+        PrintStream ps = new PrintStream(new GuiConsole(consoleOut));
+        System.setOut(ps);
+        System.setErr(ps); 
+        
         world.setLayoutX(0.0);
         world.setLayoutY(0.0);
 
@@ -86,11 +95,11 @@ public class GuiController implements DocumentListner {
         this.addClassButton.setDefaultButton(false);
         this.menubar.setViewOrder(-100);
         this.console.setViewOrder(-100);
+        this.consoleOut.setViewOrder(-100);
         this.workspaceText.setViewOrder(1000000);//To the back of the universe
-
-        setTerminalVisibility(false);
+        
+        
     }
-
 
     @FXML
     public void aboutHelpMenuAction() {
@@ -105,6 +114,7 @@ public class GuiController implements DocumentListner {
         GuiResizeManager.bindToSizeUpdates();
         GuiCamera.setupCamera();
         GuiKeyBinds.setupKeyBinds();
+        GuiConsole.setupConsole();
         //Setup button icons.
         applyIconsToButtons(addClassButton,"/org/umlproject/icons/new_class.png");
         applyIconsToButtons(addRelationshipButton,"/org/umlproject/icons/new_relationship.png");
