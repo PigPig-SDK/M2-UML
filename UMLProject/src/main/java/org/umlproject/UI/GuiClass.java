@@ -2,7 +2,6 @@ package org.umlproject.UI;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
-import javafx.scene.Group;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
@@ -17,10 +16,16 @@ import java.util.*;
 import java.util.Set;
 import javafx.geometry.Bounds;
 import javafx.geometry.Rectangle2D;
+import javafx.scene.layout.Pane;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontPosture;
+import javafx.scene.text.FontWeight;
 import org.umlproject.UMLClass;
 
 public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositional {
-    private Group world;
+    public static final Font DEFAULT_CLASS_FONT = Font.font("Monospaced", FontWeight.NORMAL, FontPosture.REGULAR, 18);
+    
+    private Pane world;
     private UMLClass parentClass;
     double mouseAnchorX;
     double mouseAnchorY;
@@ -40,7 +45,7 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
      * @param world, representing the group that holds all class boxes
      * @param parentClass, the UMLClass which a given GuiClass instance listens to.
      */
-    public GuiClass(Group world, UMLClass parentClass)
+    public GuiClass(Pane world, UMLClass parentClass)
     {
         this.world = world;
         world.setFocusTraversable(true);//lets world request focus.
@@ -70,8 +75,10 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
       */
     private void makeDraggable(StackPane nodeBackground) {
         nodeBackground.setOnMousePressed(e -> {
-            this.mouseAnchorX = e.getSceneX() - nodeBackground.getLayoutX();
-            this.mouseAnchorY = e.getSceneY() - nodeBackground.getLayoutY();
+            Point2D mouseWorldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
+            Point2D paneWorldSpace = new Point2D(nodeBackground.getLayoutX(), nodeBackground.getLayoutY());     
+            this.mouseAnchorX = mouseWorldSpace.getX() - paneWorldSpace.getX();
+            this.mouseAnchorY = mouseWorldSpace.getY() - paneWorldSpace.getY();
             nodeBackground.requestFocus();
             e.consume(); // Prevent event from propagating to other nodes
         });
@@ -82,9 +89,10 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         });
 
         this.nodeBackground.setOnMouseDragged(e -> {
-            double newX = e.getSceneX() - this.mouseAnchorX;
-            double newY = e.getSceneY() - this.mouseAnchorY;
-            this.parentClass.setLocation(new Point2D(newX, newY));
+            //I swear if i have to instantiate another immutable point2d im going to create a wrapper class.
+            Point2D worldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
+            Point2D selectionOffset = new Point2D(worldSpace.getX() - this.mouseAnchorX, worldSpace.getY() - this.mouseAnchorY);
+            this.parentClass.setLocation(selectionOffset);
             this.nodeBackground.getParent().requestLayout(); // Force layout update
             e.consume(); // Prevent event from propagating to other nodes
         });
@@ -245,6 +253,7 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
                     event.consume();
                 });
                 TextField methodText = new TextField(nextMethods.get(j).toString());
+                methodText.setPrefWidth(300);
                 methodRow.getChildren().addAll(deleteMethod, methodText);
                 linkTextFieldToMethod(methodRow);
                 methodText.setUserData(methodText.getText());
@@ -386,6 +395,7 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
             fieldRow.setUserData(nextField);
             fieldAsString = String.format("%s %s %s",nextField.getVisibility(), nextField.getTypeAsString(), nextField.getName());
             TextField nextTextField = new TextField(fieldAsString);
+            nextTextField.setPrefWidth(250);
             //setUserData as the string representing the field so that we can easily delete the field later if need be.
             nextTextField.setUserData(fieldAsString);
             Button deleteField = new Button("-");
@@ -416,8 +426,8 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         this.parentVBox = new VBox(10);
         this.parentVBox.setSpacing(10);
         this.parentVBox.setPadding(new Insets(10, 10, 10, 10));
-        this.parentVBox.setMinWidth(200);
-        this.parentVBox.setPrefWidth(250);
+        this.parentVBox.setMinWidth(300);
+        this.parentVBox.setPrefWidth(300);
         
         this.nodeBackground = new StackPane();
         this.nodeBackground.setManaged(false);
@@ -425,16 +435,18 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
 
         //create a rectangle background for the class.
         Rectangle background = new Rectangle();
-        background.setFill(Color.MINTCREAM);
+        background.setFill(GuiColor.CLASS_BACKGROUND_COLOR);
         background.setStroke(Color.BLACK);
         background.widthProperty().bind(this.parentVBox.widthProperty().add(20));
         background.heightProperty().bind(this.parentVBox.heightProperty().add(20));
+        background.setArcHeight(30);
+        background.setArcWidth(30);
         //Strip TextFields of focus if we click on rectangle.
 
         this.background = background;
         //Create modifiable className and put into VBox
         TextField classNameField = new TextField(parentClass.getClassName());
-        classNameField.setStyle("-fx-font-size: 10px; -fx-font-weight: bold");
+        classNameField.setStyle("-fx-font-size: 16px; -fx-font-weight: bold");
         classNameField.setMaxWidth(250);
         classNameField.setFocusTraversable(false);
         //Make it so the UMLClass class name updates after modifying classNameField
@@ -444,7 +456,8 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         //set up dataFields
         //retrieve dataFields hashMap, retrieve keySet, convert into an array, then cycle through each
         //and create a textField and put in dataFieldsVBox.
-        Label dataFieldsLabel = new Label("Data Fields:");
+        Label dataFieldsLabel = new Label("Data Fields");
+        dataFieldsLabel.setFont(DEFAULT_CLASS_FONT);
         HashMap<String, UMLDataField> UMLDataFields = desiredElement.getFieldsAll();
         convertDataFieldsToHBoxes(UMLDataFields);
         //create AddField Button, set action to make a new DataField
@@ -457,13 +470,14 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
 
         //-------------------------------------------------------------------------------------------
         //create methods
-        Label methodsLabel = new Label("Methods:");
+        Label methodsLabel = new Label("Methods");
+        methodsLabel.setFont(DEFAULT_CLASS_FONT);
         HashMap<String, ArrayList<UMLMethod>> umlMethods = desiredElement.getMethodsAll();
         convertMethodsToHBoxes(umlMethods);
         Button addMethod = new Button("Add method");
         addMethodButtonClickable(addMethod);
         this.parentVBox.getChildren().addAll(methodsLabel, this.methodTextFields, addMethod);
-//-------------------------------------------------------------------------------------------------
+        //-------------------------------------------------------------------------------------------------
 
         this.nodeBackground.getChildren().addAll(background, this.parentVBox);
 
@@ -545,7 +559,7 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         }
         else
         {
-            this.background.setFill(Color.MINTCREAM);
+            this.background.setFill(GuiColor.CLASS_BACKGROUND_COLOR);
             this.background.setStrokeWidth(0);
         }
     }

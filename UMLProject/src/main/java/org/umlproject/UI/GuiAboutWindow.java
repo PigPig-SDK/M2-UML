@@ -14,7 +14,7 @@ import javafx.util.Duration;
  * Displays the About dialog for the UML Editor.
  * Mirrors GuiHelp's style and lists contributors and project details.
  */
-public class AboutWindow {
+public class GuiAboutWindow {
 
     public static void showAbout() {
         Alert aboutBox = new Alert(Alert.AlertType.INFORMATION);
