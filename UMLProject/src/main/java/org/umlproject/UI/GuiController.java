@@ -1,6 +1,7 @@
 package org.umlproject.UI;
 
 import java.io.File;
+import java.io.PrintStream;
 import java.util.*;
 
 import javafx.animation.KeyFrame;
@@ -37,7 +38,7 @@ public class GuiController implements DocumentListner {
     @FXML
     private Pane world;//'World' is where all UI objects should live.
     @FXML
-    private TextField console;
+    public TextField console;
     @FXML
     private MenuBar menubar;
     @FXML
@@ -45,9 +46,13 @@ public class GuiController implements DocumentListner {
     @FXML 
     private Text workspaceText;
     @FXML
-    private AnchorPane consoleAnchorPane;
+    public AnchorPane consoleAnchorPane;
     @FXML
     private VBox rootVBox;
+    @FXML
+    public TextArea consoleOut;
+    @FXML
+    public CheckMenuItem viewTerminalMenuItem;
 
     final double initialClassBoxWidthOffset = 100;
     final double initialClassBoxHeightOffset = 100;
@@ -70,7 +75,7 @@ public class GuiController implements DocumentListner {
         //Bind to umldocument
         UMLDocument.documentListners.add(this);
 
-        this.singleton = this;
+        singleton = this;
 
         this.world.setLayoutX(0.0);
         this.world.setLayoutY(0.0);
@@ -87,11 +92,9 @@ public class GuiController implements DocumentListner {
         this.addClassButton.setDefaultButton(false);
         this.menubar.setViewOrder(-100);
         this.console.setViewOrder(-100);
+        this.consoleOut.setViewOrder(-100);
         this.workspaceText.setViewOrder(1000000);//To the back of the universe
-
-        setTerminalVisibility(false);
     }
-
 
     @FXML
     public void aboutHelpMenuAction() {
@@ -106,6 +109,7 @@ public class GuiController implements DocumentListner {
         GuiResizeManager.bindToSizeUpdates();
         GuiCamera.setupCamera();
         GuiKeyBinds.setupKeyBinds();
+        GuiConsole.setupConsole();
         //Setup button icons.
         applyIconsToButtons(addClassButton,"/org/umlproject/icons/new_class.png");
         applyIconsToButtons(addRelationshipButton,"/org/umlproject/icons/new_relationship.png");
@@ -426,15 +430,5 @@ public class GuiController implements DocumentListner {
         button.setOnMouseExited(e -> iconView.setOpacity(0.7));
         //Set graphic
         button.setGraphic(iconView);
-    }
-    /**
-     * Used for hiding console.
-     * @param isShown : If the console should be displayed
-     */
-    public void setTerminalVisibility(boolean isShown)
-    {
-        this.console.setVisible(isShown);
-        this.console.setManaged(isShown);
-        this.consoleAnchorPane.setVisible(isShown);
     }
 }

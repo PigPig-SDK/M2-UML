@@ -33,10 +33,12 @@
 -->
 
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckMenuItem?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.SeparatorMenuItem?>
+<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.Pane?>
@@ -67,6 +69,11 @@
             <MenuItem mnemonicParsing="false" onAction="#unSelectAllEditMenuAction" text="Unselect All" />
           </items>
         </Menu>
+            <Menu mnemonicParsing="false" text="View">
+               <items>
+                  <CheckMenuItem fx:id="viewTerminalMenuItem" mnemonicParsing="false" text="Terminal" />
+               </items>
+            </Menu>
           <Menu mnemonicParsing="false" text="Help">
               <items>
                   <MenuItem mnemonicParsing="false" onAction="#infoHelpMenuAction" text="Help" />
@@ -88,9 +95,14 @@
             </Pane>
             <Button fx:id="addRelationshipButton" defaultButton="true" focusTraversable="false" layoutX="14.0" layoutY="80.0" mnemonicParsing="false" onAction="#addRelationshipButtonPushed" prefHeight="50.0" prefWidth="50.0" text="+R" textAlignment="CENTER" />
             <Button fx:id="addClassButton" defaultButton="true" focusTraversable="false" layoutX="14.0" layoutY="14.0" mnemonicParsing="false" onAction="#addClassButtonPushed" prefHeight="50.0" prefWidth="50.0" text="+C" textAlignment="CENTER" />
+            <TextArea fx:id="consoleOut" editable="false" focusTraversable="false" nodeOrientation="LEFT_TO_RIGHT" prefHeight="351.0" prefWidth="640.0" style="-fx-background-color: transparent;" styleClass="consoleOut" stylesheets="@consoleOut.css" wrapText="true">
+               <font>
+                  <Font name="Monospaced Regular" size="20.0" />
+               </font>
+            </TextArea>
          </children>
       </Pane>
-      <AnchorPane fx:id="consoleAnchorPane" prefHeight="29.0" prefWidth="666.0" style="-fx-background-color: #33312d;">
+      <AnchorPane fx:id="consoleAnchorPane" prefHeight="29.0" prefWidth="666.0" style="-fx-background-color: transparent;">
          <children>
             <TextField fx:id="console" focusTraversable="false" layoutY="3.0" onAction="#consoleSubmit" prefHeight="29.0" prefWidth="640.0" promptText="Console Input" stylesheets="@stylesheet.css" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
          </children>

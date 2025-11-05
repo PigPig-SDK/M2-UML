@@ -119,7 +119,7 @@ public class UMLClassTest {
         clazz.addMethod(m1);
         assertFalse(clazz.addMethod(m2));
     }
-
+    
     @Test
     void addMethod_invalidInputs_returnFalse() {
         // case 1: null method
@@ -141,7 +141,6 @@ public class UMLClassTest {
         UMLMethod badParamName = new UMLMethod("f", new ArrayList<>(List.of(badParam)));
         assertFalse(clazz.addMethod(badParamName));
     }
-
 
     @Test
     void removeMethod_invalidNameOrIndex_returnsFalseOrThrows() {
