@@ -59,6 +59,9 @@ public class UMLMethod implements Cloneable
             }
 
         }
+
+        AutoComplete.getInstance().addWord(param.getName());
+
         parameters.add(param);
         return true;
     }
@@ -76,6 +79,9 @@ public class UMLMethod implements Cloneable
                 return true;
             }
         }
+
+        AutoComplete.getInstance().removeWord(paramToRemove.getName());
+
         return false;
     }
 

@@ -16,6 +16,7 @@ public class Main extends Application
 {
 
     private static final String terminalLaunchString = "-terminal";
+
     public static Stage mainStage;
     public static Scene currentScene;
     
@@ -70,13 +71,12 @@ public class Main extends Application
         //If terminal launch option is requested. Override JAVAFX.
         if(args.length == 1 && args[0].equals(terminalLaunchString))
         {
-            AutoComplete autoScanner = new AutoComplete();
             //Scanner scanner = new Scanner(System.in);
             TerminalHandler.runCommand("help");
             TerminalHandler.printLineBreak();
             do
             {
-                TerminalHandler.runCommand(autoScanner.lineInConsole().toLowerCase());
+                TerminalHandler.runCommand(AutoComplete.getInstance().lineInConsole().toLowerCase());
             }while(TerminalHandler.isRunning);
             return;
         }

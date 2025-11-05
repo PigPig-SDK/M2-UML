@@ -176,7 +176,7 @@ public class UMLDocument
                 }
             }
         }
-        
+
         removedClass.setClassName(newName);
         classSet.put(newName, removedClass);
         relationshipList.put(newName, tempRelationships);

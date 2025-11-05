@@ -32,7 +32,7 @@ public class CommandAdd extends BaseCommand
             case "relationship"-> addRelationship(args);
             case "method"-> addMethod(args);
             case "field"-> addField(args);
-            case "param"->addParam(args);
+            case "param"-> addParam(args);
             default -> {
                 System.out.println(description());
             }
