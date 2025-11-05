@@ -2,7 +2,6 @@ package org.umlproject.UI;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
-import javafx.scene.Group;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
@@ -16,7 +15,6 @@ import org.umlproject.*;
 import java.util.*;
 import java.util.Set;
 import javafx.geometry.Bounds;
-import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Font;
@@ -255,6 +253,7 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
                     event.consume();
                 });
                 TextField methodText = new TextField(nextMethods.get(j).toString());
+                methodText.setPrefWidth(300);
                 methodRow.getChildren().addAll(deleteMethod, methodText);
                 linkTextFieldToMethod(methodRow);
                 methodText.setUserData(methodText.getText());
@@ -396,6 +395,7 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
             fieldRow.setUserData(nextField);
             fieldAsString = String.format("%s %s %s",nextField.getVisibility(), nextField.getTypeAsString(), nextField.getName());
             TextField nextTextField = new TextField(fieldAsString);
+            nextTextField.setPrefWidth(250);
             //setUserData as the string representing the field so that we can easily delete the field later if need be.
             nextTextField.setUserData(fieldAsString);
             Button deleteField = new Button("-");
@@ -426,8 +426,8 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         this.parentVBox = new VBox(10);
         this.parentVBox.setSpacing(10);
         this.parentVBox.setPadding(new Insets(10, 10, 10, 10));
-        this.parentVBox.setMinWidth(200);
-        this.parentVBox.setPrefWidth(250);
+        this.parentVBox.setMinWidth(300);
+        this.parentVBox.setPrefWidth(300);
         
         this.nodeBackground = new StackPane();
         this.nodeBackground.setManaged(false);
@@ -446,7 +446,7 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         this.background = background;
         //Create modifiable className and put into VBox
         TextField classNameField = new TextField(parentClass.getClassName());
-        classNameField.setStyle("-fx-font-size: 10px; -fx-font-weight: bold");
+        classNameField.setStyle("-fx-font-size: 16px; -fx-font-weight: bold");
         classNameField.setMaxWidth(250);
         classNameField.setFocusTraversable(false);
         //Make it so the UMLClass class name updates after modifying classNameField
