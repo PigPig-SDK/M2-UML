@@ -85,11 +85,6 @@
     </MenuBar>
       <Pane fx:id="viewpane" prefHeight="398.0" prefWidth="640.0" style="-fx-background-color: #33312d;">
          <children>
-            <TextArea fx:id="consoleOut" prefHeight="351.0" prefWidth="640.0" style="-fx-background-color: transparent;" styleClass="consoleOut" stylesheets="@consoleOut.css">
-               <font>
-                  <Font name="Monospaced Regular" size="20.0" />
-               </font>
-            </TextArea>
             <Group fx:id="world">
                <children>
                   <Text fx:id="workspaceText" fill="#534b3e" layoutY="214.0" strokeType="OUTSIDE" strokeWidth="0.0" text="WORKSPACE" textAlignment="CENTER" wrappingWidth="640.28173828125">
@@ -100,6 +95,11 @@
                </children></Group>
             <Button fx:id="addRelationshipButton" defaultButton="true" focusTraversable="false" layoutX="14.0" layoutY="80.0" mnemonicParsing="false" onAction="#addRelationshipButtonPushed" prefHeight="50.0" prefWidth="50.0" text="+R" textAlignment="CENTER" />
             <Button fx:id="addClassButton" defaultButton="true" focusTraversable="false" layoutX="14.0" layoutY="14.0" mnemonicParsing="false" onAction="#addClassButtonPushed" prefHeight="50.0" prefWidth="50.0" text="+C" textAlignment="CENTER" />
+            <TextArea fx:id="consoleOut" editable="false" focusTraversable="false" nodeOrientation="LEFT_TO_RIGHT" prefHeight="351.0" prefWidth="640.0" style="-fx-background-color: transparent;" styleClass="consoleOut" stylesheets="@consoleOut.css" wrapText="true">
+               <font>
+                  <Font name="Monospaced Regular" size="20.0" />
+               </font>
+            </TextArea>
          </children>
       </Pane>
       <AnchorPane fx:id="consoleAnchorPane" prefHeight="29.0" prefWidth="666.0" style="-fx-background-color: transparent;">
