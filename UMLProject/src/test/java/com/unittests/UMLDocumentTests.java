@@ -45,7 +45,7 @@ public class UMLDocumentTests
         assertEquals(1, umldocument.getClassCount());
         assertNull(testclass);
     }
-    /*
+    
     @Test
     public void deleteClass_successfulDeletion_success()
     {
@@ -67,7 +67,7 @@ public class UMLDocumentTests
         // Assert
         assertNotNull(umldocument.removeClass("testclass1"));
     }
-    */
+    
     @Test
     public void deleteClass_classDoesntExist_success()
     {
@@ -99,7 +99,7 @@ public class UMLDocumentTests
         // Assert
         assertFalse(umldocument.renameClass("test class 2", "test class 3"));
     }
-    /*
+    
     @Test
     public void renameClass_successfulRename_success()
     {
@@ -114,9 +114,9 @@ public class UMLDocumentTests
         assertNull(umldocument.getClass("testclass1"));
         assertNotNull(umldocument.getClass("testclass2"));
     }
-    */
+    
 
-    /*
+    
     @Test
     public void getClass_doesntExist_success()
     {
@@ -129,7 +129,7 @@ public class UMLDocumentTests
         assertEquals(testclass1,testclass2);
         assertNull(umldocument.getClass("this class isnt real"));
     }
-     */
+     
     @Test
     public void addRelationship_nonExisting_success()
     {
