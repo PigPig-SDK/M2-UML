@@ -19,5 +19,6 @@ public class GuiResizeManager
         Pane p = GuiController.singleton.getViewPane();
         p.setPrefHeight(Main.mainStage.getHeight());
         p.setPrefWidth(Main.mainStage.getWidth());
+        GuiConsole.updateSize();
     }
 }
