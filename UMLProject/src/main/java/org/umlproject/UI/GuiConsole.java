@@ -2,6 +2,7 @@
 package org.umlproject.UI;
 
 import java.io.OutputStream;
+import java.io.PrintStream;
 import javafx.application.Platform;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.MenuItem;
@@ -25,12 +26,16 @@ public class GuiConsole extends OutputStream {
         if (c == '\n') {
             String line = buffer.toString();
             buffer.setLength(0); // clear buffer
-            Platform.runLater(() -> console.setText(line + "\n" + console.getText()));
+            Platform.runLater(() -> console.setText(console.getText() + "\n" + line));
         } else {
             buffer.append(c);
         }
     }   
     public static void setupConsole() {
+        
+        PrintStream ps = new PrintStream(new GuiConsole( GuiController.singleton.consoleOut));
+        System.setOut(ps);
+        System.setErr(ps); 
         
         AnchorPane consoleAnchorPane = GuiController.singleton.consoleAnchorPane;
         CheckMenuItem viewTerminalMenuItem = GuiController.singleton.viewTerminalMenuItem;
@@ -42,16 +47,11 @@ public class GuiConsole extends OutputStream {
         consoleOut.managedProperty().bind(consoleOut.visibleProperty());
         consoleAnchorPane.visibleProperty().bind(viewTerminalMenuItem.selectedProperty());
         consoleAnchorPane.managedProperty().bind(consoleAnchorPane.visibleProperty());
-        //consoleOutAnchorPane.visibleProperty().bind(viewTerminalMenuItem.selectedProperty());
-        //consoleOutAnchorPane.managedProperty().bind(consoleOutAnchorPane.visibleProperty());
-       
-
-       
     }
     
     public static void updateSize() {
         TextArea consoleOut = GuiController.singleton.consoleOut;
-        consoleOut.setPrefHeight(Main.mainStage.getHeight()-60);
+        consoleOut.setPrefHeight(Main.mainStage.getHeight() - 80);//Allow space for console at bottom...
         consoleOut.setPrefWidth(Main.mainStage.getWidth());
     }
 

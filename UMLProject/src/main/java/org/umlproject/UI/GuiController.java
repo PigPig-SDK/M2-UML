@@ -38,7 +38,7 @@ public class GuiController implements DocumentListner {
     @FXML
     private Group world;//'World' is where all UI objects should live.
     @FXML
-    private TextField console;
+    public TextField console;
     @FXML
     private MenuBar menubar;
     @FXML
@@ -76,11 +76,6 @@ public class GuiController implements DocumentListner {
         UMLDocument.documentListners.add(this);
 
         singleton = this;
-
-        PrintStream ps = new PrintStream(new GuiConsole(consoleOut));
-        System.setOut(ps);
-        System.setErr(ps); 
-        
         world.setLayoutX(0.0);
         world.setLayoutY(0.0);
 
@@ -97,8 +92,6 @@ public class GuiController implements DocumentListner {
         this.console.setViewOrder(-100);
         this.consoleOut.setViewOrder(-100);
         this.workspaceText.setViewOrder(1000000);//To the back of the universe
-        
-        
     }
 
     @FXML
@@ -435,15 +428,5 @@ public class GuiController implements DocumentListner {
         button.setOnMouseExited(e -> iconView.setOpacity(0.7));
         //Set graphic
         button.setGraphic(iconView);
-    }
-    /**
-     * Used for hiding console.
-     * @param isShown : If the console should be displayed
-     */
-    public void setTerminalVisibility(boolean isShown)
-    {
-        this.console.setVisible(isShown);
-        this.console.setManaged(isShown);
-        this.consoleAnchorPane.setVisible(isShown);
     }
 }
