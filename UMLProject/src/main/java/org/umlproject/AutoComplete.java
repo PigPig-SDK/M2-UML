@@ -27,8 +27,8 @@ public class AutoComplete implements DocumentListner{
         this.autoWordList =  new ArrayList<>(Arrays.asList(
                 "add", "help", "list", "load", "quit", "remove", "rename", "save",
                 "class", "classes", "relationship", "method","field", "param", "params",
-                "Add", "Help", "List", "Load", "Quit", "Remove", "Rename", "Save",
-                "Class", "Classes", "Relationship", "Method", "Field", "Param", "Params"));
+                "byte", "short", "int", "integer", "long", "float", "double", "char", "character",
+                "bool", "boolean", "aggregation", "composition", "generalization", "realization"));
 
         reader = newLineReader();
         UMLDocument.documentListners.add(this);
