@@ -51,8 +51,6 @@ public class UMLClass extends UMLDiagramElement {
             throw new IllegalArgumentException("The arguments provided are invalid!");
         }
 
-        Main.autoScanner.addWordSet(fields.keySet());
-        Main.autoScanner.addWordSet(methods.keySet());
         this.className = className;
         this.fields = fields;
         this.methods = methods;
@@ -131,6 +129,8 @@ public class UMLClass extends UMLDiagramElement {
             return false;
         }
 
+        AutoComplete.getInstance().addWord(name);
+
         fields.put(name, field);
         updateGUI();
         return true;
@@ -155,6 +155,9 @@ public class UMLClass extends UMLDiagramElement {
         boolean isRemoved = fields.remove(fieldName) != null;
         if(isRemoved)//Update our GUI listener.
             updateGUI();
+
+        AutoComplete.getInstance().removeWord(fieldName);
+
         return isRemoved;
     }
 
@@ -301,6 +304,14 @@ public class UMLClass extends UMLDiagramElement {
 
         //no duplicates found. Safe to add to list.
         list.add(method);
+
+        AutoComplete.getInstance().addWord(name);
+        if(!method.getParameters().isEmpty()){
+            for(UMLParameter p :  method.getParameters()){
+                AutoComplete.getInstance().addWord(p.getName());
+            }
+        }
+
         methods.put(name, list);
         updateGUI();
         return true;
@@ -329,6 +340,14 @@ public class UMLClass extends UMLDiagramElement {
         boolean isRemoved = methods.get(methodName).remove(index) != null;
         if(isRemoved)
             updateGUI();
+
+        AutoComplete.getInstance().removeWord(methodName);
+        if(!getMethods(methodName).get(index).getParameters().isEmpty()){
+            for(UMLParameter p :  getMethods(methodName).get(index).getParameters()) {
+                AutoComplete.getInstance().removeWord(p.getName());
+            }
+        }
+
         return isRemoved;
     }
 

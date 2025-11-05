@@ -117,7 +117,6 @@ public class UMLDocument
             removeClassKeyFromRelationships(className);
             documentListners.forEach(o->o.onClassRemove(removed));
         }
-        Main.autoScanner.removeWord(className);
         classSet.remove(className);
         return removed;
     }
@@ -178,8 +177,6 @@ public class UMLDocument
             }
         }
 
-        Main.autoScanner.removeWord(originClassName);
-        Main.autoScanner.addWord(newName);
         removedClass.setClassName(newName);
         classSet.put(newName, removedClass);
         relationshipList.put(newName, tempRelationships);
@@ -477,7 +474,6 @@ public class UMLDocument
         
         UMLClass umlclass = new UMLClass(className);
 
-        Main.autoScanner.addWord(className);
         classSet.put(className, umlclass);
         ArrayList<UMLRelationship> newList = new ArrayList<>();
         relationshipList.put(className, newList);
