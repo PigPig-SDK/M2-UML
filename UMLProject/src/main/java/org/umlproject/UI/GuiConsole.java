@@ -28,6 +28,8 @@ public class GuiConsole extends OutputStream {
 
     private static final double MESSAGE_APPEAR_TIME = 7;//In seconds
     
+    private static PrintStream printStream;
+    
     private static PrintStream initialOutputStream; 
 
     @Override
@@ -53,9 +55,7 @@ public class GuiConsole extends OutputStream {
         //Store OG output stream
         initialOutputStream = System.out;
         
-        PrintStream ps = new PrintStream(new GuiConsole(consoleOut));
-        
-        setSystemPrintLocation(ps);
+        printStream = new PrintStream(new GuiConsole(consoleOut));
         
         consoleOut.setDisable(true);
         consoleOut.setMouseTransparent(true);
@@ -71,13 +71,16 @@ public class GuiConsole extends OutputStream {
         consoleAnchorPane.managedProperty().bind(consoleAnchorPane.visibleProperty());
         
         viewTerminalMenuItem.setOnAction(event -> {
-            
-            if(viewTerminalMenuItem.isSelected())//Show in our override console
-                setSystemPrintLocation(ps);
-            else
-                setSystemPrintLocation(initialOutputStream);
+            terminalOverrideOut(viewTerminalMenuItem.isSelected());
         });
         setupAnimationTimer();
+    }
+    public static void terminalOverrideOut(boolean isOverriding)
+    {
+        if(isOverriding)//Show in our override console
+            setSystemPrintLocation(printStream);
+        else
+            setSystemPrintLocation(initialOutputStream);
     }
     private static void setSystemPrintLocation(PrintStream ps)
     {
