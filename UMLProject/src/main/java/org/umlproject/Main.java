@@ -43,7 +43,9 @@ public class Main extends Application
                 mainStage.setTitle("UML editor");
                 GuiController.singleton.lateInitialization();
             }
-            catch(Exception e){}
+            catch(Exception e){
+                System.out.println(e);//Stop crash, print error to user.
+            }
         }
         else if (buttonObject == buttonTerminal) {
             //Open terminal.. I'll let someone else figure that out.
