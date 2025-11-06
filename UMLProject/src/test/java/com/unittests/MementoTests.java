@@ -16,6 +16,16 @@ public class MementoTests {
         }
     }
     
+    private class TestListener implements MementoListener<ClonableClass>
+    {
+        public int updateCounter = 0;
+        @Override
+        public void update(Memento<ClonableClass> memento) {
+            updateCounter++;
+        }
+        
+    }
+    
     @Test
     void clonable_isDeepCopy_Success() throws CloneNotSupportedException {
         //Arrange
@@ -153,8 +163,59 @@ public class MementoTests {
         assertEquals(4, memento.getHistoryLength());
         assertEquals(1, memento.getRedoHistoryLength());
         
-        memento.clearHistory(memento.getInstance());//Reset the current instance as 'king'
+        memento.resetHistory(memento.getInstance());//Reset the current instance as 'king'
         assertEquals(1, memento.getHistoryLength());
         assertEquals(0, memento.getRedoHistoryLength());
+    }
+    @Test
+    void listener_saveState_callsback() {
+        //Arrange
+        ClonableClass cloneClass = new ClonableClass(0);
+        Memento<ClonableClass> memento = new Memento<ClonableClass>(cloneClass);
+        TestListener testListener = new TestListener();
+        memento.addListener(testListener);
+        //Act
+        memento.saveState();
+        //Assert
+        assertEquals(1, testListener.updateCounter);
+    }
+    @Test
+    void listener_undo_callsback() {
+        //Arrange
+        ClonableClass cloneClass = new ClonableClass(0);
+        Memento<ClonableClass> memento = new Memento<ClonableClass>(cloneClass);
+        TestListener testListener = new TestListener();
+        memento.addListener(testListener);
+        //Act
+        memento.saveState();
+        memento.undo();
+        //Assert
+        assertEquals(2, testListener.updateCounter);
+    }
+    @Test
+    void listener_redo_callsback() {
+        //Arrange
+        ClonableClass cloneClass = new ClonableClass(0);
+        Memento<ClonableClass> memento = new Memento<ClonableClass>(cloneClass);
+        TestListener testListener = new TestListener();
+        memento.addListener(testListener);
+        //Act
+        memento.saveState();
+        memento.undo();
+        memento.redo();
+        //Assert
+        assertEquals(3, testListener.updateCounter);
+    }
+    @Test
+    void listener_clearHistory_callsback() {
+        //Arrange
+        ClonableClass cloneClass = new ClonableClass(0);
+        Memento<ClonableClass> memento = new Memento<ClonableClass>(cloneClass);
+        TestListener testListener = new TestListener();
+        memento.addListener(testListener);
+        //Act
+        memento.resetHistory(cloneClass);
+        //Assert
+        assertEquals(1, testListener.updateCounter);
     }
 }
