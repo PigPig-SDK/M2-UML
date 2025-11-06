@@ -38,7 +38,11 @@ public final class Memento<T extends Copyable<T>>
      */
     public void undo()
     {
-        
+        if(!(undoHistory.size() == 1)){
+            redoHistory.push(undoHistory.pop());
+        }
+        instance = undoHistory.peek().clone();
+
         callListenersToUpdate();
     }
     /**
@@ -47,7 +51,13 @@ public final class Memento<T extends Copyable<T>>
      */
     public void redo()
     {
-        
+        if(redoHistory.isEmpty()){
+            return;
+        }
+
+        undoHistory.push(redoHistory.pop());
+        instance = undoHistory.peek().clone();
+
         callListenersToUpdate();
     }
     /**
@@ -82,7 +92,7 @@ public final class Memento<T extends Copyable<T>>
      */
     public void addListener(MementoListener<T> mementoListener)
     {
-        if(listeners.contains(mementoListener))        
+        if(!listeners.contains(mementoListener))
             listeners.add(mementoListener);
     }
     /**

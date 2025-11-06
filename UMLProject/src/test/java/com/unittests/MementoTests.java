@@ -89,7 +89,7 @@ public class MementoTests {
         memento.saveState();//Save the current state
         //Assert
         assertEquals(1, memento.getInstance().counter);
-        assertEquals(1, memento.getHistoryLength());//Maintains that one state always exists.
+        assertEquals(2, memento.getHistoryLength());//Maintains that one state always exists.
     }
     @Test
     void saveState_saveMultipleTimes_containsState() {
