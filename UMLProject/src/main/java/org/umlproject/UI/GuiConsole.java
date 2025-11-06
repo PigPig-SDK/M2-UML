@@ -3,11 +3,11 @@ package org.umlproject.UI;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.scene.control.CheckMenuItem;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.AnchorPane;
 import org.umlproject.Main;
@@ -15,7 +15,17 @@ import org.umlproject.Main;
 public class GuiConsole extends OutputStream {
     private static TextArea console;
     
-
+    //Commands that cannot be used while in GUI mode
+    public static List<String> restrictedCommands = List.of(
+        "remove method",
+        "remove param",
+        "rename method",
+        "rename param",
+        "list class",
+        "list classes"
+    );
+    
+    
     public GuiConsole(TextArea console) {
         this.console = console;
     }
@@ -45,9 +55,10 @@ public class GuiConsole extends OutputStream {
         } else {
             buffer.append(c);
         }
+        
     }   
+    
     public static void setupConsole() {
-
         AnchorPane consoleAnchorPane = GuiController.singleton.consoleAnchorPane;
         CheckMenuItem viewTerminalMenuItem = GuiController.singleton.viewTerminalMenuItem;
         TextArea consoleOut = GuiController.singleton.consoleOut;
@@ -75,6 +86,7 @@ public class GuiConsole extends OutputStream {
         });
         setupAnimationTimer();
     }
+    
     public static void terminalOverrideOut(boolean isOverriding)
     {
         if(isOverriding)//Show in our override console
@@ -82,6 +94,7 @@ public class GuiConsole extends OutputStream {
         else
             setSystemPrintLocation(initialOutputStream);
     }
+    
     private static void setSystemPrintLocation(PrintStream ps)
     {
         System.setOut(ps);
@@ -134,3 +147,4 @@ public class GuiConsole extends OutputStream {
     }
 
 }
+

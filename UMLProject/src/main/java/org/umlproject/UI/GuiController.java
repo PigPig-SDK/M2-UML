@@ -204,8 +204,21 @@ public class GuiController implements DocumentListner {
     @FXML
     private void consoleSubmit()
     {
-        TerminalHandler.runCommand(console.getText());
-        console.setText("");
+       
+        String cmd = console.getText();
+        List<String> restrictedcmds = GuiConsole.restrictedCommands;
+        
+        for (String SearchValue : restrictedcmds) {
+        if (cmd.contains(SearchValue)) {
+            System.out.println("This command is unavailable in GUI mode");
+            console.setText("");
+            return;
+        }
+      }
+        
+    TerminalHandler.runCommand(console.getText());
+    console.setText("");
+        
     }
     //----------------- UMLGuiController Interface -----------------
 
