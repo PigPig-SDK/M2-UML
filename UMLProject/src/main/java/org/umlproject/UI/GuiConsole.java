@@ -10,6 +10,7 @@ import javafx.application.Platform;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.AnchorPane;
+import org.umlproject.AutoComplete;
 import org.umlproject.Main;
 
 public class GuiConsole extends OutputStream {
@@ -20,9 +21,7 @@ public class GuiConsole extends OutputStream {
         "remove method",
         "remove param",
         "rename method",
-        "rename param",
-        "list class",
-        "list classes"
+        "rename param"
     );
     
     
@@ -55,14 +54,13 @@ public class GuiConsole extends OutputStream {
         } else {
             buffer.append(c);
         }
-        
+       
     }   
     
     public static void setupConsole() {
         AnchorPane consoleAnchorPane = GuiController.singleton.consoleAnchorPane;
         CheckMenuItem viewTerminalMenuItem = GuiController.singleton.viewTerminalMenuItem;
         TextArea consoleOut = GuiController.singleton.consoleOut;
-        
         //Store OG output stream
         initialOutputStream = System.out;
         

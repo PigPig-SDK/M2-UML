@@ -204,7 +204,7 @@ public class GuiController implements DocumentListner {
     @FXML
     private void consoleSubmit()
     {
-       
+        GuiConsole.terminalOverrideOut(true);
         String cmd = console.getText();
         List<String> restrictedcmds = GuiConsole.restrictedCommands;
         
