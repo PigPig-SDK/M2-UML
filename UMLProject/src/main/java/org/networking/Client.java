@@ -2,6 +2,7 @@ package org.networking;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.net.Socket;
 
 
@@ -28,7 +29,7 @@ public class Client extends PacketManager
             case PacketType.DISCONNECT ->
             {
                 System.out.println("Server suggested shutdown.");
-                running = false;
+                NetworkManager.shutdown();
             }
             case PacketType.IDENTIFICATION ->{
                 System.out.println("Got information... Ignoring it...");
@@ -36,14 +37,28 @@ public class Client extends PacketManager
                 
             default ->
             {
-                System.out.println("-> " +netPacket.jsonPayload());
+                System.out.println("-> " +netPacket.payload());
             }
 
         }
     }
 
     @Override
-    protected String objName() {
+    protected String objectName() {
         return "client";
+    }
+
+    @Override
+    protected void onConnectionStarted() {
+        UserIdentification myId = UserIdentification.generateAnonymousUserInfo();
+        try
+        {
+            NetworkPacket netPacket = NetworkPacket.objectToNetworkPacket(0, PacketType.IDENTIFICATION, myId);
+            this.sendNetworkPacket(netPacket);
+        }
+        catch(IOException ex)
+        {
+            System.out.println("Error initializing, could not send identification : " + ex);
+        }
     }
 }

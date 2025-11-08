@@ -29,7 +29,8 @@ public abstract class PacketManager extends Thread
     {
         try 
         {
-            System.out.println("Packetmanager startup under type : " + objName());
+            System.out.println("Packetmanager startup under type : " + objectName());
+            onConnectionStarted();
             while (running) 
             {
                 //Read packet sizse
@@ -66,7 +67,7 @@ public abstract class PacketManager extends Thread
             //Shutdown connection with client.
             try
             {
-                System.out.println("Packet manager closed..." + objName());
+                System.out.println("Packet manager closed..." + objectName());
                 // closing resources
                 disconnect();
                 this.in.close();
@@ -117,6 +118,8 @@ public abstract class PacketManager extends Thread
      * @param netPacket The packet we are reacting to
      */
     protected abstract void managePacket(NetworkPacket netPacket);
-
-    protected abstract String objName();
+    
+    protected abstract String objectName();//The name of the object... For debugging only...
+    
+    protected abstract void onConnectionStarted();
 }

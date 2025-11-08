@@ -2,6 +2,7 @@ package org.umlproject.Commands;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.Arrays;
 import org.networking.NetworkManager;
 import org.networking.NetworkPacket;
 import org.networking.PacketType;
@@ -82,7 +83,7 @@ public class CommandNetwork extends BaseCommand {
             {
                 try
                 {
-                    String message = String.join(" ", args);
+                    String message = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
                     NetworkManager.getClientInstance().sendNetworkPacket(new NetworkPacket(0, PacketType.MESSAGE, message));
                 }
                 catch(IOException ex)
