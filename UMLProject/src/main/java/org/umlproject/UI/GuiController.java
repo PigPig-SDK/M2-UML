@@ -1,6 +1,7 @@
 package org.umlproject.UI;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.*;
 
@@ -206,6 +207,34 @@ public class GuiController implements DocumentListner {
     {
         TerminalHandler.runCommand(console.getText());
         console.setText("");
+    }
+
+    /**
+     * Handler for the Export Screenshot action within the File drop down menu.
+     */
+    @FXML
+    private void exportScreenshotMenuAction() throws IOException {
+        //Generate an alert in case the file path is invalid and the screenshot cannot be saved.
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle("Failed To Export Image");
+        alert.setHeaderText("Screenshot cannot be saved in this location.");
+        alert.setContentText("Ensure a valid file path and then retry exporting.");
+
+        //Retrieve the location where the image should be exported.
+        File exportLocation = GuiFileBrowser.promptForScreenshotExportDirectory();
+        if(exportLocation == null){
+            alert.showAndWait();
+            return;
+        }
+        //Create a ScreenshotCommand instance to call execute() on.
+        ScreenshotCommand newScreenshot = new ScreenshotCommand();
+        try {
+            //Export the image.
+            newScreenshot.execute(exportLocation);
+        }
+        catch(IOException e){
+            alert.showAndWait();
+        }
     }
     //----------------- UMLGuiController Interface -----------------
 
