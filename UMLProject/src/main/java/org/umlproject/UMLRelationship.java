@@ -5,7 +5,7 @@ import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
 import static org.umlproject.RelationshipType.OTHER;
 
-public class UMLRelationship  extends UMLDiagramElement
+public class UMLRelationship  extends UMLDiagramElement implements Cloneable
 {
     private String sourceName;
     private String destinationName;
@@ -98,5 +98,11 @@ public class UMLRelationship  extends UMLDiagramElement
         hash = 29 * hash + Objects.hashCode(this.destinationName);
         hash = 29 * hash + Objects.hashCode(this.customNameType);
         return hash;
+    }
+    
+    @Override
+    public UMLRelationship clone()
+    {
+        return this.relationshipType == RelationshipType.OTHER? new UMLRelationship(sourceName, destinationName, relationshipType, customNameType) : new UMLRelationship(sourceName, destinationName, relationshipType);
     }
 }

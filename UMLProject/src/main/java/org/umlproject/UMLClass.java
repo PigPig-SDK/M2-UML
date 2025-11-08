@@ -333,21 +333,21 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
         if (methodName == null || methodName.isEmpty()) {
             return false;
         }
-        //    private HashMap<String, ArrayList<UMLMethod>> methods;
 
         if(!methods.containsKey(methodName))
             return  false;
         boolean isRemoved = methods.get(methodName).remove(index) != null;
         if(isRemoved)
             updateGUI();
-
+        /*
+        //TODO: Implement in a new way later.
         AutoComplete.getInstance().removeWord(methodName);
         if(!getMethods(methodName).get(index).getParameters().isEmpty()){
             for(UMLParameter p :  getMethods(methodName).get(index).getParameters()) {
                 AutoComplete.getInstance().removeWord(p.getName());
             }
         }
-
+        */
         return isRemoved;
     }
 
@@ -580,18 +580,17 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
         {
             umlc.addField(dataField.clone());
         }
-        //private HashMap<String, ArrayList<UMLMethod>> methods;
-        for(String methodName : methods.keySet())
+        for(String methodName : this.methods.keySet())
         {
             umlc.methods.put(methodName, new ArrayList<UMLMethod>());//Allocate the new memory for the item...
-            for(UMLMethod method : methods.get(methodName))
+            for(UMLMethod method : this.methods.get(methodName))
             {
                 try
                 {
                     umlc.methods.get(methodName).add(method.clone());
                 } 
                 catch (CloneNotSupportedException e)//Exception. Do skip over the class.
-                { 
+                {
                     continue;
                 }
             }
