@@ -22,7 +22,7 @@ public class TerminalHandler
         TerminalHandler.registerCommand(new CommandLoad());
         TerminalHandler.registerCommand(new CommandList());
         TerminalHandler.registerCommand(new CommandSave());
-
+        TerminalHandler.registerCommand(new CommandNetwork());
     }
     
     private static final String delimiter = " ";
