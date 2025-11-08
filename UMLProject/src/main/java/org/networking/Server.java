@@ -79,8 +79,6 @@ public class Server extends Thread {
             try
             {
                 clientHandler.sendNetworkPacket(netPacket);
-                System.out.println("Sent message to client.");
-
             }
             catch(IOException ex)
             {
@@ -105,6 +103,11 @@ public class Server extends Thread {
         
         this.running = false;
         this.isReadyForConnections = false;
+        try
+        {
+            serverSocket.close();
+        }
+        catch(IOException ignoreMe){}
     }
     /**
      * Returns the bound IP and PORT.

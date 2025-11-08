@@ -30,9 +30,13 @@ public class Client extends PacketManager
                 System.out.println("Server suggested shutdown.");
                 running = false;
             }
+            case PacketType.IDENTIFICATION ->{
+                System.out.println("Got information... Ignoring it...");
+            }
+                
             default ->
             {
-                System.out.println("Got message : " + netPacket.jsonPayload());
+                System.out.println("-> " +netPacket.jsonPayload());
             }
 
         }

@@ -83,7 +83,6 @@ public class CommandNetwork extends BaseCommand {
                 try
                 {
                     String message = String.join(" ", args);
-                    System.out.println("Say message: " + message);
                     NetworkManager.getClientInstance().sendNetworkPacket(new NetworkPacket(0, PacketType.MESSAGE, message));
                 }
                 catch(IOException ex)

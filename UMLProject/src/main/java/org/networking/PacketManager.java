@@ -58,10 +58,6 @@ public abstract class PacketManager extends Thread
                 managePacket(netPacket);
             }
         }
-        catch (EOFException e)
-        {
-            System.out.println("Packet size did not match. Disconnecting : " + e.getMessage());
-        }
         catch (IOException e) {
             System.out.println("Generic packet failure: " + e.getMessage());
         }
@@ -72,7 +68,7 @@ public abstract class PacketManager extends Thread
             {
                 System.out.println("Packet manager closed..." + objName());
                 // closing resources
-                this.socket.close();
+                disconnect();
                 this.in.close();
                 this.out.close();
             }
@@ -91,7 +87,12 @@ public abstract class PacketManager extends Thread
      */
     public void disconnect()
     {
-        running = false;
+        try
+        {
+            running = false;
+            socket.close();
+        }
+        catch(IOException ignoreMe){}
     }
     /**
      * Sends a network packet to the client.
