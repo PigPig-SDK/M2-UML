@@ -10,6 +10,7 @@ import javafx.scene.image.Image;
 import javafx.scene.paint.Stop;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import org.networking.NetworkManager;
 import org.umlproject.UI.GuiController;
 
 public class Main extends Application
@@ -69,7 +70,8 @@ public class Main extends Application
     
     public static void main(String[] args) 
     {
-
+        NetworkManager.initialize();
+        
         //If terminal launch option is requested. Override JAVAFX.
         if(args.length == 1 && args[0].equals(terminalLaunchString))
         {
@@ -82,7 +84,6 @@ public class Main extends Application
             }while(TerminalHandler.isRunning);
             return;
         }
-        
         launch(args);
     }
     
