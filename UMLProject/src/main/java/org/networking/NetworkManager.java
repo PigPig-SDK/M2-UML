@@ -9,7 +9,7 @@ import java.net.Socket;
 public class NetworkManager {
     /*  CONSTANTS  */
     public static final int MAX_PACKET_LENGTH = 60000;
-    
+    public static final int CONNECTION_TIMEOUT = 3;//in seconds
     
     public static boolean isHosting;
     
@@ -63,7 +63,10 @@ public class NetworkManager {
     {
         try
         {
-            Socket socket = new Socket(address.getAddress(), address.getPort());
+            System.out.println("ConnectionAttempt");
+            Socket socket = new Socket();
+            socket.connect(address, CONNECTION_TIMEOUT * 1000);
+            
             DataInputStream dataInputStream = new DataInputStream(socket.getInputStream());
             DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
             //If no errors, our object is created.
@@ -75,7 +78,6 @@ public class NetworkManager {
         catch(IOException ex)
         {
             System.out.println("Connection failed! " + address);
-            ex.printStackTrace();
         }
     }
     /**

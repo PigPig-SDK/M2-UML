@@ -29,10 +29,9 @@ public abstract class PacketManager extends Thread
     {
         try 
         {
+            System.out.println("Packetmanager startup under type : " + objName());
             while (running) 
             {
-                System.out.println("Packetmanager... : " + objName());
-                
                 //Read packet sizse
                 int packetSize = in.readInt();
                 
