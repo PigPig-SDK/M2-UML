@@ -26,7 +26,7 @@ public class GuiCamera {
     
     public static void setCameraLocation(Point2D location)
     {
-        Pane world = GuiController.singleton.getWorld();
+        Pane world = GuiController.getInstance().getWorld();
         camLocation = location;
         world.setTranslateX(camLocation.getX());
         world.setTranslateY(camLocation.getY());
@@ -49,7 +49,7 @@ public class GuiCamera {
     private static void setZoom(double newZoom, ScrollEvent event) {
         if (newZoom < ZOOM_SCALE_MIN) newZoom = ZOOM_SCALE_MIN;
         if (newZoom > ZOOM_SCALE_MAX) newZoom = ZOOM_SCALE_MAX;
-        Pane world = GuiController.singleton.getWorld();
+        Pane world = GuiController.getInstance().getWorld();
         Point2D before = world.sceneToLocal(event.getSceneX(), event.getSceneY());//Get og realitive
         
         world.setScaleX(newZoom);
@@ -116,7 +116,7 @@ public class GuiCamera {
             startDragX = event.getScreenX();
             startDragY = event.getScreenY(); 
             //We click onto a type of textbox, do not remove selection.
-            if (!(event.getTarget() instanceof TextInputControl)) GuiController.singleton.getViewPane().requestFocus();
+            if (!(event.getTarget() instanceof TextInputControl)) GuiController.getInstance().getViewPane().requestFocus();
         });
     }
     /**
@@ -127,8 +127,8 @@ public class GuiCamera {
      */
     public static Point2D screenToWorld(Point2D screenSpace)
     {
-        Pane view = GuiController.singleton.getViewPane();
-        Pane world = GuiController.singleton.getWorld();
+        Pane view = GuiController.getInstance().getViewPane();
+        Pane world = GuiController.getInstance().getWorld();
         
         Point2D sceneLocation = view.localToScene(screenSpace);
         Point2D worldLocation = world.sceneToLocal(sceneLocation);
@@ -139,7 +139,7 @@ public class GuiCamera {
      */
     public static Point2D getScreenCenter()
     {
-        Pane view = GuiController.singleton.getViewPane();
+        Pane view = GuiController.getInstance().getViewPane();
 
         double centerX = view.getWidth() / 2;
         double centerY = view.getHeight() / 2;
