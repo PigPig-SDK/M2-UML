@@ -21,7 +21,7 @@ import java.util.function.Supplier;
 
 public class UMLDocument implements Copyable<UMLDocument>
 {
-    private static UMLDocument instance;
+    private static Memento<UMLDocument> instance;
     
     transient String fileLocation = null;
     private Map<String, UMLClass> classSet = new HashMap<>();
@@ -70,7 +70,7 @@ public class UMLDocument implements Copyable<UMLDocument>
         {
             setupInstance();
         }
-        return instance;
+        return instance.getInstance();
     }
     public static synchronized UMLDocument setupInstance()
     {
