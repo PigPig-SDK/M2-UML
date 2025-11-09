@@ -1,15 +1,15 @@
 package org.umlproject;
 
 
-public class DocumentMementoListener implements DiagramElementListener, DocumentListner
+public class UndoRedoListener implements DiagramElementListener, DocumentListner
 {
     
-    private static DocumentMementoListener instance;
+    private static UndoRedoListener instance;
     /**
      * Get the memento of instance listener.
      * NOTE: This can be null! That is because setupListener() is expected to be called.
      */
-    public DocumentMementoListener getInstance()
+    public UndoRedoListener getInstance()
     {
         //Null is an intended return value.
         return instance;
@@ -19,7 +19,7 @@ public class DocumentMementoListener implements DiagramElementListener, Document
      */
     public static void setupListener()
     {
-        instance = new DocumentMementoListener();
+        instance = new UndoRedoListener();
         UMLDiagramElement.globalListeners.add(instance);
         UMLDocument.documentListners.add(instance);
     }
@@ -30,17 +30,8 @@ public class DocumentMementoListener implements DiagramElementListener, Document
     {
         if(UMLDocument.getDocumentState().equals(DocumentState.FILE_LOADING))
             return;
-        saveMemento();
-        System.out.println("Update..." + from);
-    }
-    /**
-     * Creates a new memento state in the UMLDocument
-     * 
-     * Call this if you have blocked an update and require a memento...
-     */
-    public static void saveMemento()
-    {
-        System.out.println("Memento save called");
+        UMLDocument.saveMementoState();
+        System.out.println("SAVE STATE" + from);
     }
     
     /*---------------------------[ Listeners ]---------------------------*/
