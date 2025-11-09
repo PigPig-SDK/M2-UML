@@ -3,13 +3,13 @@ package org.umlproject;
 
 public class DocumentMementoListener implements DiagramElementListener, DocumentListner
 {
-    public static DocumentMementoListener singleton;
+    private static DocumentMementoListener instance;
     
     public static void setupListener()
     {
-        singleton = new DocumentMementoListener();
-        UMLDiagramElement.globalListeners.add(singleton);
-        UMLDocument.documentListners.add(singleton);
+        instance = new DocumentMementoListener();
+        UMLDiagramElement.globalListeners.add(instance);
+        UMLDocument.documentListners.add(instance);
     }
 
     

@@ -27,7 +27,7 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
     public void setLocation(Point2D location, boolean informGlobals) { 
         this.locationX = location.getX();
         this.locationY = location.getY();
-        updateGUILocation(informGlobals);
+        updateListnerAboutLocation(informGlobals);
     }
     
     /**
@@ -107,7 +107,7 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
      */
     public void setClassName(String name) {
         this.className = name;
-        updateGUI(true);
+        updateListener(true);
     }
     /**
      * addField method will add a new UMLDataField object to the fields hashMap under the
@@ -132,7 +132,7 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
         AutoComplete.getInstance().addWord(name);
 
         fields.put(name, field);
-        updateGUI(true);
+        updateListener(true);
         return true;
     }
 
@@ -154,7 +154,7 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
         //The != null ensures a boolean value is returned
         boolean isRemoved = fields.remove(fieldName) != null;
         if(isRemoved)//Update our GUI listener.
-            updateGUI(true);
+            updateListener(true);
 
         AutoComplete.getInstance().removeWord(fieldName);
 
@@ -183,7 +183,7 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
         //update field name
         field.setName(newName);
         fields.put(newName, field);
-        updateGUI(true);
+        updateListener(true);
         return true;
     }
 
@@ -256,7 +256,7 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
         target.setMethodName(newName);
         newList.add(target);
         methods.put(newName, newList);
-        updateGUI(true);
+        updateListener(true);
         return true;
     }
 
@@ -313,7 +313,7 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
         }
 
         methods.put(name, list);
-        updateGUI(true);
+        updateListener(true);
         return true;
     }
 
@@ -338,7 +338,7 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
             return  false;
         boolean isRemoved = methods.get(methodName).remove(index) != null;
         if(isRemoved)
-            updateGUI(true);
+            updateListener(true);
         /*
         //TODO: Implement in a new way later.
         AutoComplete.getInstance().removeWord(methodName);
@@ -385,7 +385,7 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
         for (UMLMethod method : list) {
             if (method.getParameters().equals(parameters)) {
                 method.addParameter(newParameter);
-                updateGUI(true);
+                updateListener(true);
                 return true;
             }
         }
@@ -421,7 +421,7 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
         for (UMLMethod method : overloads) {
             if (method.getParameters().equals(parameters)) {
                 boolean removed = method.removeParameter(paramToRemove);
-                if(removed) updateGUI(true);
+                if(removed) updateListener(true);
                 return removed;
             }
         }
@@ -456,7 +456,7 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
             if (method.getParameters().equals(oldParameters)) {
                 //match found, so swap parameter with parameter list
                 method.changeParameter(paramToRemove, newParameters);
-                updateGUI(true);
+                updateListener(true);
                 return true;
             }
         }
@@ -492,7 +492,7 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
             if (method.getParameters().equals(oldParameters)) {
                 //match found, so swap parameter with parameter list
                 method.setListParameters(newParameters);
-                updateGUI(true);
+                updateListener(true);
                 return true;
             }
         }

@@ -329,7 +329,6 @@ public class UMLDocumentTests
         UMLDocument umldocument = new UMLDocument("file");
         UMLDocument.executeActionUnderState(DocumentState.MASS_OPERATION, () -> umldocument.addClass("A"));
         // Act
-        UMLDocument.documentState = DocumentState.MASS_OPERATION;
         UMLClass toBeRemoved = UMLDocument.executeActionUnderState(DocumentState.MASS_OPERATION, () -> umldocument.removeClass("A"));
         
         UMLDocument.documentListners.remove(listener);

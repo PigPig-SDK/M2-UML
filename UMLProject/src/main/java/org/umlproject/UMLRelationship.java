@@ -54,21 +54,21 @@ public class UMLRelationship  extends UMLDiagramElement implements Cloneable
     public void setSourceName(String newName)
     {
         this.sourceName = newName;
-        updateGUI(true);
+        updateListener(true);
     }
     public void setDestinationName(String newName)
     {
         this.destinationName = newName;
-        updateGUI(true);
+        updateListener(true);
     }
     public void setRelationshipType(RelationshipType newType){
         this.relationshipType = newType;
-        updateGUI(true);
+        updateListener(true);
     }
     public void setCustomNameType(String newTypeCustom){
         this.relationshipType = OTHER;
         this.customNameType = newTypeCustom;
-        updateGUI(true);
+        updateListener(true);
     }
     @Override
     public String toString() {

@@ -374,11 +374,11 @@ public class UMLClassTest {
         
         //Act
         UMLClass testerClone = tester.clone();
-        testerClone.updateGUI(false);//Calls update...
+        testerClone.updateListener(false);//Calls update...
         
         //Assert
-        assertEquals(1, ((DummyListener)tester.getUIListener()).timesUpdateCalled);
-        assertEquals(tester.getUIListener(), testerClone.getUIListener());//How get the value of timesUpdateCalled?
+        assertEquals(1, ((DummyListener)tester.getListener()).timesUpdateCalled);
+        assertEquals(tester.getListener(), testerClone.getListener());//How get the value of timesUpdateCalled?
     }
     
 }

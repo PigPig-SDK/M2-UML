@@ -322,7 +322,7 @@ public class GuiController implements DocumentListner {
         ArrayList<String> umlClassKeys = new ArrayList<>(umlClassMap.keySet());
         List<GuiClass> guiClasses = new ArrayList<GuiClass>();
         for(String umlClass : umlClassKeys){
-            guiClasses.add((GuiClass)umlClassMap.get(umlClass).getUIListener());
+            guiClasses.add((GuiClass)umlClassMap.get(umlClass).getListener());
 
         }
         return guiClasses;
@@ -430,11 +430,11 @@ public class GuiController implements DocumentListner {
     }
     @Override
     public void onClassRemove(UMLClass umlClass) {
-        umlClass.disposeOfGuiListener();
+        umlClass.disposeOfListener();
     }
     @Override
     public void onRelationshipRemove(UMLRelationship umlRelationship) {
-        umlRelationship.disposeOfGuiListener();
+        umlRelationship.disposeOfListener();
     }
 
     private void applyIconsToButtons(Button button, String iconDirectory)

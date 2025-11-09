@@ -12,7 +12,7 @@ public abstract class UMLDiagramElement
     transient protected DiagramElementListener listener;
     public static Set<DiagramElementListener> globalListeners = new HashSet();
     
-    public DiagramElementListener getUIListener()
+    public DiagramElementListener getListener()
     {
         return listener;
     }
@@ -22,7 +22,7 @@ public abstract class UMLDiagramElement
         this.listener = listener;
     }
 
-    public void updateGUI(boolean informGlobals)
+    public void updateListener(boolean informGlobals)
     {
         if(informGlobals)
             globalListeners.forEach(o->o.update(this));
@@ -32,7 +32,7 @@ public abstract class UMLDiagramElement
         listener.update(this);
     }
 
-    public void updateGUILocation(boolean informGlobals)
+    public void updateListnerAboutLocation(boolean informGlobals)
     {
         if(informGlobals)
             globalListeners.forEach(o->o.updateLocation(this));
@@ -41,7 +41,7 @@ public abstract class UMLDiagramElement
             return;
         listener.updateLocation(this);
     }
-    public void disposeOfGuiListener()
+    public void disposeOfListener()
     {
         if(this.listener == null)
             return;

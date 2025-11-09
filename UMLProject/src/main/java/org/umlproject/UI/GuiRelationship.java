@@ -163,7 +163,7 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
      */
     void placeRelationshipMarker(UMLClass endClass, RelationshipType desiredElement)
     {
-        Rectangle2D targetBounds = ((GuiClass)endClass.getUIListener()).getRectBounds();
+        Rectangle2D targetBounds = ((GuiClass)endClass.getListener()).getRectBounds();
         // In the future when we untangle the wire of relationships, only this function needs to change.
         Double angle = computeLineAngle();
         
