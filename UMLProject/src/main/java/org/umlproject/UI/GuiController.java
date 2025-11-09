@@ -365,11 +365,25 @@ public class GuiController implements DocumentListner {
             Rectangle2D newRect = new Rectangle2D(testLocation.getX(), testLocation.getY(), NEW_CLASS_WIDTH, NEW_CLASS_HEIGHT);
             boolean overlaps = false;
             for (GuiClass existingClass : existingClasses) {
-                if (existingClass == null)
-                    continue;
+                if (existingClass == null) continue;
+                
                 Rectangle2D existingBounds = existingClass.getRectBounds();
                 if (existingBounds != null && newRect.intersects(existingBounds)) {
                     overlaps = true;
+                    //testLocation overlapped with existing tile, so create Up, Down, Left, Right neighbors
+                    Point2D up = new Point2D(testLocation.getX(), testLocation.getY() - STEPY);
+                    Point2D down = new Point2D(testLocation.getX(), testLocation.getY() + STEPY);
+                    Point2D left = new Point2D(testLocation.getX() - STEPX, testLocation.getY());
+                    Point2D right = new Point2D(testLocation.getX() + STEPX, testLocation.getY());
+                    
+                    //Compare neighbors with closed set. If not in closed set, add to both open and closed sets.
+                    for(Point2D checkLocation : List.of(left, right, up, down))//Order chosen because most aspect ratios are wider than they are tall
+                    {
+                        if (!closedSet.contains(checkLocation)) {
+                            closedSet.add(checkLocation);
+                            openSet.offer(checkLocation);
+                        }
+                    }
                     break;
                 }
             }
@@ -377,22 +391,6 @@ public class GuiController implements DocumentListner {
             if (!overlaps) {
                 break;
             }
-            else {
-                //testLocation overlapped with existing tile, so create Up, Down, Left, Right neighbors
-                Point2D up = new Point2D(testLocation.getX(), testLocation.getY() - STEPY);
-                Point2D down = new Point2D(testLocation.getX(), testLocation.getY() + STEPY);
-                Point2D left = new Point2D(testLocation.getX() - STEPX, testLocation.getY());
-                Point2D right = new Point2D(testLocation.getX() + STEPX, testLocation.getY());
-                //Compare neighbors with closed set. If not in closed set, add to both open and closed sets.
-                for(Point2D checkLocation : List.of(up, down, left, right))
-                {
-                    if (!closedSet.contains(checkLocation)) {
-                        closedSet.add(checkLocation);
-                        openSet.offer(checkLocation);
-                    }
-                }
-            }
-
         }
         return testLocation;
     }
