@@ -439,7 +439,6 @@ public class GuiController implements DocumentListner {
         return testLocation;
     }
 
-
     @Override
     public void onRelationshipAdded(UMLRelationship umlRelationship, boolean isLoading) {
         GuiRelationship guiRelationship = new GuiRelationship(world, umlRelationship);

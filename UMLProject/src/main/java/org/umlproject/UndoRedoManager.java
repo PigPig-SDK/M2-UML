@@ -1,15 +1,20 @@
 package org.umlproject;
 
+import java.util.HashSet;
+import java.util.Set;
 
-public class UndoRedoListener implements DiagramElementListener, DocumentListner
+
+public class UndoRedoManager implements DiagramElementListener, DocumentListner
 {
     
-    private static UndoRedoListener instance;
+    private static final Set<DocumentState> invalidDocumentStates = Set.of(DocumentState.FILE_LOADING, DocumentState.MEMENTO_STATE_RESET);
+    
+    private static UndoRedoManager instance;
     /**
      * Get the memento of instance listener.
      * NOTE: This can be null! That is because setupListener() is expected to be called.
      */
-    public UndoRedoListener getInstance()
+    public UndoRedoManager getInstance()
     {
         //Null is an intended return value.
         return instance;
@@ -19,7 +24,7 @@ public class UndoRedoListener implements DiagramElementListener, DocumentListner
      */
     public static void setupListener()
     {
-        instance = new UndoRedoListener();
+        instance = new UndoRedoManager();
         UMLDiagramElement.globalListeners.add(instance);
         UMLDocument.documentListners.add(instance);
     }
@@ -28,8 +33,9 @@ public class UndoRedoListener implements DiagramElementListener, DocumentListner
      */
     private static void onDocumentUpdated(String from)
     {
-        if(UMLDocument.getDocumentState().equals(DocumentState.FILE_LOADING))
+        if(invalidDocumentStates.contains(UMLDocument.getDocumentState()))
             return;
+        
         UMLDocument.saveMementoState();
         System.out.println("SAVE STATE" + from);
     }
@@ -40,7 +46,7 @@ public class UndoRedoListener implements DiagramElementListener, DocumentListner
     }
 
     @Override public void updateLocation(Object desiredElement) {
-        System.out.println("LOCATIONAL CHANGE");
+        onDocumentUpdated("location");
     }
     
     @Override public void onClassRemove(UMLClass umlClass) {

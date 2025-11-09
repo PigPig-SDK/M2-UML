@@ -22,7 +22,8 @@ public class TerminalHandler
         TerminalHandler.registerCommand(new CommandLoad());
         TerminalHandler.registerCommand(new CommandList());
         TerminalHandler.registerCommand(new CommandSave());
-
+        TerminalHandler.registerCommand(new CommandUndo());
+        TerminalHandler.registerCommand(new CommandRedo());
     }
     
     private static final String delimiter = " ";
