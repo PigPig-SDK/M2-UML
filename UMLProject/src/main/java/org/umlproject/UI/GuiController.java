@@ -30,7 +30,7 @@ import org.umlproject.UMLClass;
 import org.umlproject.UMLDocument;
 import org.umlproject.UMLRelationship;
 import org.umlproject.DocumentListner;
-import org.umlproject.UIListener;
+import org.umlproject.DiagramElementListener;
 
 public class GuiController implements DocumentListner {
     
@@ -346,7 +346,7 @@ public class GuiController implements DocumentListner {
         if(!isLoading)//The class addition is from 'newclass button'
         {
             Point2D safeLocation = findSafeLocation(GuiCamera.getScreenCenter(), extractGuiClasses());
-            umlClass.setLocation(safeLocation);
+            umlClass.setLocation(safeLocation, false);
         }
         GuiClass guiClass = new GuiClass(world, umlClass);
         umlClass.setListener(guiClass);
@@ -366,7 +366,7 @@ public class GuiController implements DocumentListner {
         ArrayList<String> umlClassKeys = new ArrayList<>(umlClassMap.keySet());
         List<GuiClass> guiClasses = new ArrayList<GuiClass>();
         for(String umlClass : umlClassKeys){
-            guiClasses.add((GuiClass)umlClassMap.get(umlClass).getUIListener());
+            guiClasses.add((GuiClass)umlClassMap.get(umlClass).getListener());
 
         }
         return guiClasses;
@@ -450,7 +450,7 @@ public class GuiController implements DocumentListner {
      */
     private void redrawAllRelationships()
     {
-        for(UIListener uIListener : UMLDocument.getInstance().getUIListeners())
+        for(DiagramElementListener uIListener : UMLDocument.getInstance().getUIListeners())
         {
             if(uIListener instanceof GuiRelationship rgui)
             {
@@ -474,11 +474,11 @@ public class GuiController implements DocumentListner {
     }
     @Override
     public void onClassRemove(UMLClass umlClass) {
-        umlClass.disposeOfGuiListener();
+        umlClass.disposeOfListener();
     }
     @Override
     public void onRelationshipRemove(UMLRelationship umlRelationship) {
-        umlRelationship.disposeOfGuiListener();
+        umlRelationship.disposeOfListener();
     }
 
     private void applyIconsToButtons(Button button, String iconDirectory)

@@ -11,7 +11,7 @@ import org.umlproject.UMLRelationship;
 import java.util.ArrayList;
 import java.util.Optional;
 import javafx.animation.AnimationTimer;
-import org.umlproject.UIListener;
+import org.umlproject.DiagramElementListener;
 
 public class GuiSelect {
 
@@ -148,7 +148,7 @@ public class GuiSelect {
     public void selectAll()
     {
         resetSelect();
-        for(UIListener listner : UMLDocument.getInstance().getUIListeners())
+        for(DiagramElementListener listner : UMLDocument.getInstance().getUIListeners())
         {
             if(listner instanceof UISelectable selectable)
             {
