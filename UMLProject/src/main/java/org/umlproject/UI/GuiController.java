@@ -383,23 +383,13 @@ public class GuiController implements DocumentListner {
                 Point2D down = new Point2D(testLocation.getX(), testLocation.getY() + STEPY);
                 Point2D left = new Point2D(testLocation.getX() - STEPX, testLocation.getY());
                 Point2D right = new Point2D(testLocation.getX() + STEPX, testLocation.getY());
-
                 //Compare neighbors with closed set. If not in closed set, add to both open and closed sets.
-                if (!closedSet.contains(up)) {
-                    closedSet.add(up);
-                    openSet.offer(up);
-                }
-                if (!closedSet.contains(down)) {
-                    closedSet.add(down);
-                    openSet.offer(down);
-                }
-                if (!closedSet.contains(left)) {
-                    closedSet.add(left);
-                    openSet.offer(left);
-                }
-                if (!closedSet.contains(right)) {
-                    closedSet.add(right);
-                    openSet.offer(right);
+                for(Point2D checkLocation : List.of(up, down, left, right))
+                {
+                    if (!closedSet.contains(checkLocation)) {
+                        closedSet.add(checkLocation);
+                        openSet.offer(checkLocation);
+                    }
                 }
             }
 
