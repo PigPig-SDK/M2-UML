@@ -22,18 +22,20 @@ public abstract class UMLDiagramElement
         this.listener = listener;
     }
 
-    public void updateGUI()
+    public void updateGUI(boolean informGlobals)
     {
-        globalListeners.forEach(o->o.update(this));
+        if(informGlobals)
+            globalListeners.forEach(o->o.update(this));
         
         if(listener == null)
             return;
         listener.update(this);
     }
 
-    public void updateGUILocation()
+    public void updateGUILocation(boolean informGlobals)
     {
-        globalListeners.forEach(o->o.updateLocation(this));
+        if(informGlobals)
+            globalListeners.forEach(o->o.updateLocation(this));
         
         if(listener == null)
             return;

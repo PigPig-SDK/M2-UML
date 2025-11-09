@@ -24,10 +24,10 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
     
     public Point2D getLocation() { return new Point2D(locationX, locationY); }
     
-    public void setLocation(Point2D location) { 
+    public void setLocation(Point2D location, boolean informGlobals) { 
         this.locationX = location.getX();
         this.locationY = location.getY();
-        updateGUILocation();
+        updateGUILocation(informGlobals);
     }
     
     /**
@@ -107,7 +107,7 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
      */
     public void setClassName(String name) {
         this.className = name;
-        updateGUI();
+        updateGUI(true);
     }
     /**
      * addField method will add a new UMLDataField object to the fields hashMap under the
@@ -132,7 +132,7 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
         AutoComplete.getInstance().addWord(name);
 
         fields.put(name, field);
-        updateGUI();
+        updateGUI(true);
         return true;
     }
 
@@ -154,7 +154,7 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
         //The != null ensures a boolean value is returned
         boolean isRemoved = fields.remove(fieldName) != null;
         if(isRemoved)//Update our GUI listener.
-            updateGUI();
+            updateGUI(true);
 
         AutoComplete.getInstance().removeWord(fieldName);
 
@@ -183,7 +183,7 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
         //update field name
         field.setName(newName);
         fields.put(newName, field);
-        updateGUI();
+        updateGUI(true);
         return true;
     }
 
@@ -256,7 +256,7 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
         target.setMethodName(newName);
         newList.add(target);
         methods.put(newName, newList);
-        updateGUI();
+        updateGUI(true);
         return true;
     }
 
@@ -313,7 +313,7 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
         }
 
         methods.put(name, list);
-        updateGUI();
+        updateGUI(true);
         return true;
     }
 
@@ -338,7 +338,7 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
             return  false;
         boolean isRemoved = methods.get(methodName).remove(index) != null;
         if(isRemoved)
-            updateGUI();
+            updateGUI(true);
         /*
         //TODO: Implement in a new way later.
         AutoComplete.getInstance().removeWord(methodName);
@@ -385,7 +385,7 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
         for (UMLMethod method : list) {
             if (method.getParameters().equals(parameters)) {
                 method.addParameter(newParameter);
-                updateGUI();
+                updateGUI(true);
                 return true;
             }
         }
@@ -421,7 +421,7 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
         for (UMLMethod method : overloads) {
             if (method.getParameters().equals(parameters)) {
                 boolean removed = method.removeParameter(paramToRemove);
-                if(removed) updateGUI();
+                if(removed) updateGUI(true);
                 return removed;
             }
         }
@@ -456,7 +456,7 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
             if (method.getParameters().equals(oldParameters)) {
                 //match found, so swap parameter with parameter list
                 method.changeParameter(paramToRemove, newParameters);
-                updateGUI();
+                updateGUI(true);
                 return true;
             }
         }
@@ -492,7 +492,7 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
             if (method.getParameters().equals(oldParameters)) {
                 //match found, so swap parameter with parameter list
                 method.setListParameters(newParameters);
-                updateGUI();
+                updateGUI(true);
                 return true;
             }
         }

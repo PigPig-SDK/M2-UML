@@ -13,14 +13,17 @@ public class DocumentMementoListener implements DiagramElementListener, Document
     }
 
     
-    private static void onDocumentUpdated()
+    private static void onDocumentUpdated(String from)
     {
-        System.out.println("Update...");
+        if(UMLDocument.getDocumentState().equals(DocumentState.FILE_LOADING))
+            return;
+        
+        System.out.println("Update..." + from);
     }
     
     @Override
     public void update(Object desiredElement) {
-        onDocumentUpdated();
+        onDocumentUpdated("objUpdate");
     }
 
     @Override
@@ -30,22 +33,22 @@ public class DocumentMementoListener implements DiagramElementListener, Document
     
     @Override
     public void onClassRemove(UMLClass umlClass) {
-        onDocumentUpdated();
+        onDocumentUpdated("classRemove");
     }
 
     @Override
     public void onRelationshipRemove(UMLRelationship umlClass) {
-        onDocumentUpdated();
+        onDocumentUpdated("relationship remove");
     }
 
     @Override
     public void onClassAdded(UMLClass umlClass, boolean isLoading) {
-        onDocumentUpdated();
+        onDocumentUpdated("class added");
     }
 
     @Override
     public void onRelationshipAdded(UMLRelationship umlRelationship, boolean isLoading) {
-        onDocumentUpdated();
+        onDocumentUpdated(" Relationship added");
     }
     
     @Override
@@ -55,6 +58,11 @@ public class DocumentMementoListener implements DiagramElementListener, Document
     
     @Override
     public void loadFile(UMLDocument umlDocument) {
-        //Do nothing
+        System.out.println("Loaded file");
+    }
+    
+    public void saveMemento()
+    {
+        System.out.println("Memento save called");
     }
 }

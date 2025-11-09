@@ -83,7 +83,12 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
             e.consume(); // Prevent event from propagating to other nodes
         });
         //Used for selection
+        //Mouse up...
         nodeBackground.setOnMouseClicked(e -> {
+            Point2D worldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
+            Point2D selectionOffset = new Point2D(worldSpace.getX() - this.mouseAnchorX, worldSpace.getY() - this.mouseAnchorY);
+            this.parentClass.setLocation(selectionOffset, true);
+            
             GuiSelect.getInstance().clickUiElement(e, this);
             e.consume(); // Prevent event from propagating to other nodes
         });
@@ -92,7 +97,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
             //I swear if i have to instantiate another immutable point2d im going to create a wrapper class.
             Point2D worldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
             Point2D selectionOffset = new Point2D(worldSpace.getX() - this.mouseAnchorX, worldSpace.getY() - this.mouseAnchorY);
-            this.parentClass.setLocation(selectionOffset);
+            this.parentClass.setLocation(selectionOffset, false);
             this.nodeBackground.getParent().requestLayout(); // Force layout update
             e.consume(); // Prevent event from propagating to other nodes
         });
@@ -515,11 +520,15 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         //System.out.println("stackpane layout is changed to:" + ((UMLClass)(desiredElement)).getLocation());
         this.nodeBackground.getParent().requestLayout();
     }
+    /**
+     * Updates the GUI element of all my associated relationships.
+     * Note: this bypasses global listener updates.
+     */
     public void updateAllRelationships(UMLClass desiredElement)
     {
         ArrayList<UMLRelationship> list = UMLDocument.getInstance().getAllRelationshipsInstanceOf(desiredElement.getClassName());
         for(UMLRelationship relationship : list)//Update all relationship GUI
-            relationship.updateGUI();
+            relationship.updateGUI(false);
     }
 
     /**
@@ -595,7 +604,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     public void setLocation(Point2D location) {
         if(parentClass == null)
             return;
-        parentClass.setLocation(location);
+        parentClass.setLocation(location, false);
     }
 
     /**

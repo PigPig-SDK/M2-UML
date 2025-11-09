@@ -302,7 +302,7 @@ public class GuiController implements DocumentListner {
         if(!isLoading)//The class addition is from 'newclass button'
         {
             Point2D safeLocation = findSafeLocation(GuiCamera.getScreenCenter(), extractGuiClasses());
-            umlClass.setLocation(safeLocation);
+            umlClass.setLocation(safeLocation, false);
         }
         GuiClass guiClass = new GuiClass(world, umlClass);
         umlClass.setListener(guiClass);

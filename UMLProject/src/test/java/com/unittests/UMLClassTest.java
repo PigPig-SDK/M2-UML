@@ -374,7 +374,7 @@ public class UMLClassTest {
         
         //Act
         UMLClass testerClone = tester.clone();
-        testerClone.updateGUI();//Calls update...
+        testerClone.updateGUI(false);//Calls update...
         
         //Assert
         assertEquals(1, ((DummyListener)tester.getUIListener()).timesUpdateCalled);
