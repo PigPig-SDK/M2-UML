@@ -3,10 +3,13 @@ package com.unittests;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
+import org.umlproject.UIListener;
 import org.umlproject.UMLClass;
 import org.umlproject.UMLDocument;
 
@@ -269,6 +272,71 @@ public class UMLDocumentTests
         // Act
         // Assert
         assertFalse(umldocument.isFileLocationValid());
+    }
+    /*
+    ------------------------------------------------------------
+    CLONABLE TESTING
+    ------------------------------------------------------------
+    */
+    @Test 
+    public void copy_classList_isEqual()
+    {
+        // Arrange
+        UMLDocument umldocument = new UMLDocument("Foobar");
+        umldocument.addClass("Boring_Name");
+        umldocument.addClass("Something_Else");
+        // Act
+        UMLDocument clone = umldocument.clone();
+        // Assert
+        assertEquals(clone.getClassCount(), umldocument.getClassCount());
+    }
+    @Test 
+    public void copy_relationshipList_isEqual()
+    {
+        // Arrange
+        UMLDocument umldocument = new UMLDocument("Foobar");
+        umldocument.addClass("a");
+        umldocument.addClass("b");
+        umldocument.addClass("c");
+        umldocument.addRelationship("a", "b", "MyRelationshipType");
+        umldocument.addRelationship("b", "c", "Someting");
+        // Act
+        UMLDocument clone = umldocument.clone();
+        // Assert
+        assertEquals(clone.getRelationshipList().size(), umldocument.getRelationshipList().size());
+        assertEquals(clone.getRelationshipList(), umldocument.getRelationshipList());
+    }
+    @Test 
+    public void copy_removeRelationship_isDeepCopy()
+    {
+        // Arrange
+        UMLDocument umldocument = new UMLDocument("Foobar");
+        umldocument.addClass("a");
+        umldocument.addClass("b");
+        umldocument.addClass("c");
+        umldocument.addRelationship("a", "b", "MyRelationshipType");
+        umldocument.addRelationship("b", "c", "Someting");
+        // Act
+        UMLDocument clone = umldocument.clone();
+        boolean isRemoved = clone.removeRelationship("a", "b");
+        // Assert
+        assertTrue(isRemoved);
+        assertNotEquals(clone.getRelationshipList(), umldocument.getRelationshipList());
+    }
+    @Test 
+    public void copy_removeClass_isDeepCopy()
+    {
+        // Arrange
+        UMLDocument umldocument = new UMLDocument("Foobar");
+        umldocument.addClass("a");
+        umldocument.addClass("b");
+        umldocument.addClass("c");
+        // Act
+        UMLDocument clone = umldocument.clone();
+        boolean isRemoved = (clone.removeClass("a") != null);
+        // Assert
+        assertTrue(isRemoved);
+        assertNotEquals(clone.getClassSet(), umldocument.getClassSet());
     }
     @AfterEach
     public void killAnnoyingFiles() {

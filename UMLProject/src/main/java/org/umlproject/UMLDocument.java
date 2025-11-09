@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Objects;
 
 
-public class UMLDocument
+public class UMLDocument implements Copyable<UMLDocument>
 {
     private static UMLDocument instance;
     
@@ -546,6 +546,26 @@ public class UMLDocument
     @Override
     public int hashCode() {
         return this.fileLocation.hashCode();
+    }
+
+    @Override
+    public UMLDocument clone() {
+        
+        UMLDocument umldoc = new UMLDocument(this.fileLocation);
+        for(String classString : classSet.keySet())
+        {
+            umldoc.getClassSet().put(classString, classSet.get(classString).clone());
+        }
+        for(String relatString : relationshipList.keySet())
+        {
+            Map<String, ArrayList<UMLRelationship>> copyRelatList = umldoc.getRelationshipList();
+            copyRelatList.put(relatString, new ArrayList<UMLRelationship>());
+            for(UMLRelationship relationship : relationshipList.get(relatString))
+            {
+                copyRelatList.get(relatString).add(relationship);
+            }
+        }
+        return umldoc;
     }
 
 }
