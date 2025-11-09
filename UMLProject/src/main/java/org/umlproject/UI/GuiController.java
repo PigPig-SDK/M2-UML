@@ -210,7 +210,10 @@ public class GuiController implements DocumentListner {
     }
 
     /**
-     * Handler for the Export Screenshot action within the File drop down menu.
+     * Handler for the Export Screenshot action within the Gui's file drop down menu. This method functions
+     * as the "client" in the command design pattern. It is responsible for retrieving
+     * the necessary information for constructing the concrete ScreenshotCommand object
+     * and then passing it to the invoker object that calls execute().
      */
     @FXML
     private void exportScreenshotMenuAction() throws IOException {
@@ -227,13 +230,15 @@ public class GuiController implements DocumentListner {
             return;
         }
         //Create a ScreenshotCommand instance to call execute() on.
-        ScreenshotCommand newScreenshot = new ScreenshotCommand();
+        ScreenshotCommand newScreenshot = new ScreenshotCommand(exportLocation, world);
+        CommandInvoker invoker = new CommandInvoker(newScreenshot);
         try {
             //Export the image.
-            newScreenshot.execute(exportLocation);
+            invoker.invoke();
         }
         catch(IOException e){
             alert.showAndWait();
+            return;
         }
     }
     //----------------- UMLGuiController Interface -----------------
