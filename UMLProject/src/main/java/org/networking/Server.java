@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,7 +28,7 @@ public class Server extends Thread {
     {
         this.port = port;
         this.serverSocket = new ServerSocket(port);
-
+        this.serverSocket.setSoTimeout(NetworkManager.unstuckTimeout * 1000);
     }
    
     @Override
@@ -48,12 +49,16 @@ public class Server extends Thread {
                 //Assign new thread for the client...
                 Thread clientThread = new ClientHandler(socket, dataInputStream, dataOutputStream);
                 clients.add((ClientHandler) clientThread);
+                clientThread.setDaemon(true);
                 clientThread.start();
+            }
+            catch(SocketTimeoutException e)
+            {
+                System.out.println("SocketBreakLoop : SERVER HANDLER...");
             }
             catch(IOException e)
             {
-                
-                System.out.println("Socket startup, Client error:" +  e);
+                System.out.println("Server Socket:" +  e.getMessage());
                 //Try close socket! Something went wrong.
                 try { 
                     if(socket != null)
@@ -86,7 +91,6 @@ public class Server extends Thread {
             }
         }
     }
-    
     /**
      * Shutsdown the current server.
      */

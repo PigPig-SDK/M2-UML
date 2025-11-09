@@ -13,7 +13,7 @@ public class ClientHandler extends PacketManager
 {
     UserIdentification userID = null;
     
-    public ClientHandler(Socket socket, DataInputStream dataInputStream, DataOutputStream dataOutputStream) {
+    public ClientHandler(Socket socket, DataInputStream dataInputStream, DataOutputStream dataOutputStream) throws IOException {
         super(socket, dataInputStream, dataOutputStream);
     }
     

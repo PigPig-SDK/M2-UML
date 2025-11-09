@@ -10,6 +10,7 @@ public class NetworkManager {
     /*  CONSTANTS  */
     public static final int MAX_PACKET_LENGTH = 60000;
     public static final int CONNECTION_TIMEOUT = 3;//in seconds
+    public static final int unstuckTimeout = 10;//in seconds
     
     public static boolean isHosting;
     
@@ -18,9 +19,8 @@ public class NetworkManager {
     
     public static void initialize()
     {
-        Runtime.getRuntime().addShutdownHook(new Thread(NetworkManager::shutdown));
+        //Do nothing...
     }
-    
     
     /**
      * Spins up a 'host', under the condition a host isn't already active.
@@ -37,6 +37,7 @@ public class NetworkManager {
         {
             System.out.println("Starting host on : " + port);
             serverManager = new Server(port);
+            serverManager.setDaemon(true);
             serverManager.start();
         }
         catch(IOException ex)
@@ -61,6 +62,11 @@ public class NetworkManager {
      */
     public static void connect(InetSocketAddress address)
     {
+        if(clientManager != null)
+        {
+            System.out.println("Already connected to a server.");
+            return;
+        }
         try
         {
             System.out.println("ConnectionAttempt");
@@ -73,11 +79,13 @@ public class NetworkManager {
             //If a server is active, our created client is marked as a 'host client'
             //This dosn't grant the user any powers, just helps us avoid specific edgecases of running a client and server on the same memory instance.
             clientManager = new Client(socket, dataInputStream, dataOutputStream, serverManager != null);
+            clientManager.setDaemon(true);
             clientManager.start();
         }
         catch(IOException ex)
         {
             System.out.println("Connection failed! " + address);
+            clientManager = null;
         }
     }
     /**
@@ -91,7 +99,21 @@ public class NetworkManager {
         if(serverManager != null)
             serverManager.shutdown();
         
+        setClientNull();
+        setServerNull();
+    }
+    /**
+     * ONLY DO THIS IF YOU KNOW WHAT YOU ARE DOING!
+     */
+    public static void setClientNull()
+    {
         clientManager = null;
+    }
+    /**
+     * ONLY DO THIS IF YOU KNOW WHAT YOU ARE DOING!
+     */
+    public static void setServerNull()
+    {
         serverManager = null;
     }
     /**

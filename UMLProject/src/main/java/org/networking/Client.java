@@ -10,7 +10,7 @@ public class Client extends PacketManager
 {
     private boolean isHosting = false;
     
-    public Client(Socket socket, DataInputStream dataInputStream, DataOutputStream dataOutputStream, boolean isHost) 
+    public Client(Socket socket, DataInputStream dataInputStream, DataOutputStream dataOutputStream, boolean isHost) throws IOException
     {
         super(socket, dataInputStream, dataOutputStream);
         this.isHosting = isHost;
@@ -60,5 +60,11 @@ public class Client extends PacketManager
         {
             System.out.println("Error initializing, could not send identification : " + ex);
         }
+    }
+    @Override
+    public void disconnect()
+    {
+        NetworkManager.setClientNull();
+        super.disconnect();
     }
 }
