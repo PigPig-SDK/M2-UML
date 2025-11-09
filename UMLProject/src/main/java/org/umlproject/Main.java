@@ -41,7 +41,7 @@ public class Main extends Application
                 mainStage.setScene(scene);
                 mainStage.setResizable(true);
                 mainStage.setTitle("UML editor");
-                GuiController.singleton.lateInitialization();
+                GuiController.getInstance().lateInitialization();
             }
             catch(Exception e){
                 System.out.println(e);//Stop crash, print error to user.

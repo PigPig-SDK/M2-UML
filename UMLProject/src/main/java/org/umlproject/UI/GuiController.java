@@ -34,7 +34,17 @@ import org.umlproject.UIListener;
 
 public class GuiController implements DocumentListner {
     
-    public static GuiController singleton;
+    private static GuiController singleton;
+
+    /**
+     * @return NULL if javaFX didn't setup the singleton
+     */
+    public static GuiController getInstance()
+    {
+        //Note. This singleton can be null!
+        //In terminal mode, this will 100% be null!
+        return singleton;
+    }
     
     @FXML
     private Pane world;//'World' is where all UI objects should live.
