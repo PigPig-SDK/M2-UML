@@ -7,11 +7,17 @@ import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
+import org.umlproject.DiagramElementListener;
+import org.umlproject.DocumentListner;
+import org.umlproject.DocumentState;
 import org.umlproject.UMLClass;
+import org.umlproject.UMLDiagramElement;
 import org.umlproject.UMLDocument;
+import org.umlproject.UMLRelationship;
 
 public class UMLDocumentTests
 {
+
     @Test
     public void getFileLocation_constructor_success()
     {
@@ -270,8 +276,75 @@ public class UMLDocumentTests
         // Assert
         assertFalse(umldocument.isFileLocationValid());
     }
+    /********/
+    /********/
+    /********/
+    /********/
+    /*
+        DOC LISTENER DEBUG stuff.
+    
+    */
+    /********/
+    /********/
+    /********/
+    /********/
+    protected abstract class MockListener implements DiagramElementListener, DocumentListner
+    {
+        public int incrementor = 0;
+        private MockListener()
+        {
+            UMLDiagramElement.globalListeners.add(this);
+            UMLDocument.documentListners.add(this);
+        }
+        private void cleanUpListener()
+        {
+            UMLDiagramElement.globalListeners.remove(this);
+            UMLDocument.documentListners.remove(this);
+            assertFalse(UMLDiagramElement.globalListeners.contains(this));
+            assertFalse(UMLDocument.documentListners.contains(this));
+        }
+        protected abstract void eventCalled();
+        @Override public void update(Object desiredElement) { eventCalled();}
+        @Override public void updateLocation(Object desiredElement) { eventCalled();}
+        @Override public void onClassRemove(UMLClass umlClass) { eventCalled();}
+        @Override public void onRelationshipRemove(UMLRelationship umlClass) { eventCalled();}
+        @Override public void onClassAdded(UMLClass umlClass, boolean isLoading) { eventCalled();}
+        @Override public void onRelationshipAdded(UMLRelationship umlRelationship, boolean isLoading) { eventCalled();}
+        @Override public void cleanUp() {}
+        @Override public void loadFile(UMLDocument umlDocument) {}
+    }
+    protected class NoMassOperationsListener extends MockListener
+    {
+        @Override
+        protected void eventCalled() {
+            if(UMLDocument.getDocumentState() == DocumentState.NORMAL)
+                this.incrementor++;
+        }
+    }
+    @Test 
+    public void executeActionUnderState_MassOperation_Success()
+    {
+        // Arrange
+        NoMassOperationsListener listener = new NoMassOperationsListener();
+        UMLDocument umldocument = new UMLDocument("file");
+        UMLDocument.executeActionUnderState(DocumentState.MASS_OPERATION, () -> umldocument.addClass("A"));
+        // Act
+        UMLDocument.documentState = DocumentState.MASS_OPERATION;
+        UMLClass toBeRemoved = UMLDocument.executeActionUnderState(DocumentState.MASS_OPERATION, () -> umldocument.removeClass("A"));
+        
+        UMLDocument.documentListners.remove(listener);
+        // Assert
+        assertNotNull(toBeRemoved);
+        assertEquals(0, listener.incrementor);
+        //Cleanup, includes assertions...
+        listener.cleanUp();
+    }
+    
     @AfterEach
     public void killAnnoyingFiles() {
+        
+        
+        
         //God i hate these files. Die.
         Path file1 = Paths.get("ello.json");
         Path file2 = Paths.get("test.json");
