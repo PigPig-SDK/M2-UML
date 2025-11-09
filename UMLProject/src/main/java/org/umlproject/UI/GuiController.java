@@ -1,12 +1,18 @@
 package org.umlproject.UI;
 
 import java.io.File;
+
+import javafx.scene.input.KeyCode;
+import org.controlsfx.control.textfield.AutoCompletionBinding;
+import org.controlsfx.control.textfield.TextFields;
 import java.io.PrintStream;
 import java.util.*;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
@@ -23,18 +29,12 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
-import org.umlproject.RelationshipType;
-import org.umlproject.TerminalHandler;
-import org.umlproject.UMLClass;
-import org.umlproject.UMLDocument;
-import org.umlproject.UMLRelationship;
-import org.umlproject.DocumentListner;
-import org.umlproject.UIListener;
+import org.umlproject.*;
 
 public class GuiController implements DocumentListner {
     
     public static GuiController singleton;
-    
+
     @FXML
     private Pane world;//'World' is where all UI objects should live.
     @FXML
@@ -63,6 +63,8 @@ public class GuiController implements DocumentListner {
     private Button addClassButton;
     @FXML
     private Button addRelationshipButton;
+
+    private AutoCompletionBinding<String> AutoCompletionBind;
     
     public Pane getWorld(){return this.world;}
     public TextField getTerminal(){return this.console;}
@@ -92,9 +94,14 @@ public class GuiController implements DocumentListner {
         this.addClassButton.setDefaultButton(false);
         this.menubar.setViewOrder(-100);
         this.console.setViewOrder(-100);
+        updateGUIAutoComplete();
         this.consoleOut.setViewOrder(-100);
         this.workspaceText.setViewOrder(1000000);//To the back of the universe
     }
+
+
+
+
 
     @FXML
     public void aboutHelpMenuAction() {
@@ -401,6 +408,36 @@ public class GuiController implements DocumentListner {
         );
         timeline.setCycleCount(1);
         timeline.play();
+
+    }
+
+    public void updateGUIAutoComplete(){
+
+        //binds AutoCompleter to textfield, and allows per word autocomplete suggestion.
+        //Issue: Suggestions rewrite entire textfield
+        final ArrayList<String[]> lineHolder = new ArrayList<>();
+        if(this.AutoCompletionBind != null){
+            this.AutoCompletionBind.dispose();
+        }
+        this.AutoCompletionBind = TextFields.bindAutoCompletion(this.console
+                , (in) -> {
+            String [] splitInput = in.getUserText().split(" ");
+            lineHolder.clear();
+            lineHolder.add(splitInput);
+            String last = splitInput[splitInput.length - 1];
+            ArrayList<String> matched = new ArrayList<>();
+            for(String word : AutoComplete.getInstance().getAutoWordList()){
+                if(word.startsWith(last)){matched.add(word);}
+            }
+            return (matched);
+        });
+
+        this.AutoCompletionBind.setOnAutoCompleted(e -> {
+            String [] splitInput = lineHolder.get(0);
+            splitInput[splitInput.length - 1] = e.getCompletion();
+            this.console.setText(String.join(" ", splitInput));
+            this.console.positionCaret(this.console.getText().length());
+        });
 
     }
     @Override
