@@ -36,7 +36,6 @@
 <?import javafx.scene.control.CheckMenuItem?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
-<?import javafx.scene.control.MenuButton?>
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.SeparatorMenuItem?>
 <?import javafx.scene.control.TextArea?>
@@ -109,11 +108,5 @@
             <TextField fx:id="console" focusTraversable="false" layoutY="3.0" onAction="#consoleSubmit" prefHeight="29.0" prefWidth="640.0" promptText="Console Input" stylesheets="@stylesheet.css" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
          </children>
       </AnchorPane>
-      <MenuButton mnemonicParsing="false" text="MenuButton">
-        <items>
-          <MenuItem mnemonicParsing="false" text="Action 1" />
-          <MenuItem mnemonicParsing="false" text="Action 2" />
-        </items>
-      </MenuButton>
   </children>
 </VBox>
