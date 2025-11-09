@@ -354,7 +354,7 @@ public class UMLClassTest {
     }
     
     //NOTE : This class is only to be used for testing!
-    static class DummyListener implements UIListener<UMLClass> {
+    static class DummyListener implements DiagramElementListener<UMLClass> {
         public int timesUpdateCalled = 0;
 
         @Override public void update(UMLClass desiredElement) { timesUpdateCalled++; }
@@ -368,7 +368,7 @@ public class UMLClassTest {
         //Arrange
         
         //Mock : used for testing.
-        UIListener<UMLClass> dummyListner = new DummyListener();
+        DiagramElementListener<UMLClass> dummyListner = new DummyListener();
         UMLClass tester = new UMLClass("test");
         tester.setListener(dummyListner);
         

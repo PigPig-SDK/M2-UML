@@ -37,9 +37,9 @@ public class UMLDocument
      * To be used by a 'UMLGuiController' when requested
      * @return all UMLSelectables from both the classSet and relationshipList
      */
-    public List<UIListener> getUIListeners()
+    public List<DiagramElementListener> getUIListeners()
     {
-        List<UIListener> allListeners = new ArrayList();
+        List<DiagramElementListener> allListeners = new ArrayList();
         for(UMLClass umlclass : classSet.values())
         {
             if(umlclass == null || umlclass.listener == null) continue;
@@ -452,8 +452,8 @@ public class UMLDocument
     }
     private void cleanUpAllGuiListeners()
     {
-        List<UIListener> allListeners = getUIListeners();
-        for(UIListener listener : allListeners)
+        List<DiagramElementListener> allListeners = getUIListeners();
+        for(DiagramElementListener listener : allListeners)
         {
             listener.cleanUp();
         }

@@ -29,7 +29,7 @@ import org.umlproject.UMLClass;
 import org.umlproject.UMLDocument;
 import org.umlproject.UMLRelationship;
 import org.umlproject.DocumentListner;
-import org.umlproject.UIListener;
+import org.umlproject.DiagramElementListener;
 
 public class GuiController implements DocumentListner {
     
@@ -406,7 +406,7 @@ public class GuiController implements DocumentListner {
      */
     private void redrawAllRelationships()
     {
-        for(UIListener uIListener : UMLDocument.getInstance().getUIListeners())
+        for(DiagramElementListener uIListener : UMLDocument.getInstance().getUIListeners())
         {
             if(uIListener instanceof GuiRelationship rgui)
             {

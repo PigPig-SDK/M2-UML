@@ -25,6 +25,28 @@ public class Main extends Application
 
     @FXML
     private Button buttonGUI;
+    
+    
+    public static void main(String[] args) 
+    {
+        //Setup
+        DocumentMementoListener.setupListener();
+        
+        //If terminal launch option is requested. Override JAVAFX.
+        if(args.length == 1 && args[0].equals(terminalLaunchString))
+        {
+            //Scanner scanner = new Scanner(System.in);
+            TerminalHandler.runCommand("help");
+            TerminalHandler.printLineBreak();
+            do
+            {
+                TerminalHandler.runCommand(AutoComplete.getInstance().lineInConsole().toLowerCase());
+            }while(TerminalHandler.isRunning);
+            return;
+        }
+        
+        launch(args);
+    }
 
     /**
      * Important to note: Both buttons have the onButtonPressed event in side StartupScreen.XML
@@ -67,27 +89,7 @@ public class Main extends Application
         }
     }
     
-    public static void main(String[] args) 
-    {
-
-        //If terminal launch option is requested. Override JAVAFX.
-        if(args.length == 1 && args[0].equals(terminalLaunchString))
-        {
-            //Scanner scanner = new Scanner(System.in);
-            TerminalHandler.runCommand("help");
-            TerminalHandler.printLineBreak();
-            do
-            {
-                TerminalHandler.runCommand(AutoComplete.getInstance().lineInConsole().toLowerCase());
-            }while(TerminalHandler.isRunning);
-            return;
-        }
-        
-        launch(args);
-    }
-    
     @Override
-
     public void start(Stage stage) throws Exception {
         //JavaFX setup...
         mainStage = stage;

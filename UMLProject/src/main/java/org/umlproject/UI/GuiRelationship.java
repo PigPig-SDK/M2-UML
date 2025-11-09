@@ -15,12 +15,12 @@ import static org.umlproject.RelationshipType.COMPOSITION;
 import static org.umlproject.RelationshipType.GENERALIZATION;
 import static org.umlproject.RelationshipType.OTHER;
 import static org.umlproject.RelationshipType.REALIZATION;
-import org.umlproject.UIListener;
 import org.umlproject.UMLClass;
 import org.umlproject.UMLDocument;
 import org.umlproject.UMLRelationship;
+import org.umlproject.DiagramElementListener;
 
-public final class GuiRelationship implements UIListener<UMLRelationship>, UISelectable{
+public final class GuiRelationship implements DiagramElementListener<UMLRelationship>, UISelectable{
 
     private UMLRelationship relationship;
     private Pane world;

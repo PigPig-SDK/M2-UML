@@ -22,7 +22,7 @@ import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
 import org.umlproject.UMLClass;
 
-public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositional {
+public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable, UIPositional {
     public static final Font DEFAULT_CLASS_FONT = Font.font("Monospaced", FontWeight.NORMAL, FontPosture.REGULAR, 18);
     
     private Pane world;
