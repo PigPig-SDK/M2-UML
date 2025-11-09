@@ -59,6 +59,7 @@
             <MenuItem mnemonicParsing="false" onAction="#saveAsFileMenuAction" text="Save As…" />
             <SeparatorMenuItem mnemonicParsing="false" />
             <MenuItem mnemonicParsing="false" onAction="#quitFileMenuAction" text="Quit" />
+                  <MenuItem mnemonicParsing="false" onAction="#exportScreenshotMenuAction" text="Export Screenshot" />
           </items>
         </Menu>
         <Menu mnemonicParsing="false" text="Edit">

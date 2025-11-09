@@ -1,6 +1,7 @@
 package org.umlproject.UI;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.*;
 
@@ -33,7 +34,17 @@ import org.umlproject.DiagramElementListener;
 
 public class GuiController implements DocumentListner {
     
-    public static GuiController singleton;
+    private static GuiController singleton;
+
+    /**
+     * @return NULL if javaFX didn't setup the singleton
+     */
+    public static GuiController getInstance()
+    {
+        //Note. This singleton can be null!
+        //In terminal mode, this will 100% be null!
+        return singleton;
+    }
     
     @FXML
     private Pane world;//'World' is where all UI objects should live.
@@ -206,6 +217,39 @@ public class GuiController implements DocumentListner {
     {
         TerminalHandler.runCommand(console.getText());
         console.setText("");
+    }
+
+    /**
+     * Handler for the Export Screenshot action within the Gui's file drop down menu. This method functions
+     * as the "client" in the command design pattern. It is responsible for retrieving
+     * the necessary information for constructing the concrete ScreenshotCommand object
+     * and then passing it to the invoker object that calls execute().
+     */
+    @FXML
+    private void exportScreenshotMenuAction() throws IOException {
+        //Generate an alert in case the file path is invalid and the screenshot cannot be saved.
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle("Failed To Export Image");
+        alert.setHeaderText("Screenshot cannot be saved in this location.");
+        alert.setContentText("Ensure a valid file path and then retry exporting.");
+
+        //Retrieve the location where the image should be exported.
+        File exportLocation = GuiFileBrowser.promptForScreenshotExportDirectory();
+        if(exportLocation == null){
+            alert.showAndWait();
+            return;
+        }
+        //Create a ScreenshotCommand instance to call execute() on.
+        ScreenshotCommand newScreenshot = new ScreenshotCommand(exportLocation, world);
+        CommandInvoker invoker = new CommandInvoker(newScreenshot);
+        try {
+            //Export the image.
+            invoker.invoke();
+        }
+        catch(IOException e){
+            alert.showAndWait();
+            return;
+        }
     }
     //----------------- UMLGuiController Interface -----------------
 

@@ -19,7 +19,7 @@ import java.util.Objects;
 import java.util.function.Supplier;
 
 
-public class UMLDocument
+public class UMLDocument implements Copyable<UMLDocument>
 {
     private static UMLDocument instance;
     
@@ -601,4 +601,25 @@ public class UMLDocument
      * @return the current document state.
      */
     public static DocumentState getDocumentState() {return documentState;}
+
+    @Override
+    public UMLDocument clone() {
+        
+        UMLDocument umldoc = new UMLDocument(this.fileLocation);
+        for(String classString : classSet.keySet())
+        {
+            umldoc.getClassSet().put(classString, classSet.get(classString).clone());
+        }
+        for(String relatString : relationshipList.keySet())
+        {
+            Map<String, ArrayList<UMLRelationship>> copyRelatList = umldoc.getRelationshipList();
+            copyRelatList.put(relatString, new ArrayList<UMLRelationship>());
+            for(UMLRelationship relationship : relationshipList.get(relatString))
+            {
+                copyRelatList.get(relatString).add(relationship);
+            }
+        }
+        return umldoc;
+    }
+
 }
