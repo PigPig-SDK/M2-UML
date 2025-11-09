@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Test;
 import org.umlproject.DiagramElementListener;
 import org.umlproject.DocumentListner;
 import org.umlproject.DocumentState;
-import org.umlproject.UIListener;
 import org.umlproject.UMLClass;
 import org.umlproject.UMLDiagramElement;
 import org.umlproject.UMLDocument;
@@ -406,6 +405,111 @@ public class UMLDocumentTests
         // Assert
         assertTrue(isRemoved);
         assertNotEquals(clone.getClassSet(), umldocument.getClassSet());
+    }
+    @Test 
+    public void singletonReset_isProperReset_Success()
+    {
+        // Arrange
+        UMLDocument.resetInstance();
+        UMLDocument.getInstance().addClass("A");
+        UMLDocument.saveMementoState();
+        UMLDocument.getInstance().addClass("B");
+        UMLDocument.saveMementoState();
+        UMLDocument.getInstance().addClass("C");
+        UMLDocument.saveMementoState();
+        UMLDocument.undoMementoState();
+        // Act
+        assertEquals(3, UMLDocument.getMemento().getHistoryLength());
+        UMLDocument.resetInstance();
+        // Assert
+        assertEquals(1, UMLDocument.getMemento().getHistoryLength());
+        assertEquals(0, UMLDocument.getMemento().getRedoHistoryLength());
+    }
+    @Test 
+    public void undoMementoState_savesHistory_Success()
+    {
+        // Arrange
+        UMLDocument.resetInstance();
+        UMLDocument.getInstance().addClass("A");
+        UMLDocument.saveMementoState();
+        UMLDocument.getInstance().addClass("B");
+        UMLDocument.saveMementoState();
+        UMLDocument.getInstance().addClass("C");
+        UMLDocument.saveMementoState();
+        // UNDO 1...
+        UMLDocument.undoMementoState();
+        assertEquals(3, UMLDocument.getMemento().getHistoryLength());
+        assertEquals(1, UMLDocument.getMemento().getRedoHistoryLength());
+        assertNull(UMLDocument.getInstance().getClass("C"));
+        assertNotNull(UMLDocument.getInstance().getClass("B"));
+        assertNotNull(UMLDocument.getInstance().getClass("A"));
+        // UNDO 2...
+        UMLDocument.undoMementoState();
+        assertEquals(2, UMLDocument.getMemento().getHistoryLength());
+        assertEquals(2, UMLDocument.getMemento().getRedoHistoryLength());
+        assertNull(UMLDocument.getInstance().getClass("C"));
+        assertNull(UMLDocument.getInstance().getClass("B"));
+        assertNotNull(UMLDocument.getInstance().getClass("A"));
+        // UNDO 3...
+        UMLDocument.undoMementoState();
+        assertEquals(1, UMLDocument.getMemento().getHistoryLength());
+        assertEquals(3, UMLDocument.getMemento().getRedoHistoryLength());
+        assertNull(UMLDocument.getInstance().getClass("C"));
+        assertNull(UMLDocument.getInstance().getClass("B"));
+        assertNull(UMLDocument.getInstance().getClass("A"));
+        // UNDO 4 (overflow case)
+        UMLDocument.undoMementoState();
+        assertEquals(1, UMLDocument.getMemento().getHistoryLength());
+        assertEquals(3, UMLDocument.getMemento().getRedoHistoryLength());
+        assertNull(UMLDocument.getInstance().getClass("C"));
+        assertNull(UMLDocument.getInstance().getClass("B"));
+        assertNull(UMLDocument.getInstance().getClass("A"));
+    }
+    @Test 
+    public void redoMementoState_savesHistory_Success()
+    {
+        // Arrange
+        UMLDocument.resetInstance();
+        UMLDocument.getInstance().addClass("A");
+        UMLDocument.saveMementoState();
+        UMLDocument.getInstance().addClass("B");
+        UMLDocument.saveMementoState();
+        UMLDocument.getInstance().addClass("C");
+        UMLDocument.saveMementoState();
+        
+        //Undo all states...
+        UMLDocument.undoMementoState();
+        UMLDocument.undoMementoState();
+        UMLDocument.undoMementoState();
+        
+        //Redo 1
+        UMLDocument.redoMementoState();
+        assertEquals(2, UMLDocument.getMemento().getHistoryLength());
+        assertEquals(2, UMLDocument.getMemento().getRedoHistoryLength());
+        assertNull(UMLDocument.getInstance().getClass("C"));
+        assertNull(UMLDocument.getInstance().getClass("B"));
+        assertNotNull(UMLDocument.getInstance().getClass("A"));
+        //Redo 2
+        UMLDocument.redoMementoState();
+        assertEquals(3, UMLDocument.getMemento().getHistoryLength());
+        assertEquals(1, UMLDocument.getMemento().getRedoHistoryLength());
+        assertNull(UMLDocument.getInstance().getClass("C"));
+        assertNotNull(UMLDocument.getInstance().getClass("B"));
+        assertNotNull(UMLDocument.getInstance().getClass("A"));
+        //Redo 3
+        UMLDocument.redoMementoState();
+        assertEquals(4, UMLDocument.getMemento().getHistoryLength());
+        assertEquals(0, UMLDocument.getMemento().getRedoHistoryLength());
+        assertNotNull(UMLDocument.getInstance().getClass("C"));
+        assertNotNull(UMLDocument.getInstance().getClass("B"));
+        assertNotNull(UMLDocument.getInstance().getClass("A"));
+        //Redo 4 (Overflow)
+        UMLDocument.redoMementoState();
+        assertEquals(4, UMLDocument.getMemento().getHistoryLength());
+        assertEquals(0, UMLDocument.getMemento().getRedoHistoryLength());
+        assertNotNull(UMLDocument.getInstance().getClass("C"));
+        assertNotNull(UMLDocument.getInstance().getClass("B"));
+        assertNotNull(UMLDocument.getInstance().getClass("A"));
     }
     @AfterEach
     public void killAnnoyingFiles() {
