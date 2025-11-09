@@ -331,45 +331,70 @@ public class GuiController implements DocumentListner {
     /**
      * This method will compare a test Rectangles dimensions and location against that of every
      * Rectangle background in each of the GuiClass objects that already exist. If there is no intersection
-     * between the test Rectangle and an existion one, then the location of the test Rectangle will be returned.
+     * between the test Rectangle and an existing one, then the location of the test Rectangle will be returned.
+     * Utilizes a closed set to store locations that have been previously checked or are about to be checked
+     * and utilizes an open set for locations that still need to be checked.
+     * @param currentCameraCenter, the current camera center coordinates
      * @param existingClasses, list of existing GuiClasses
-     * @return, safe location for a new class box
+     * @return, safe location for a new class box.
      */
-    public static Point2D findSafeLocation(Point2D location, List<GuiClass> existingClasses){
-        final double NEW_CLASS_WIDTH = 250.0;
-        final double NEW_CLASS_HEIGHT = 150.0;
+    public static Point2D findSafeLocation(Point2D currentCameraCenter, List<GuiClass> existingClasses) {
+        //Initial class boxes have the following specifications.
+        final double NEW_CLASS_WIDTH = 350.0;
+        final double NEW_CLASS_HEIGHT = 350.0;
         final double PADDING = 20.0;
+        Point2D testLocation = currentCameraCenter;
 
-        double currentX = location.getX();
-        double currentY = location.getY();
-        final double STEP = NEW_CLASS_WIDTH + PADDING;
-        final int MAX_COLUMNS = 5;
-        int currentColumn = 0;
+        //Sstep sizes for calculating the horizontal and vertical neighbor tiles of the current testLocation.
+        final double STEPX = NEW_CLASS_WIDTH + PADDING;
+        final double STEPY = NEW_CLASS_HEIGHT + PADDING;
 
-        while(true){
-            Rectangle2D newRect = new Rectangle2D(currentX, currentY, NEW_CLASS_WIDTH, NEW_CLASS_HEIGHT);
+        //OpenSet for tile locations to check.
+        //ClosedSet stores tile locations we have already checked or that are in openSet.
+        Queue<Point2D> openSet = new LinkedList<>();
+        Set<Point2D> closedSet = new HashSet<>();
+
+        //Initialize both sets with currentCameraLocation
+        openSet.offer(currentCameraCenter);
+        closedSet.add(currentCameraCenter);
+
+        //Begin search for a safe location. Compare a testRectangle against all rectangle bounds of
+        //existing classes.
+        while (!openSet.isEmpty()) {
+            testLocation = openSet.poll();
+            Rectangle2D newRect = new Rectangle2D(testLocation.getX(), testLocation.getY(), NEW_CLASS_WIDTH, NEW_CLASS_HEIGHT);
             boolean overlaps = false;
-            for(GuiClass existingClass : existingClasses){
-                if(existingClass == null)
-                    continue;
+            for (GuiClass existingClass : existingClasses) {
+                if (existingClass == null) continue;
+                
                 Rectangle2D existingBounds = existingClass.getRectBounds();
-                if(existingBounds != null && newRect.intersects(existingBounds)){
+                if (existingBounds != null && newRect.intersects(existingBounds)) {
                     overlaps = true;
+                    //testLocation overlapped with existing tile, so create Up, Down, Left, Right neighbors
+                    Point2D up = new Point2D(testLocation.getX(), testLocation.getY() - STEPY);
+                    Point2D down = new Point2D(testLocation.getX(), testLocation.getY() + STEPY);
+                    Point2D left = new Point2D(testLocation.getX() - STEPX, testLocation.getY());
+                    Point2D right = new Point2D(testLocation.getX() + STEPX, testLocation.getY());
+                    
+                    //Compare neighbors with closed set. If not in closed set, add to both open and closed sets.
+                    for(Point2D checkLocation : List.of(left, right, up, down))//Order chosen because most aspect ratios are wider than they are tall
+                    {
+                        if (!closedSet.contains(checkLocation)) {
+                            closedSet.add(checkLocation);
+                            openSet.offer(checkLocation);
+                        }
+                    }
                     break;
                 }
             }
-            if(!overlaps){
-                return new Point2D(currentX, currentY);
-            }
-            currentX += STEP;
-            currentColumn++;
-            if(currentColumn >= MAX_COLUMNS){
-                currentX = PADDING;
-                currentY += STEP;
-                currentColumn = 0;
+            //if no overlapping, break from while loop and return testLocation
+            if (!overlaps) {
+                break;
             }
         }
+        return testLocation;
     }
+
 
     @Override
     public void onRelationshipAdded(UMLRelationship umlRelationship, boolean isLoading) {
