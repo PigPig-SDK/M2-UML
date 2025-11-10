@@ -69,7 +69,10 @@ public class CommandNetwork extends BaseCommand {
                 }
                 for(ClientHandler clienthandler : NetworkManager.getServerInstance().getClients())
                 {
-                    System.out.println(clienthandler.getUserID().userName + " : " + ((double)clienthandler.getHeartbeatDelta() / 1000000000.0) + " : " + clienthandler.getUserIP());
+                    System.out.println(clienthandler.getUserID().userName + " : "
+                            + ((double)clienthandler.getHeartbeatDelta() / 1000000000.0) + " : "
+                            + clienthandler.getUserIP() + " : Is terminal user? " +
+                            clienthandler.getUserID().isTerminalUser);
                 }
             }
             case "host" ->
