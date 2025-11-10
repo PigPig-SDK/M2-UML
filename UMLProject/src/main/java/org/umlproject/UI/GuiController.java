@@ -2,7 +2,9 @@ package org.umlproject.UI;
 
 import java.io.File;
 
+import javafx.event.EventHandler;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import org.controlsfx.control.textfield.AutoCompletionBinding;
 import org.controlsfx.control.textfield.TextFields;
 import java.io.PrintStream;
@@ -65,7 +67,9 @@ public class GuiController implements DocumentListner {
     private Button addRelationshipButton;
 
     private AutoCompletionBinding<String> AutoCompletionBind;
-    
+
+    private String userInput = "";
+
     public Pane getWorld(){return this.world;}
     public TextField getTerminal(){return this.console;}
     public MenuBar getMenuBar(){return this.menubar;}
@@ -95,6 +99,10 @@ public class GuiController implements DocumentListner {
         this.menubar.setViewOrder(-100);
         this.console.setViewOrder(-100);
         updateGUIAutoComplete();
+        this.console.setOnKeyTyped(e-> {
+            userInput = this.console.getText();
+            e.consume();
+        });
         this.consoleOut.setViewOrder(-100);
         this.workspaceText.setViewOrder(1000000);//To the back of the universe
     }
@@ -415,15 +423,14 @@ public class GuiController implements DocumentListner {
 
         //binds AutoCompleter to textfield, and allows per word autocomplete suggestion.
         //Issue: Suggestions rewrite entire textfield
-        final ArrayList<String[]> lineHolder = new ArrayList<>();
         if(this.AutoCompletionBind != null){
             this.AutoCompletionBind.dispose();
         }
+
         this.AutoCompletionBind = TextFields.bindAutoCompletion(this.console
                 , (in) -> {
-            String [] splitInput = in.getUserText().split(" ");
-            lineHolder.clear();
-            lineHolder.add(splitInput);
+            this.AutoCompletionBind.setDelay(0);
+            String [] splitInput = userInput.split(" ");
             String last = splitInput[splitInput.length - 1];
             ArrayList<String> matched = new ArrayList<>();
             for(String word : AutoComplete.getInstance().getAutoWordList()){
@@ -433,12 +440,11 @@ public class GuiController implements DocumentListner {
         });
 
         this.AutoCompletionBind.setOnAutoCompleted(e -> {
-            String [] splitInput = lineHolder.get(0);
+            String [] splitInput = userInput.split(" ");
             splitInput[splitInput.length - 1] = e.getCompletion();
             this.console.setText(String.join(" ", splitInput));
             this.console.positionCaret(this.console.getText().length());
         });
-
     }
     @Override
     public void onClassRemove(UMLClass umlClass) {
