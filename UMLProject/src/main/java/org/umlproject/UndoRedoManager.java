@@ -7,7 +7,7 @@ import java.util.Set;
 public class UndoRedoManager implements DiagramElementListener, DocumentListner
 {
     
-    private static final Set<DocumentState> invalidDocumentStates = Set.of(DocumentState.FILE_LOADING, DocumentState.MEMENTO_STATE_RESET);
+    private static final Set<DocumentState> invalidDocumentStates = Set.of(DocumentState.FILE_LOADING, DocumentState.MEMENTO_STATE_RESET, DocumentState.MASS_OPERATION);
     
     private static UndoRedoManager instance;
     /**
@@ -46,6 +46,9 @@ public class UndoRedoManager implements DiagramElementListener, DocumentListner
     }
 
     @Override public void updateLocation(Object desiredElement) {
+        if(UMLDocument.getDocumentState() == DocumentState.SILENT_MOVEMENT)
+            return;
+        
         onDocumentUpdated("location");
     }
     
