@@ -2,12 +2,12 @@ package org.networking;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
+import java.util.Timer;
 
 /**
  * This class is the server side management of the client.
@@ -15,11 +15,11 @@ import java.nio.charset.StandardCharsets;
  */
 public abstract class PacketManager extends Thread
 {
+    
     private final DataInputStream in;
     private final DataOutputStream out;
     private final Socket socket;
     protected boolean running = true;
-    public PacketMangerListener listener = null;
     
     public PacketManager(Socket socket, DataInputStream dataInputStream, DataOutputStream dataOutputStream) throws IOException
     {
@@ -27,11 +27,13 @@ public abstract class PacketManager extends Thread
         this.in = dataInputStream;
         this.out = dataOutputStream;
         this.socket.setSoTimeout(NetworkManager.unstuckTimeout * 1000);
+
     }
+    
     @Override
     public void run() 
     {
-        System.out.println("Packetmanager startup under type : " + objectName());
+        //System.out.println("Packetmanager startup under type : " + objectName());
         onConnectionStarted();
         while (running) 
         {
@@ -58,28 +60,25 @@ public abstract class PacketManager extends Thread
                 in.readFully(data);
 
                 NetworkPacket netPacket = NetworkPacket.jsonToPacket(new String(data, StandardCharsets.UTF_8));
-
-                //Check if the client wants to disconnect.
-                if(listener != null) listener.onRecievePacket(this, netPacket);
+                
                 managePacket(netPacket);
             }
             catch(SocketTimeoutException e)//Timeout
             {
-                if(listener != null) listener.onHitTimeout(this);
                 System.out.println("Timeout hit");
                 continue;
             }
             catch (SocketException e) {
-                if ("Socket closed".equalsIgnoreCase(e.getMessage())) {
-                    System.out.println("SOCKET CLOSED: " + objectName());
+                if ("Socket closed".equalsIgnoreCase(e.getMessage()))
+                {
+                    //System.out.println("SOCKET CLOSED: " + objectName());
                     break;
                 } 
             }
             catch (IOException e) {
-                
-                if(e.getMessage() == null)//Our socket has closed...
+                if(e.getMessage() == null)//Our socket has closed...? What the fuck java?!?!?!
                 {
-                    System.out.println("Socket closed " + objectName());
+                    //System.out.println("Socket closed " + objectName());
                     break;
                 }
                 else
@@ -89,9 +88,7 @@ public abstract class PacketManager extends Thread
             }
         }
         //Shutdown connection with client.
-        if(listener != null) listener.onShutDown(this);
-        
-        System.out.println("Packet manager closed..." + objectName());
+        //System.out.println("Packet manager closed..." + objectName());
         disconnect();
     }
     public String getUserName()
@@ -113,6 +110,9 @@ public abstract class PacketManager extends Thread
         catch(IOException ignoreMe){}
     }
     /**
+     * Sends a network packet to the client.
+     * @param netpacket The network packet we decide to send to the client...
+     */    /**
      * Sends a network packet to the client.
      * @param netpacket The network packet we decide to send to the client...
      */

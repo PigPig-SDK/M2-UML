@@ -9,6 +9,9 @@ import java.net.Socket;
 public class Client extends PacketManager
 {
     private boolean isHosting = false;
+    private long tick = 0;
+    private long lastHeartbeatTick = 0;
+    private static final int heartbeatDelta = 20;
     
     public Client(Socket socket, DataInputStream dataInputStream, DataOutputStream dataOutputStream, boolean isHost) throws IOException
     {
@@ -29,12 +32,27 @@ public class Client extends PacketManager
             case PacketType.DISCONNECT ->
             {
                 System.out.println("Server suggested shutdown.");
-                NetworkManager.shutdown();
+                this.disconnect();
             }
             case PacketType.IDENTIFICATION ->{
                 System.out.println("Got information... Ignoring it...");
             }
+            case PacketType.HEARTBEAT ->{
                 
+                long delta = netPacket.sendTick() - lastHeartbeatTick;
+                tick = netPacket.sendTick();
+                if(delta >= heartbeatDelta)
+                {
+                    try{
+                        sendNetworkPacket(new NetworkPacket(tick, PacketType.HEARTBEAT, null));
+                        lastHeartbeatTick = tick;//Success. Update our last heartbeat time.
+                    }
+                    catch(IOException ex)
+                    {
+                        System.out.println("heartbeat sending exception..." + ex.getMessage());
+                    }
+                }
+            }
             default ->
             {
                 System.out.println("-> " +netPacket.payload());

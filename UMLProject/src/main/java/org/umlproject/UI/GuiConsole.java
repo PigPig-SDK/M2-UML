@@ -85,7 +85,7 @@ public class GuiConsole extends OutputStream {
     private static void setSystemPrintLocation(PrintStream ps)
     {
         System.setOut(ps);
-        System.setErr(ps); 
+        //System.setErr(ps);//Impossibly hard to debug with err pushed into the tiny box.
     }
     
     private static void setupAnimationTimer()

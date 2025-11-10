@@ -52,7 +52,7 @@ public class NetworkManager {
             //Control flow managed VIA dirty while loop.
             while (!serverManager.isReadyForConnections() && serverManager.isAlive()) { try { Thread.sleep(10); } catch (InterruptedException ignored) {}}
             
-            System.out.println("Starting local client: " + port);
+            //System.out.println("Starting local client: " + port);
             connect(serverManager.getAddress());
         }
     }
@@ -69,7 +69,7 @@ public class NetworkManager {
         }
         try
         {
-            System.out.println("ConnectionAttempt");
+            System.out.println("Connecting...");
             Socket socket = new Socket();
             socket.connect(address, CONNECTION_TIMEOUT * 1000);
             
@@ -131,5 +131,15 @@ public class NetworkManager {
     public static Server getServerInstance()
     {
         return serverManager;
+    }
+    /**
+     * Returns the current tick of the server
+     * @return -1 if the server is not valid.
+     */
+    public static long getServerTick()
+    {
+        if(serverManager == null)
+            return -1;
+        return serverManager.getTick();
     }
 }

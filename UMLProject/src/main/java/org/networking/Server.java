@@ -8,10 +8,14 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class Server extends Thread {
     
+    private static final int TICK_INTERVAL = 100;//in MS.
     private boolean isReadyForConnections = false;
     private boolean running = true;
     private int port;
@@ -19,6 +23,8 @@ public class Server extends Thread {
     private long currentTick = 0;
     
     private ArrayList<ClientHandler> clients = new ArrayList<>();
+    private final Object clientLock = new Object();
+    private Timer clientUpdateTimer;
     
     /**
      * @param port The Port we are going to host under.
@@ -29,8 +35,34 @@ public class Server extends Thread {
         this.port = port;
         this.serverSocket = new ServerSocket(port);
         this.serverSocket.setSoTimeout(NetworkManager.unstuckTimeout * 1000);
+        clientUpdateTimer = new Timer(true);
+        clientUpdateTimer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                onTimerTick();
+            }
+        }, 0, TICK_INTERVAL);
     }
-   
+    /**
+     * Executes every "TICK_INTERVAL" till the thread dies.
+     */
+    private void onTimerTick() {
+        //Safely remove the client.
+        //Careful with this code.
+        synchronized (clientLock) {
+            Iterator<ClientHandler> it = clients.iterator();
+            while (it.hasNext()) {
+                ClientHandler client = it.next();
+                if (client.hasTimedOut()) {
+                    it.remove();
+                    client.disconnect();
+                }
+            }
+        }
+        NetworkPacket timestep = new NetworkPacket(currentTick, PacketType.HEARTBEAT, null);
+        sendMessageToAllClients(timestep);
+        currentTick++;
+    }
     @Override
     public void run()
     {
@@ -48,7 +80,9 @@ public class Server extends Thread {
                 
                 //Assign new thread for the client...
                 Thread clientThread = new ClientHandler(socket, dataInputStream, dataOutputStream);
-                clients.add((ClientHandler) clientThread);
+                synchronized (clientLock) {
+                    clients.add((ClientHandler) clientThread);
+                }
                 clientThread.setDaemon(true);
                 clientThread.start();
             }
@@ -79,15 +113,20 @@ public class Server extends Thread {
      */
     public void sendMessageToAllClients(NetworkPacket netPacket)
     {
-        for(ClientHandler clientHandler : clients)
-        {
-            try
+        synchronized (clientLock) {
+            for(ClientHandler clientHandler : clients)
             {
-                clientHandler.sendNetworkPacket(netPacket);
-            }
-            catch(IOException ex)
-            {
-                System.out.println("Failed to sendMessageToAllClients: " + clientHandler.getUserName());
+                try
+                {
+                    clientHandler.sendNetworkPacket(netPacket);
+                }
+                catch(IOException ex)
+                {
+                    if("Socket closed".equalsIgnoreCase(ex.getMessage()))//Don't send messages to deadweight... Killem.
+                    {
+                        clientHandler.disconnect();//Stop talking to them...
+                    }
+                }
             }
         }
     }
@@ -97,11 +136,18 @@ public class Server extends Thread {
     public void shutdown()
     {
         //Shutdown all clients...
+        clientUpdateTimer.cancel();
         System.out.println("Shutdown server. Closing all clients!");
         sendMessageToAllClients(new NetworkPacket(0, PacketType.DISCONNECT,""));
+        try {
+            Thread.sleep(50);
+        } 
+        catch (InterruptedException e) {
+            System.out.println("Shutdown timer failure: " + e.getMessage());
+        }
+        
         for(ClientHandler clientHandler : clients)
         {
-            System.out.println("Told client listener thread to die.");
             clientHandler.disconnect();
         }
         
@@ -129,5 +175,21 @@ public class Server extends Thread {
     public boolean isReadyForConnections()
     {
         return this.isReadyForConnections;
+    }
+    /**
+     * Returns the current tick.
+     */
+    public long getTick()
+    {
+        return currentTick;
+    }
+    /**
+     * Thread safe removal of a clientHandler.
+    */
+    public void removeClientHandler(ClientHandler clienthandler)
+    {
+        synchronized (clientLock) {
+            clients.remove(clienthandler);
+        }
     }
 }
