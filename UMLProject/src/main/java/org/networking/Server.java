@@ -88,7 +88,7 @@ public class Server extends Thread {
             }
             catch(SocketTimeoutException e)
             {
-                System.out.println("SocketBreakLoop : SERVER HANDLER...");
+                //Ok exception, just breaks connection listening softlocks.
             }
             catch(IOException e)
             {
@@ -191,5 +191,22 @@ public class Server extends Thread {
         synchronized (clientLock) {
             clients.remove(clienthandler);
         }
+    }
+    /**
+     * Get all clients
+     * Note: this is a shallow copy of the list. Modifying the items in the list will affect the classes.
+     * However, removing items from the list will not affect the 'OG' client list
+     */
+    public ArrayList<ClientHandler> getClients()
+    {
+        ArrayList<ClientHandler> tempList = new ArrayList<>();
+        synchronized (clientLock) {
+            Iterator<ClientHandler> it = clients.iterator();
+            while (it.hasNext()) {
+                ClientHandler client = it.next();
+                tempList.add(client);
+            }
+        }
+        return tempList;
     }
 }
