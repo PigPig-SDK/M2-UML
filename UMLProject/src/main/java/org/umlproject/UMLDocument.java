@@ -206,7 +206,7 @@ public class UMLDocument implements Copyable<UMLDocument>
         RelationshipType relationshipType = RelationshipType.stringToRelationshipType(relationshipTypeString);
         UMLRelationship relationship = new UMLRelationship(className, destinationName, relationshipType, (relationshipType == RelationshipType.OTHER) ? relationshipTypeString : null);
         relationshipList.get(className).add(relationship);
-        documentListners.forEach(o->o.onRelationshipAdded(relationship,false));
+        documentListners.forEach(o->o.onRelationshipAdded(relationship));
         return true;
     }
     /**
@@ -435,12 +435,12 @@ public class UMLDocument implements Copyable<UMLDocument>
     private void suggestGuiControllerRedraw()
     {
         for(UMLClass umlc : classSet.values()) {
-            documentListners.forEach(o-> o.onClassAdded(umlc, true));
+            documentListners.forEach(o-> o.onClassAdded(umlc));
         }
         for(ArrayList<UMLRelationship> relationshipList : relationshipList.values())
         {
             for(UMLRelationship umlr : relationshipList){
-                documentListners.forEach(o -> o.onRelationshipAdded(umlr, true));
+                documentListners.forEach(o -> o.onRelationshipAdded(umlr));
             }
         }
         documentListners.forEach(o -> o.loadFile(this));
@@ -482,7 +482,7 @@ public class UMLDocument implements Copyable<UMLDocument>
         classSet.put(className, umlclass);
         ArrayList<UMLRelationship> newList = new ArrayList<>();
         relationshipList.put(className, newList);
-        documentListners.forEach(o -> o.onClassAdded(umlclass, false));
+        documentListners.forEach(o -> o.onClassAdded(umlclass));
         return umlclass;
     }
 
@@ -646,9 +646,12 @@ public class UMLDocument implements Copyable<UMLDocument>
     */
     public static void redoMementoState()
     {
-        instance.getInstance().cleanUpAllGuiListeners();
-        instance.redo();
-        executeActionUnderState(DocumentState.MEMENTO_STATE_RESET, () -> instance.getInstance().suggestGuiControllerRedraw());
+        if(instance.getRedoHistoryLength()!= 0)//There are items to be redone.
+        {
+            instance.getInstance().cleanUpAllGuiListeners();
+            instance.redo();
+            executeActionUnderState(DocumentState.MEMENTO_STATE_RESET, () -> instance.getInstance().suggestGuiControllerRedraw());
+        }
     }
     /**
      * Returns the memento

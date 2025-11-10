@@ -2,11 +2,18 @@ package org.umlproject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.function.Function;
 import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
 import org.umlproject.UI.GuiClass;
 
 public class UMLClass extends UMLDiagramElement implements Cloneable{
+    
+    /**
+     * Used for overriding the default spawn location.
+     */
+    public static Function<UMLClass, Point2D> initializationLocation = (umlclass) -> Point2D.ZERO;
+    
     private String className;
     /**
      * use hashmap for UMLDataFields where a unique DataField name is the key
@@ -58,6 +65,8 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
         this.className = className;
         this.fields = fields;
         this.methods = methods;
+        if(initializationLocation != null)
+            setLocationSilent(initializationLocation.apply(this));
     }
     /**
      * getter method for a single field

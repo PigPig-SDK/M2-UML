@@ -310,8 +310,8 @@ public class UMLDocumentTests
         @Override public void updateLocation(Object desiredElement) { eventCalled();}
         @Override public void onClassRemove(UMLClass umlClass) { eventCalled();}
         @Override public void onRelationshipRemove(UMLRelationship umlClass) { eventCalled();}
-        @Override public void onClassAdded(UMLClass umlClass, boolean isLoading) { eventCalled();}
-        @Override public void onRelationshipAdded(UMLRelationship umlRelationship, boolean isLoading) { eventCalled();}
+        @Override public void onClassAdded(UMLClass umlClass) { eventCalled();}
+        @Override public void onRelationshipAdded(UMLRelationship umlRelationship) { eventCalled();}
         @Override public void cleanUp() {}
         @Override public void loadFile(UMLDocument umlDocument) {}
     }

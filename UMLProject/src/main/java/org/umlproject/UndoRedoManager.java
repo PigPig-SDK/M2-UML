@@ -60,11 +60,11 @@ public class UndoRedoManager implements DiagramElementListener, DocumentListner
         onDocumentUpdated("relationship remove");
     }
 
-    @Override public void onClassAdded(UMLClass umlClass, boolean isLoading) {
+    @Override public void onClassAdded(UMLClass umlClass) {
         onDocumentUpdated("class added");
     }
 
-    @Override public void onRelationshipAdded(UMLRelationship umlRelationship, boolean isLoading) {
+    @Override public void onRelationshipAdded(UMLRelationship umlRelationship) {
         onDocumentUpdated(" Relationship added");
     }
     
