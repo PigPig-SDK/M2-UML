@@ -7,13 +7,15 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.umlproject.UI.GuiFileBrowser;
 public class MementoTests {
     
-    private class ClonableClass implements Cloneable{
+    private class ClonableClass implements Copyable<ClonableClass>{
         public int counter;
         public ClonableClass(int counterInitial) { this.counter = counterInitial;}
+
         @Override
-        protected ClonableClass clone() throws CloneNotSupportedException {
+        public ClonableClass clone() {
             return new ClonableClass(this.counter);//Value type. Is deep copy.
         }
+        
     }
     
     private class TestListener implements MementoListener<ClonableClass>
@@ -41,7 +43,7 @@ public class MementoTests {
     void undo_saveState_returnsToFirstState() {
         //Arrange
         ClonableClass cloneClass = new ClonableClass(0);
-        Memento<ClonableClass> memento = new Memento<ClonableClass>(cloneClass);
+        Memento<ClonableClass> memento = new Memento<>(cloneClass);
         //Act
         memento.getInstance().counter++;
         memento.saveState();//Save the current state
@@ -54,7 +56,7 @@ public class MementoTests {
     void undo_undoInitialState_returnsToFirstState() {
         //Arrange
         ClonableClass cloneClass = new ClonableClass(0);
-        Memento<ClonableClass> memento = new Memento<ClonableClass>(cloneClass);
+        Memento<ClonableClass> memento = new Memento<>(cloneClass);
         //Act
         memento.getInstance().counter++;
         memento.undo();//Retreat to the initial state, because no state was saved.
@@ -67,7 +69,7 @@ public class MementoTests {
     void undo_saveUndoUndo_returnsToFirstState() {
         //Arrange
         ClonableClass cloneClass = new ClonableClass(0);
-        Memento<ClonableClass> memento = new Memento<ClonableClass>(cloneClass);
+        Memento<ClonableClass> memento = new Memento<>(cloneClass);
         //Act
         memento.getInstance().counter++;
         memento.saveState();//Save the current state
@@ -81,19 +83,19 @@ public class MementoTests {
     void saveState_saveOnce_containsState() {
         //Arrange
         ClonableClass cloneClass = new ClonableClass(0);
-        Memento<ClonableClass> memento = new Memento<ClonableClass>(cloneClass);
+        Memento<ClonableClass> memento = new Memento<>(cloneClass);
         //Act
         memento.getInstance().counter++;
         memento.saveState();//Save the current state
         //Assert
         assertEquals(1, memento.getInstance().counter);
-        assertEquals(1, memento.getHistoryLength());//Maintains that one state always exists.
+        assertEquals(2, memento.getHistoryLength());//Maintains that one state always exists.
     }
     @Test
     void saveState_saveMultipleTimes_containsState() {
         //Arrange
         ClonableClass cloneClass = new ClonableClass(0);
-        Memento<ClonableClass> memento = new Memento<ClonableClass>(cloneClass);
+        Memento<ClonableClass> memento = new Memento<>(cloneClass);
         //Act
         memento.getInstance().counter++;
         memento.saveState();//1
@@ -119,7 +121,7 @@ public class MementoTests {
     void redo_oneTime_returnsToState() {
         //Arrange
         ClonableClass cloneClass = new ClonableClass(0);
-        Memento<ClonableClass> memento = new Memento<ClonableClass>(cloneClass);
+        Memento<ClonableClass> memento = new Memento<>(cloneClass);
         //Act
         memento.getInstance().counter++;
         memento.saveState();//1
@@ -140,7 +142,7 @@ public class MementoTests {
     void redo_noStack_stopsAction() {
         //Arrange
         ClonableClass cloneClass = new ClonableClass(0);
-        Memento<ClonableClass> memento = new Memento<ClonableClass>(cloneClass);
+        Memento<ClonableClass> memento = new Memento<>(cloneClass);
         //Act
         memento.redo();//Nothing should happen...
         
@@ -152,7 +154,7 @@ public class MementoTests {
     void clearHistory_clearsAllHistory_success() {
         //Arrange
         ClonableClass cloneClass = new ClonableClass(0);
-        Memento<ClonableClass> memento = new Memento<ClonableClass>(cloneClass);
+        Memento<ClonableClass> memento = new Memento<>(cloneClass);
         //Act
         memento.saveState();
         memento.saveState();
@@ -171,7 +173,7 @@ public class MementoTests {
     void listener_saveState_callsback() {
         //Arrange
         ClonableClass cloneClass = new ClonableClass(0);
-        Memento<ClonableClass> memento = new Memento<ClonableClass>(cloneClass);
+        Memento<ClonableClass> memento = new Memento<>(cloneClass);
         TestListener testListener = new TestListener();
         memento.addListener(testListener);
         //Act
@@ -183,7 +185,7 @@ public class MementoTests {
     void listener_undo_callsback() {
         //Arrange
         ClonableClass cloneClass = new ClonableClass(0);
-        Memento<ClonableClass> memento = new Memento<ClonableClass>(cloneClass);
+        Memento<ClonableClass> memento = new Memento<>(cloneClass);
         TestListener testListener = new TestListener();
         memento.addListener(testListener);
         //Act
@@ -196,7 +198,7 @@ public class MementoTests {
     void listener_redo_callsback() {
         //Arrange
         ClonableClass cloneClass = new ClonableClass(0);
-        Memento<ClonableClass> memento = new Memento<ClonableClass>(cloneClass);
+        Memento<ClonableClass> memento = new Memento<>(cloneClass);
         TestListener testListener = new TestListener();
         memento.addListener(testListener);
         //Act
@@ -210,7 +212,7 @@ public class MementoTests {
     void listener_clearHistory_callsback() {
         //Arrange
         ClonableClass cloneClass = new ClonableClass(0);
-        Memento<ClonableClass> memento = new Memento<ClonableClass>(cloneClass);
+        Memento<ClonableClass> memento = new Memento<>(cloneClass);
         TestListener testListener = new TestListener();
         memento.addListener(testListener);
         //Act

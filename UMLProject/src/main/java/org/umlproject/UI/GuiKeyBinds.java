@@ -6,10 +6,12 @@ import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.input.KeyCode;
 import static javafx.scene.input.KeyCode.N;
+import static javafx.scene.input.KeyCode.Z;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import org.umlproject.Main;
+import org.umlproject.UMLDocument;
 
 public class GuiKeyBinds {
     /**
@@ -27,26 +29,26 @@ public class GuiKeyBinds {
         addAccelerator(new KeyCodeCombination(KeyCode.DELETE, KeyCombination.CONTROL_DOWN), "Delete");
         addAccelerator(new KeyCodeCombination(KeyCode.F1), "Help");
         addAccelerator(new KeyCodeCombination(KeyCode.F2), "About UML Editor");
-        addAccelerator(new KeyCodeCombination(KeyCode.F12), GuiController.singleton.viewTerminalMenuItem);
+        addAccelerator(new KeyCodeCombination(KeyCode.F12), GuiController.getInstance().viewTerminalMenuItem);
         
         
         Main.currentScene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
-            if(GuiController.singleton == null)//Cannot execute quickbind. The menu dosn't exist.
+            if(GuiController.getInstance() == null)//Cannot execute quickbind. The menu dosn't exist.
                 return;
           
             switch(event.getCode())
             {
                 case F2->
                 {
-                    GuiController.singleton.aboutHelpMenuAction();
+                    GuiController.getInstance().aboutHelpMenuAction();
                 }
                 case F1->
                 {
-                    GuiController.singleton.infoHelpMenuAction();
+                    GuiController.getInstance().infoHelpMenuAction();
                 }
                 case F12->
                 {
-                    CheckMenuItem terminalButton = GuiController.singleton.viewTerminalMenuItem;
+                    CheckMenuItem terminalButton = GuiController.getInstance().viewTerminalMenuItem;
                     GuiConsole.terminalOverrideOut(!terminalButton.isSelected());//Override output, this is required due to a javafx bug...
                     terminalButton.setSelected(!terminalButton.isSelected());
                 }
@@ -59,29 +61,39 @@ public class GuiKeyBinds {
             {
                 case S -> {
                     if(event.isShiftDown())//CTRL+SHIFT+S for "Save As"
-                        GuiController.singleton.saveAsFileMenuAction();
+                        GuiController.getInstance().saveAsFileMenuAction();
                     else//CTRL+S for Save
-                        GuiController.singleton.saveFileMenuAction();
+                        GuiController.getInstance().saveFileMenuAction();
                     event.consume();
                 }
                 //Select all (CTRL+A)
                 case A -> {
-                    GuiController.singleton.selectAllEditMenuAction();
+                    GuiController.getInstance().selectAllEditMenuAction();
                     event.consume();
                 }
                 //New file (CTRL+N)
                 case N -> {
-                    GuiController.singleton.newFileMenuAction();
+                    GuiController.getInstance().newFileMenuAction();
                     event.consume();
                 }
                 //Open file (CTRL+O)
                 case O -> {
-                    GuiController.singleton.openFileMenuAction();
+                    GuiController.getInstance().openFileMenuAction();
                     event.consume();
                 }
                 //Delete all (CTRL+DELETE)
                 case DELETE -> {
                     GuiSelect.getInstance().deleteAllSelected();
+                    event.consume();
+                }
+                //UNDO
+                case Z ->{
+                    UMLDocument.undoMementoState();
+                    event.consume();
+                }
+                //Redo
+                case Y ->{
+                    UMLDocument.redoMementoState();
                     event.consume();
                 }
             }
@@ -96,10 +108,10 @@ public class GuiKeyBinds {
      */
     public static void addAccelerator(KeyCodeCombination keyAccelerator, String menuItemName)
     {
-        if(GuiController.singleton == null)//Ensure not some odd case.
+        if(GuiController.getInstance() == null)//Ensure not some odd case.
             return;
         //Search for menuitem in our menu bar.
-        MenuItem saveMenuItem =  findMenuItemFromMenuBar(GuiController.singleton.getMenuBar(),menuItemName);
+        MenuItem saveMenuItem =  findMenuItemFromMenuBar(GuiController.getInstance().getMenuBar(),menuItemName);
         if(saveMenuItem == null)
         {
             System.out.println(String.format("GuiKeyCodes::setupKeyCodes() : '%s' SUBMENU NOT FOUND!",menuItemName));

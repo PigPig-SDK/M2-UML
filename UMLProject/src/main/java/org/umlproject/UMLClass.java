@@ -24,10 +24,14 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
     
     public Point2D getLocation() { return new Point2D(locationX, locationY); }
     
-    public void setLocation(Point2D location) { 
+    public void setLocation(Point2D location, boolean informGlobals) { 
+        setLocationSilent(location);
+        updateListnerAboutLocation(informGlobals);
+    }
+    
+    public void setLocationSilent(Point2D location) { 
         this.locationX = location.getX();
         this.locationY = location.getY();
-        updateGUILocation();
     }
     
     /**
@@ -107,7 +111,7 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
      */
     public void setClassName(String name) {
         this.className = name;
-        updateGUI();
+        updateListener(true);
     }
     /**
      * addField method will add a new UMLDataField object to the fields hashMap under the
@@ -132,7 +136,7 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
         AutoComplete.getInstance().addWord(name);
 
         fields.put(name, field);
-        updateGUI();
+        updateListener(true);
         return true;
     }
 
@@ -154,7 +158,7 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
         //The != null ensures a boolean value is returned
         boolean isRemoved = fields.remove(fieldName) != null;
         if(isRemoved)//Update our GUI listener.
-            updateGUI();
+            updateListener(true);
 
         AutoComplete.getInstance().removeWord(fieldName);
 
@@ -183,7 +187,7 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
         //update field name
         field.setName(newName);
         fields.put(newName, field);
-        updateGUI();
+        updateListener(true);
         return true;
     }
 
@@ -256,7 +260,7 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
         target.setMethodName(newName);
         newList.add(target);
         methods.put(newName, newList);
-        updateGUI();
+        updateListener(true);
         return true;
     }
 
@@ -313,7 +317,7 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
         }
 
         methods.put(name, list);
-        updateGUI();
+        updateListener(true);
         return true;
     }
 
@@ -333,21 +337,21 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
         if (methodName == null || methodName.isEmpty()) {
             return false;
         }
-        //    private HashMap<String, ArrayList<UMLMethod>> methods;
 
         if(!methods.containsKey(methodName))
             return  false;
         boolean isRemoved = methods.get(methodName).remove(index) != null;
         if(isRemoved)
-            updateGUI();
-
+            updateListener(true);
+        /*
+        //TODO: Implement in a new way later.
         AutoComplete.getInstance().removeWord(methodName);
         if(!getMethods(methodName).get(index).getParameters().isEmpty()){
             for(UMLParameter p :  getMethods(methodName).get(index).getParameters()) {
                 AutoComplete.getInstance().removeWord(p.getName());
             }
         }
-
+        */
         return isRemoved;
     }
 
@@ -385,7 +389,7 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
         for (UMLMethod method : list) {
             if (method.getParameters().equals(parameters)) {
                 method.addParameter(newParameter);
-                updateGUI();
+                updateListener(true);
                 return true;
             }
         }
@@ -421,7 +425,7 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
         for (UMLMethod method : overloads) {
             if (method.getParameters().equals(parameters)) {
                 boolean removed = method.removeParameter(paramToRemove);
-                if(removed) updateGUI();
+                if(removed) updateListener(true);
                 return removed;
             }
         }
@@ -456,7 +460,7 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
             if (method.getParameters().equals(oldParameters)) {
                 //match found, so swap parameter with parameter list
                 method.changeParameter(paramToRemove, newParameters);
-                updateGUI();
+                updateListener(true);
                 return true;
             }
         }
@@ -492,7 +496,7 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
             if (method.getParameters().equals(oldParameters)) {
                 //match found, so swap parameter with parameter list
                 method.setListParameters(newParameters);
-                updateGUI();
+                updateListener(true);
                 return true;
             }
         }
@@ -576,22 +580,22 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
     public UMLClass clone()
     {
         UMLClass umlc = new UMLClass(this.className);
+        umlc.setLocationSilent(this.getLocation());
         for(UMLDataField dataField : this.fields.values())
         {
             umlc.addField(dataField.clone());
         }
-        //private HashMap<String, ArrayList<UMLMethod>> methods;
-        for(String methodName : methods.keySet())
+        for(String methodName : this.methods.keySet())
         {
             umlc.methods.put(methodName, new ArrayList<UMLMethod>());//Allocate the new memory for the item...
-            for(UMLMethod method : methods.get(methodName))
+            for(UMLMethod method : this.methods.get(methodName))
             {
                 try
                 {
                     umlc.methods.get(methodName).add(method.clone());
                 } 
                 catch (CloneNotSupportedException e)//Exception. Do skip over the class.
-                { 
+                {
                     continue;
                 }
             }
