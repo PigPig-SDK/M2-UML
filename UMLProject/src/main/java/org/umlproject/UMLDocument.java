@@ -627,7 +627,7 @@ public class UMLDocument implements Copyable<UMLDocument>
     */
     public static void saveMementoState()
     {
-        instance.saveState();
+        executeActionUnderState(DocumentState.MEMENTO_STATE_RESET, ()->instance.saveState());
     }
     /**
      * Returns to the previous state.
