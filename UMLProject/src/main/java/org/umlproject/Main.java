@@ -91,25 +91,6 @@ public class Main extends Application
         }
     }
     
-    public static void main(String[] args) 
-    {
-        NetworkManager.initialize();
-        
-        //If terminal launch option is requested. Override JAVAFX.
-        if(args.length == 1 && args[0].equals(terminalLaunchString))
-        {
-            //Scanner scanner = new Scanner(System.in);
-            TerminalHandler.runCommand("help");
-            TerminalHandler.printLineBreak();
-            do
-            {
-                TerminalHandler.runCommand(AutoComplete.getInstance().lineInConsole().toLowerCase());
-            }while(TerminalHandler.isRunning);
-            return;
-        }
-        launch(args);
-    }
-    
     @Override
     public void start(Stage stage) throws Exception {
         //JavaFX setup...
