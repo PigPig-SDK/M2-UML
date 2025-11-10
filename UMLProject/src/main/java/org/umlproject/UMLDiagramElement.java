@@ -10,7 +10,7 @@ import java.util.Set;
 public abstract class UMLDiagramElement
 {
     transient protected DiagramElementListener listener;
-    public static Set<DiagramElementListener> globalListeners = new HashSet();
+    transient public static Set<DiagramElementListener> globalListeners = new HashSet();
     
     public DiagramElementListener getListener()
     {
@@ -25,7 +25,9 @@ public abstract class UMLDiagramElement
     public void updateListener(boolean informGlobals)
     {
         if(informGlobals)
+        {
             globalListeners.forEach(o->o.update(this));
+        }
         
         if(listener == null)
             return;

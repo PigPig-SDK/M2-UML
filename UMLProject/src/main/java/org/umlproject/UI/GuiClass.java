@@ -526,9 +526,20 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
      */
     public void updateAllRelationships(UMLClass desiredElement)
     {
-        ArrayList<UMLRelationship> list = UMLDocument.getInstance().getAllRelationshipsInstanceOf(desiredElement.getClassName());
-        for(UMLRelationship relationship : list)//Update all relationship GUI
-            relationship.updateListener(false);
+
+        if(UMLDocument.getDocumentState() != DocumentState.MEMENTO_STATE_RESET)//select newly added items.
+        {
+            ArrayList<UMLRelationship> list = UMLDocument.getInstance().getAllRelationshipsInstanceOf(desiredElement.getClassName());
+            for(UMLRelationship relationship : list)//Update all relationship GUI
+            {
+                if(relationship == null)
+                {
+                    System.out.println("FUCK OFF");
+                   continue;
+                }
+                relationship.updateListener(false);
+            }
+        }
     }
 
     /**

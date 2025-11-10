@@ -417,6 +417,7 @@ public class UMLDocument implements Copyable<UMLDocument>
                 this.classSet=data.classSet;
                 this.fileLocation=data.fileLocation;
                 this.relationshipList=data.relationshipList;
+                instance.resetHistory(this);
             } 
             catch (IOException e) {
                 return false;

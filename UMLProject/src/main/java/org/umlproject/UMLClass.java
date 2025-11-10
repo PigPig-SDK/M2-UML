@@ -145,6 +145,7 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
         AutoComplete.getInstance().addWord(name);
 
         fields.put(name, field);
+        System.out.println("Root of crash : " + UMLDocument.getDocumentState());
         updateListener(true);
         return true;
     }

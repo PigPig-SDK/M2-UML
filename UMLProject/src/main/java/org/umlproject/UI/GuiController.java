@@ -359,7 +359,6 @@ public class GuiController implements DocumentListner {
         GuiClass guiClass = new GuiClass(world, umlClass);
         umlClass.setListener(guiClass);
         
-        System.out.println(UMLDocument.getDocumentState());
         if(UMLDocument.getDocumentState() != DocumentState.FILE_LOADING &&
            UMLDocument.getDocumentState() != DocumentState.MEMENTO_STATE_RESET)//select newly added items.
         {
