@@ -4,6 +4,7 @@ import org.junit.jupiter.api.*;
 import org.umlproject.*;
 
 import java.util.*;
+import javafx.geometry.Point2D;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -35,7 +36,18 @@ public class UMLClassTest {
         assertThrows(IllegalArgumentException.class, () -> new UMLClass(null));
         assertThrows(IllegalArgumentException.class, () -> new UMLClass(""));
     }
-
+    @Test
+    void constructor_locationDynamic_usedLambda() {
+        //Arrange
+        UMLClass.initializationLocation = (p) -> {return new Point2D(10, 10);};
+        //Act
+        UMLClass tester = new UMLClass("test");
+        //Assert
+        assertEquals(tester.getLocation().getX(), 10);
+        assertEquals(tester.getLocation().getY(), 10);
+        //UNDO for next test...
+        UMLClass.initializationLocation = (p) -> {return Point2D.ZERO;};
+    }
     /* ------------------------------------------------------------
      * Field operations
      * ------------------------------------------------------------ */
@@ -352,7 +364,7 @@ public class UMLClassTest {
         assertNull(testerClone.getFields(dataFieldName));
         assertNotNull(tester.getFields(dataFieldName));
     }
-    
+
     //NOTE : This class is only to be used for testing!
     static class DummyListener implements DiagramElementListener<UMLClass> {
         public int timesUpdateCalled = 0;

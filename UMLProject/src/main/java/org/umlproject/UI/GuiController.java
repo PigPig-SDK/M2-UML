@@ -31,6 +31,7 @@ import org.umlproject.UMLDocument;
 import org.umlproject.UMLRelationship;
 import org.umlproject.DocumentListner;
 import org.umlproject.DiagramElementListener;
+import org.umlproject.DocumentState;
 
 public class GuiController implements DocumentListner {
     
@@ -116,7 +117,19 @@ public class GuiController implements DocumentListner {
      * This is called after initialize. 
      * This is because some things are not fully initialized during the call of 'initialize'.
      */
-    public void lateInitialization() {
+    public void lateInitialization() { 
+        
+        UMLClass.initializationLocation = (UMLClass umlclass) ->
+        {
+            //If we are not loading
+            if((UMLDocument.getDocumentState() == DocumentState.NORMAL))
+            {
+                return findSafeLocation(GuiCamera.getScreenCenter(), extractGuiClasses());
+            }
+            else
+                return umlclass.getLocation();
+        };
+        
         GuiResizeManager.bindToSizeUpdates();
         GuiCamera.setupCamera();
         GuiKeyBinds.setupKeyBinds();
@@ -342,15 +355,13 @@ public class GuiController implements DocumentListner {
     }
     //This method will bind a guiClass listener to the new umlClass
     @Override
-    public void onClassAdded(UMLClass umlClass, boolean isLoading) {
-        if(!isLoading)//The class addition is from 'newclass button'
-        {
-            Point2D safeLocation = findSafeLocation(GuiCamera.getScreenCenter(), extractGuiClasses());
-            umlClass.setLocation(safeLocation, false);
-        }
+    public void onClassAdded(UMLClass umlClass) {
         GuiClass guiClass = new GuiClass(world, umlClass);
         umlClass.setListener(guiClass);
-        if(!isLoading)//Calls this late so items are setup...
+        
+        System.out.println(UMLDocument.getDocumentState());
+        if(UMLDocument.getDocumentState() != DocumentState.FILE_LOADING &&
+           UMLDocument.getDocumentState() != DocumentState.MEMENTO_STATE_RESET)//select newly added items.
         {
             GuiSelect.getInstance().resetSelect();//Clear our selection...
             GuiSelect.getInstance().selectUiElement(guiClass);
@@ -440,7 +451,7 @@ public class GuiController implements DocumentListner {
     }
 
     @Override
-    public void onRelationshipAdded(UMLRelationship umlRelationship, boolean isLoading) {
+    public void onRelationshipAdded(UMLRelationship umlRelationship) {
         GuiRelationship guiRelationship = new GuiRelationship(world, umlRelationship);
         umlRelationship.setListener(guiRelationship);
     }
