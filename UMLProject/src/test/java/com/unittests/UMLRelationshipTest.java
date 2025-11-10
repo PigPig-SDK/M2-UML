@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class UMLRelationshipTest {
     //NOTE : This class is only to be used for testing!
-    static class DummyListener implements UIListener<UMLRelationship> {
+    static class DummyListener implements DiagramElementListener<UMLRelationship> {
         public int timesUpdateCalled = 0;
         @Override public void update(UMLRelationship desiredElement) { timesUpdateCalled++; }
         @Override public void updateLocation(UMLRelationship desiredElement) {}

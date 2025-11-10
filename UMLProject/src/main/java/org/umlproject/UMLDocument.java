@@ -21,7 +21,7 @@ import java.util.function.Supplier;
 
 public class UMLDocument implements Copyable<UMLDocument>
 {
-    private static UMLDocument instance;
+    private static Memento<UMLDocument> instance;
     
     transient String fileLocation = null;
     private Map<String, UMLClass> classSet = new HashMap<>();
@@ -31,9 +31,7 @@ public class UMLDocument implements Copyable<UMLDocument>
     private static final String DEFAULT_FILEDIRECTORY = "Documents" + File.separator + "NewUMLDocument";
 
     public static List<DocumentListner> documentListners = new ArrayList<>();
-    
     private static DocumentState documentState = DocumentState.NORMAL;
-
     
     /**
      * Used to return all selectable objects
@@ -68,13 +66,15 @@ public class UMLDocument implements Copyable<UMLDocument>
     {
         if(instance == null)
         {
-            setupInstance();
+            resetInstance();
         }
-        return instance;
+        return instance.getInstance();
     }
-    public static synchronized UMLDocument setupInstance()
+    public static synchronized UMLDocument resetInstance()
     {
-        return instance = new UMLDocument(DEFAULT_FILEDIRECTORY);
+        UMLDocument doc = new UMLDocument(DEFAULT_FILEDIRECTORY);
+        instance = new Memento<UMLDocument>(doc);
+        return doc;
     }
     /**
      * Creates a new UMLDocument
@@ -621,5 +621,40 @@ public class UMLDocument implements Copyable<UMLDocument>
         }
         return umldoc;
     }
-
+    /**
+     * Stores a memento state.
+    */
+    public static void saveMementoState()
+    {
+        instance.saveState();
+    }
+    /**
+     * Returns to the previous state.
+    */
+    public static void undoMementoState()
+    {
+        if(instance.getHistoryLength() != 1)//There are items to be undone.
+        {
+            instance.getInstance().cleanUpAllGuiListeners();
+            instance.undo();
+            //Do not register this as a 'update state'
+            executeActionUnderState(DocumentState.MEMENTO_STATE_RESET, () -> instance.getInstance().suggestGuiControllerRedraw());
+        }
+    }
+    /**
+     * Returns to the previous state after an undo.
+    */
+    public static void redoMementoState()
+    {
+        instance.getInstance().cleanUpAllGuiListeners();
+        instance.redo();
+        executeActionUnderState(DocumentState.MEMENTO_STATE_RESET, () -> instance.getInstance().suggestGuiControllerRedraw());
+    }
+    /**
+     * Returns the memento
+     */
+    public static Memento<UMLDocument> getMemento()
+    {
+        return instance;
+    }
 }

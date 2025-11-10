@@ -30,7 +30,7 @@ public class Main extends Application
     public static void main(String[] args) 
     {
         //Setup
-        DocumentMementoListener.setupListener();
+        UndoRedoManager.setupListener();
         
         //If terminal launch option is requested. Override JAVAFX.
         if(args.length == 1 && args[0].equals(terminalLaunchString))

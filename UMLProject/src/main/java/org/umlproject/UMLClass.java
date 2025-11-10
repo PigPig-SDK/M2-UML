@@ -25,9 +25,13 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
     public Point2D getLocation() { return new Point2D(locationX, locationY); }
     
     public void setLocation(Point2D location, boolean informGlobals) { 
+        setLocationSilent(location);
+        updateListnerAboutLocation(informGlobals);
+    }
+    
+    public void setLocationSilent(Point2D location) { 
         this.locationX = location.getX();
         this.locationY = location.getY();
-        updateListnerAboutLocation(informGlobals);
     }
     
     /**
@@ -576,6 +580,7 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
     public UMLClass clone()
     {
         UMLClass umlc = new UMLClass(this.className);
+        umlc.setLocationSilent(this.getLocation());
         for(UMLDataField dataField : this.fields.values())
         {
             umlc.addField(dataField.clone());

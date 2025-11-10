@@ -43,7 +43,7 @@ public class CommandTests
     {
         //Arrange
         
-        UMLDocument doc = UMLDocument.setupInstance();//For testing.
+        UMLDocument doc = UMLDocument.resetInstance();//For testing.
         doc.addClass("a");
         //Act
         TerminalHandler.runCommand("rename class a b");
@@ -60,7 +60,7 @@ public class CommandTests
         //Arrange
         ByteArrayOutputStream caught = new ByteArrayOutputStream();
         System.setOut(new PrintStream(caught));
-        UMLDocument doc = UMLDocument.setupInstance();
+        UMLDocument doc = UMLDocument.resetInstance();
         doc.addClass("a");
         doc.addClass("b");
         //Act

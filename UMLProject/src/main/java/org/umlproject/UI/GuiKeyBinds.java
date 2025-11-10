@@ -6,10 +6,12 @@ import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.input.KeyCode;
 import static javafx.scene.input.KeyCode.N;
+import static javafx.scene.input.KeyCode.Z;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import org.umlproject.Main;
+import org.umlproject.UMLDocument;
 
 public class GuiKeyBinds {
     /**
@@ -82,6 +84,16 @@ public class GuiKeyBinds {
                 //Delete all (CTRL+DELETE)
                 case DELETE -> {
                     GuiSelect.getInstance().deleteAllSelected();
+                    event.consume();
+                }
+                //UNDO
+                case Z ->{
+                    UMLDocument.undoMementoState();
+                    event.consume();
+                }
+                //Redo
+                case Y ->{
+                    UMLDocument.redoMementoState();
                     event.consume();
                 }
             }
