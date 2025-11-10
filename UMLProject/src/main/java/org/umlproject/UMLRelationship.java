@@ -103,10 +103,12 @@ public class UMLRelationship  extends UMLDiagramElement implements Cloneable
     @Override
     public UMLRelationship clone()
     {
-        UMLRelationship relationship = this.relationshipType == RelationshipType.OTHER ? 
-                new UMLRelationship(sourceName, destinationName, relationshipType, customNameType) :
-                new UMLRelationship(sourceName, destinationName, relationshipType);
-        relationship.setListener(this.listener);
-        return relationship;
+        return UMLDocument.executeActionUnderState(DocumentState.CLONING, ()-> {
+            UMLRelationship relationship = this.relationshipType == RelationshipType.OTHER ?
+                    new UMLRelationship(sourceName, destinationName, relationshipType, customNameType) :
+                    new UMLRelationship(sourceName, destinationName, relationshipType);
+            relationship.setListener(this.listener);
+            return relationship;
+        });
     }
 }
