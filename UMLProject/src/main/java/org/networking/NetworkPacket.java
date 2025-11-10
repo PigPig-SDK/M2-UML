@@ -5,7 +5,8 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
-public record NetworkPacket(long sendTick, PacketType packetType, String jsonPayload) {
+public record NetworkPacket(long sendTick, PacketType packetType, String payload)
+{
     
     /**
      * Converts a given json string to an object.
@@ -23,5 +24,22 @@ public record NetworkPacket(long sendTick, PacketType packetType, String jsonPay
     {
         Gson gson = new Gson();
         return gson.toJson(this);
+    }
+    /**
+     * Converts the current payload to the specified object
+     */
+    public <T> T payloadToObject(Class<T> classType) throws IOException
+    {
+        Gson gson = new Gson();
+        return gson.fromJson(payload, classType);
+    }
+    /**
+     * Creates a network packet with a wrapped payload.
+     */
+    public static <T> NetworkPacket objectToNetworkPacket(long sendTick, PacketType packetType, T payload) throws IOException
+    {
+        Gson gson = new Gson();
+        String payloadString = gson.toJson(payload);
+        return new NetworkPacket(sendTick, packetType, payloadString);
     }
 }

@@ -22,6 +22,7 @@ public class TerminalHandler
         TerminalHandler.registerCommand(new CommandLoad());
         TerminalHandler.registerCommand(new CommandList());
         TerminalHandler.registerCommand(new CommandSave());
+        TerminalHandler.registerCommand(new CommandNetwork());
         TerminalHandler.registerCommand(new CommandUndo());
         TerminalHandler.registerCommand(new CommandRedo());
     }

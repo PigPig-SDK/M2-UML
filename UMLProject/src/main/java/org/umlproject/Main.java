@@ -10,6 +10,7 @@ import javafx.scene.image.Image;
 import javafx.scene.paint.Stop;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import org.networking.NetworkManager;
 import org.umlproject.UI.GuiController;
 
 public class Main extends Application
@@ -30,6 +31,7 @@ public class Main extends Application
     public static void main(String[] args) 
     {
         //Setup
+        NetworkManager.initialize();
         UndoRedoManager.setupListener();
         
         //If terminal launch option is requested. Override JAVAFX.
