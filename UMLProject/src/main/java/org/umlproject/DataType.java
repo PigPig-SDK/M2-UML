@@ -10,7 +10,12 @@ public enum DataType {
     CHAR,
     BOOLEAN,
     OTHER;
-    
+    /**
+     * Converts a given string to a DataType.
+     * 
+     * @param input String to be converted to DataType
+     * @return Other if no valid input is found, Otherwise the expected DataType.
+     */
     public static DataType stringToDatatype(String input) {
         if (input == null)
             return OTHER;

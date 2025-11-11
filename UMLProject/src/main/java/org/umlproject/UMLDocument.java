@@ -92,10 +92,16 @@ public class UMLDocument implements Copyable<UMLDocument>
             this.fileLocation = fileLocation;
         }
     }
+    /**
+     * Get the quick-save file location.
+     */
     public String getFileLocation()
     {
         return this.fileLocation;
     }
+    /**
+     * Set the quick-save location
+     */
     public void setFileLocation(String newFileLocation)
     {
         this.fileLocation = newFileLocation;
@@ -123,6 +129,13 @@ public class UMLDocument implements Copyable<UMLDocument>
         classSet.remove(className);
         return removed;
     }
+    /**
+     * Removes a class from the list, returning it to the API caller
+     * Automatically removes the classes relationships...
+     * 
+     * @param className to be removed.
+     * @return NULL or the removed object.
+     */
     public UMLClass removeClass(String className)
     {
         return removeClass(className,true);
@@ -384,6 +397,11 @@ public class UMLDocument implements Copyable<UMLDocument>
     {
         return save(this.getFileLocation());
     }
+    /**
+     * Saves to a specified file location
+     * @param filename , the directory/name we save as.
+     * @return True if the save was successful
+     */
     public boolean save(String filename)
     {
         if(fileLocation == null)
@@ -399,11 +417,23 @@ public class UMLDocument implements Copyable<UMLDocument>
         this.fileLocation = filename;
         return true;
     }
-    
+    /**
+     * 
+     */
     public boolean quickLoad()
     {
         return load(this.getFileLocation());
     }
+    /**
+     * Loads a specified file.
+     * Also clears out the current memento
+     * sets the current singleton to this loaded object.
+     * 
+     * TODO: REFACTOR LOAD() TO BE STATIC!
+     * 
+     * @param filename The file name/directory to load
+     * @return True if the file was loaded without issue.
+     */
     public boolean load(String filename)
     {
         return executeActionUnderState(DocumentState.FILE_LOADING,()->
@@ -456,6 +486,9 @@ public class UMLDocument implements Copyable<UMLDocument>
         classSet.clear();
         relationshipList.clear();
     }
+    /**
+     * Calls Cleanup on all listener instances
+     */
     private void cleanUpAllGuiListeners()
     {
         List<DiagramElementListener> allListeners = getUIListeners();
