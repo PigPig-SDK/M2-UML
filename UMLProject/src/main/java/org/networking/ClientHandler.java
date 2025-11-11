@@ -7,7 +7,9 @@ import java.net.Socket;
 
 /**
  * This class is the server side management of the client.
- * This is a communication stream with a specified 'client' (Not the client class, do not be confused).
+ * This is a communication stream with a specified 'Client'.
+ * 
+ * Do not be confused. This is only a server side object!
  */
 public class ClientHandler extends PacketManager
 {
@@ -32,13 +34,17 @@ public class ClientHandler extends PacketManager
         }
         return false;
     }
-    
+    /**
+     * Dictates if our connection should close when handling an invalid packet.
+     */
     @Override
     protected boolean closeOnInvalidPacket() {
         //If we get an invalid packet, we stop sending to the client...
         return true;
     }
-
+    /**
+     * Incoming packet management for the CLIENTHANDLER
+     */
     @Override
     protected void managePacket(NetworkPacket netPacket) {
         //Packets are time bound...
@@ -90,18 +96,24 @@ public class ClientHandler extends PacketManager
 
         }
     }
-
+    /**
+     * The object name for debugging. TODO: REMOVE ME!
+     */
     @Override
     protected String objectName() {
         return "ClientHandler";
     }
-
+    /**
+     * Called when the main socket connection is successful.
+     */
     @Override
     protected void onConnectionStarted() {
         //Inform new users of the connection.
         NetworkManager.getServerInstance().sendMessageToAllClients(new NetworkPacket(0,PacketType.MESSAGE, "A new user is connecting..."));
     }
-
+    /**
+     * Called on connection shutdown.
+     */
     @Override
     public void disconnect() {
         super.disconnect();
