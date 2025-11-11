@@ -29,11 +29,12 @@ public abstract class PacketManager extends Thread
         this.socket.setSoTimeout(NetworkManager.unstuckTimeout * 1000);
 
     }
-    
+    /**
+     * Manages incoming packets on the dedicated thread
+     */
     @Override
     public void run() 
     {
-        //System.out.println("Packetmanager startup under type : " + objectName());
         onConnectionStarted();
         while (running) 
         {
@@ -91,6 +92,9 @@ public abstract class PacketManager extends Thread
         //System.out.println("Packet manager closed..." + objectName());
         disconnect();
     }
+    /**
+     * Returns the IP of the client we are communicating with.
+     */
     public String getUserIP()
     {
         return socket.getInetAddress().getHostName();
@@ -135,8 +139,13 @@ public abstract class PacketManager extends Thread
      * @param netPacket The packet we are reacting to
      */
     protected abstract void managePacket(NetworkPacket netPacket);
-    
+    /**
+     * The debug object name
+     * TODO: remove me when finished with a majority of networking code.
+     */
     protected abstract String objectName();//The name of the object... For debugging only...
-    
+    /**
+     * Called when a connection starts.
+     */
     protected abstract void onConnectionStarted();
 }

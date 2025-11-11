@@ -5,6 +5,13 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
+/**
+ * This is the standard for our editors 'network packet'
+ * 
+ * sendTick : The server tick which we sent data.
+ * packetType : The type of payload the other end should expect.
+ * payload : The payload. Expected to be using 'json objects', 'string', or 'null'.
+ */
 public record NetworkPacket(long sendTick, PacketType packetType, String payload)
 {
     

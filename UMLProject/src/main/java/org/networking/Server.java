@@ -13,6 +13,15 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+/**
+ * Server is a class which manages existing connections, and establishes continuous connections.
+ * It also handles sending messages to all clients, this includes heartbeats
+ * 
+ * In function. When a client asks to 'establish a connection', the server spins up a 
+ * 'ClientHandler' to handle the connection on a different thread.
+ * 
+ * If a client fails to send a heartbeat in 
+ */
 public class Server extends Thread {
     
     private static final int TICK_INTERVAL = 100;//in MS.
@@ -108,11 +117,13 @@ public class Server extends Thread {
         }
     }
     /**
-     * 
-     * @param netPacket
+     * Sends a network packet to all clients
+     * If a client cannot receive a message because they have been terminated, their thread gets shutdown.
+     * @param netPacket The network packet to transmit to all users
      */
     public void sendMessageToAllClients(NetworkPacket netPacket)
     {
+        //Ensure we are not causing race conditions...
         synchronized (clientLock) {
             for(ClientHandler clientHandler : clients)
             {

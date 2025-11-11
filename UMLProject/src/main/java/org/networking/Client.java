@@ -5,7 +5,16 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
-
+/**
+ * This class is the 'client' logic for handling server packets
+ * This is a communication stream with a specified 'ClientHandler'.
+ * 
+ * Do not be confused, this is a clientside object! 
+ * The server in most cases will contain a self client connection. 
+ * This allows the server to interact with the client server architecture through a 'fair' control field.
+ * Also simplifies the design of most interactions.
+ * If there is an action you only want executed on non server clients, use 'isHosting' in control flow.
+ */
 public class Client extends PacketManager
 {
     private boolean isHosting = false;
@@ -18,15 +27,18 @@ public class Client extends PacketManager
         super(socket, dataInputStream, dataOutputStream);
         this.isHosting = isHost;
     }
-
+    /**
+     * Dictates if our connection should close when handling an invalid packet.
+     */
     @Override
     protected boolean closeOnInvalidPacket() {
         System.out.println("Disconnecting from host! Invalid packet length!");
         return true;
     }
-
-    @Override
-    protected void managePacket(NetworkPacket netPacket) {
+    /**
+     * Incoming packet management for the CLIENT
+     */
+    @Override protected void managePacket(NetworkPacket netPacket) {
         switch(netPacket.packetType())
         {
             case PacketType.DISCONNECT ->
@@ -60,12 +72,16 @@ public class Client extends PacketManager
 
         }
     }
-
+    /**
+     * The object name for debugging. TODO: REMOVE ME!
+     */
     @Override
     protected String objectName() {
         return "client";
     }
-
+    /**
+     * Called when the main socket connection is successful.
+     */
     @Override
     protected void onConnectionStarted() {
         UserIdentification myId = UserIdentification.generateAnonymousUserInfo();
@@ -79,6 +95,9 @@ public class Client extends PacketManager
             System.out.println("Error initializing, could not send identification : " + ex);
         }
     }
+    /**
+     * Called on connection shutdown.
+     */
     @Override
     public void disconnect()
     {
