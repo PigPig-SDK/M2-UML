@@ -11,7 +11,7 @@ import java.net.Socket;
  */
 public class ClientHandler extends PacketManager
 {
-    UserIdentification userID = new UserIdentification("Unknown");
+    private UserIdentification userID = new UserIdentification("Unknown", false);
     private boolean firstID = true;
     private long lastHeartbeatTime = 0;
     private static final long TIMEOUT = 5; // In seconds
@@ -25,7 +25,7 @@ public class ClientHandler extends PacketManager
      */
     public boolean hasTimedOut()
     {
-        long delta = System.nanoTime() - lastHeartbeatTime;
+        long delta = getHeartbeatDelta();
         if(delta >= TIMEOUT * 1000000000)//Multiply seconds -> Nano-Seconds
         {
             return true;
@@ -106,5 +106,18 @@ public class ClientHandler extends PacketManager
     public void disconnect() {
         super.disconnect();
     }
-    
+    /**
+     * Gets the heartbeat delta
+     */
+    public long getHeartbeatDelta()
+    {
+        return System.nanoTime() - lastHeartbeatTime;
+    }
+    /**
+     * Returns the current userID of this client connection
+     */
+    public UserIdentification getUserID()
+    {
+        return userID;
+    }
 }

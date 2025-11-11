@@ -3,6 +3,7 @@ package org.umlproject.Commands;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
+import org.networking.ClientHandler;
 import org.networking.NetworkManager;
 import org.networking.NetworkPacket;
 import org.networking.PacketType;
@@ -59,6 +60,21 @@ public class CommandNetwork extends BaseCommand {
                 System.out.println("Disconnecting...");
                 NetworkManager.shutdown();
             }
+            case "list" ->
+            {
+                if(NetworkManager.getServerInstance() == null)
+                {
+                    System.out.println("You must be hosting a server in order to list information...");
+                    return;
+                }
+                for(ClientHandler clienthandler : NetworkManager.getServerInstance().getClients())
+                {
+                    System.out.println(clienthandler.getUserID().userName + " : "
+                            + ((double)clienthandler.getHeartbeatDelta() / 1000000000.0) + " : "
+                            + clienthandler.getUserIP() + " : Is terminal user? " +
+                            clienthandler.getUserID().isTerminalUser);
+                }
+            }
             case "host" ->
             {
                 if(args.length != 2)
@@ -97,7 +113,7 @@ public class CommandNetwork extends BaseCommand {
 
     @Override
     public String description() {
-        return "host, connect, ";
+        return "host, connect, say, list";
     }
     
 }

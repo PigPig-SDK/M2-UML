@@ -91,7 +91,7 @@ public abstract class PacketManager extends Thread
         //System.out.println("Packet manager closed..." + objectName());
         disconnect();
     }
-    public String getUserName()
+    public String getUserIP()
     {
         return socket.getInetAddress().getHostName();
     }

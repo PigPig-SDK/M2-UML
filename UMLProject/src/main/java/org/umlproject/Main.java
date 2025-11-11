@@ -15,7 +15,7 @@ import org.umlproject.UI.GuiController;
 
 public class Main extends Application
 {
-
+    private static boolean isInTerminalMode = true;
     private static final String terminalLaunchString = "-terminal";
 
     public static Stage mainStage;
@@ -58,6 +58,7 @@ public class Main extends Application
         Object buttonObject = event.getSource();
         if (buttonObject == buttonGUI){
             try {
+                isInTerminalMode = false;
                 //MainScreen.fxml BINDS TO GuiClass!
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("MainScreen.fxml"));
                 Scene scene = new Scene(loader.load());
@@ -111,5 +112,9 @@ public class Main extends Application
     public void stop(){
         System.out.println("Stopping Application");
 
+    }
+    public static boolean isInTerminalMode()
+    {
+        return isInTerminalMode;
     }
 }
