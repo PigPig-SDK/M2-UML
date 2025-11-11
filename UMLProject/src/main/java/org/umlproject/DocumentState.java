@@ -6,5 +6,6 @@ public enum DocumentState
     MASS_OPERATION,
     FILE_LOADING,
     MEMENTO_STATE_RESET,
-    SILENT_MOVEMENT
+    SILENT_MOVEMENT,
+    CLONING
 }

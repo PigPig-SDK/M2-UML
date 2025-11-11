@@ -417,6 +417,7 @@ public class UMLDocument implements Copyable<UMLDocument>
                 this.classSet=data.classSet;
                 this.fileLocation=data.fileLocation;
                 this.relationshipList=data.relationshipList;
+                instance.resetHistory(this);
             } 
             catch (IOException e) {
                 return false;
@@ -604,29 +605,27 @@ public class UMLDocument implements Copyable<UMLDocument>
 
     @Override
     public UMLDocument clone() {
-        
-        UMLDocument umldoc = new UMLDocument(this.fileLocation);
-        for(String classString : classSet.keySet())
-        {
-            umldoc.getClassSet().put(classString, classSet.get(classString).clone());
-        }
-        for(String relatString : relationshipList.keySet())
-        {
-            Map<String, ArrayList<UMLRelationship>> copyRelatList = umldoc.getRelationshipList();
-            copyRelatList.put(relatString, new ArrayList<UMLRelationship>());
-            for(UMLRelationship relationship : relationshipList.get(relatString))
-            {
-                copyRelatList.get(relatString).add(relationship);
+        return UMLDocument.executeActionUnderState(DocumentState.CLONING, ()-> {
+            UMLDocument umldoc = new UMLDocument(this.fileLocation);
+            for (String classString : classSet.keySet()) {
+                umldoc.getClassSet().put(classString, classSet.get(classString).clone());
             }
-        }
-        return umldoc;
+            for (String relatString : relationshipList.keySet()) {
+                Map<String, ArrayList<UMLRelationship>> copyRelatList = umldoc.getRelationshipList();
+                copyRelatList.put(relatString, new ArrayList<UMLRelationship>());
+                for (UMLRelationship relationship : relationshipList.get(relatString)) {
+                    copyRelatList.get(relatString).add(relationship);
+                }
+            }
+            return umldoc;
+        });
     }
     /**
      * Stores a memento state.
     */
     public static void saveMementoState()
     {
-        instance.saveState();
+        executeActionUnderState(DocumentState.MEMENTO_STATE_RESET, () ->instance.saveState());
     }
     /**
      * Returns to the previous state.

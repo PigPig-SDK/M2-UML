@@ -588,28 +588,26 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
     @Override
     public UMLClass clone()
     {
-        UMLClass umlc = new UMLClass(this.className);
-        umlc.setLocationSilent(this.getLocation());
-        for(UMLDataField dataField : this.fields.values())
-        {
-            umlc.addField(dataField.clone());
-        }
-        for(String methodName : this.methods.keySet())
-        {
-            umlc.methods.put(methodName, new ArrayList<UMLMethod>());//Allocate the new memory for the item...
-            for(UMLMethod method : this.methods.get(methodName))
-            {
-                try
-                {
-                    umlc.methods.get(methodName).add(method.clone());
-                } 
-                catch (CloneNotSupportedException e)//Exception. Do skip over the class.
-                {
-                    continue;
-                }
-            }
-        }
-        umlc.listener = this.listener;//NOTE THIS IS THE ONLY THING THAT SHOULDNT BE A DEEP COPY!
-        return umlc;
+       return UMLDocument.executeActionUnderState(DocumentState.CLONING, ()-> {
+
+           UMLClass umlc = new UMLClass(this.className);
+           umlc.setLocationSilent(this.getLocation());
+           for (UMLDataField dataField : this.fields.values()) {
+               umlc.addField(dataField.clone());
+           }
+           for (String methodName : this.methods.keySet()) {
+               umlc.methods.put(methodName, new ArrayList<UMLMethod>());//Allocate the new memory for the item...
+               for (UMLMethod method : this.methods.get(methodName)) {
+                   try {
+                       umlc.methods.get(methodName).add(method.clone());
+                   } catch (CloneNotSupportedException e)//Exception. Do skip over the class.
+                   {
+                       continue;
+                   }
+               }
+           }
+           umlc.listener = this.listener;//NOTE THIS IS THE ONLY THING THAT SHOULDNT BE A DEEP COPY!
+           return umlc;
+       });
     }
 }
