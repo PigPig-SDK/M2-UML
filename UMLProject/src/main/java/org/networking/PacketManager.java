@@ -2,10 +2,12 @@ package org.networking;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
+import java.util.Timer;
 
 /**
  * This class is the server side management of the client.
@@ -13,29 +15,33 @@ import java.nio.charset.StandardCharsets;
  */
 public abstract class PacketManager extends Thread
 {
+    
     private final DataInputStream in;
     private final DataOutputStream out;
     private final Socket socket;
     protected boolean running = true;
     
-    public PacketManager(Socket socket, DataInputStream dataInputStream, DataOutputStream dataOutputStream) 
+    public PacketManager(Socket socket, DataInputStream dataInputStream, DataOutputStream dataOutputStream) throws IOException
     {
         this.socket = socket;
         this.in = dataInputStream;
         this.out = dataOutputStream;
+        this.socket.setSoTimeout(NetworkManager.unstuckTimeout * 1000);
+
     }
+    
     @Override
     public void run() 
     {
-        try 
+        //System.out.println("Packetmanager startup under type : " + objectName());
+        onConnectionStarted();
+        while (running) 
         {
-            System.out.println("Packetmanager startup under type : " + objectName());
-            onConnectionStarted();
-            while (running) 
+            try 
             {
                 //Read packet sizse
                 int packetSize = in.readInt();
-                
+
                 if(packetSize <= 0 || packetSize >= NetworkManager.MAX_PACKET_LENGTH)
                 {
                     if(closeOnInvalidPacket())
@@ -52,32 +58,38 @@ public abstract class PacketManager extends Thread
                 //Read packet body...
                 byte[] data = new byte[packetSize];
                 in.readFully(data);
-                
-                NetworkPacket netPacket = NetworkPacket.jsonToPacket(new String(data, StandardCharsets.UTF_8));
 
-                //Check if the client wants to disconnect.
+                NetworkPacket netPacket = NetworkPacket.jsonToPacket(new String(data, StandardCharsets.UTF_8));
+                
                 managePacket(netPacket);
             }
-        }
-        catch (IOException e) {
-            System.out.println("Generic packet failure: " + e.getMessage());
-        }
-        finally//Cleanup...
-        {
-            //Shutdown connection with client.
-            try
+            catch(SocketTimeoutException e)//Timeout
             {
-                System.out.println("Packet manager closed..." + objectName());
-                // closing resources
-                disconnect();
-                this.in.close();
-                this.out.close();
+                System.out.println("Timeout hit");
+                continue;
             }
-            catch(IOException e) {
-                e.printStackTrace();
+            catch (SocketException e) {
+                if ("Socket closed".equalsIgnoreCase(e.getMessage()))
+                {
+                    //System.out.println("SOCKET CLOSED: " + objectName());
+                    break;
+                } 
+            }
+            catch (IOException e) {
+                if(e.getMessage() == null)//Our socket has closed...? What the fuck java?!?!?!
+                {
+                    //System.out.println("Socket closed " + objectName());
+                    break;
+                }
+                else
+                {
+                    System.out.println("Message error: " + e.getMessage());
+                }
             }
         }
-        
+        //Shutdown connection with client.
+        //System.out.println("Packet manager closed..." + objectName());
+        disconnect();
     }
     public String getUserName()
     {
@@ -90,12 +102,17 @@ public abstract class PacketManager extends Thread
     {
         try
         {
-            running = false;
-            socket.close();
+            this.running = false;
+            this.socket.close();
+            this.in.close();
+            this.out.close();
         }
         catch(IOException ignoreMe){}
     }
     /**
+     * Sends a network packet to the client.
+     * @param netpacket The network packet we decide to send to the client...
+     */    /**
      * Sends a network packet to the client.
      * @param netpacket The network packet we decide to send to the client...
      */
