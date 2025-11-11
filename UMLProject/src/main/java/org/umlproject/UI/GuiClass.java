@@ -534,7 +534,6 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
             {
                 if(relationship == null)
                 {
-                    System.out.println("FUCK OFF");
                    continue;
                 }
                 relationship.updateListener(false);
