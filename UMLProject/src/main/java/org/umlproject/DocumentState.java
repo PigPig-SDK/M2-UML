@@ -1,5 +1,10 @@
 package org.umlproject;
 
+/**
+ * This enum describes which 'operation' the UMLDocument singleton might be under.
+ * 
+ * Purpose: To allow observers more information over the action they retrieve.
+ */
 public enum DocumentState 
 {
     NORMAL,

@@ -35,7 +35,9 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
         setLocationSilent(location);
         updateListnerAboutLocation(informGlobals);
     }
-    
+    /**
+     * Set the location of this class without alerting the horde of observers
+     */
     public void setLocationSilent(Point2D location) { 
         this.locationX = location.getX();
         this.locationY = location.getY();

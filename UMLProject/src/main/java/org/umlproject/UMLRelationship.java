@@ -31,19 +31,35 @@ public class UMLRelationship  extends UMLDiagramElement implements Cloneable
         this.destinationName = destinationName;
         this.relationshipType = relationshipType;
     }
-    
+    /**
+     * @return the source name
+     */
     public String getSourceName()
     {
         return this.sourceName;
     }
+    /**
+     * @return the destination name
+     */
     public String getDestinationName()
     {
         return this.destinationName;
     }
-    public RelationshipType getRelationshipType(){return this.relationshipType;}
-    
-    public String getCustomNameType(){return this.customNameType;}
-    
+    /**
+     * @return the relationship type
+     */
+    public RelationshipType getRelationshipType(){
+        return this.relationshipType;
+    }
+    /**
+     * @return NULL or the custom name
+     */
+    public String getCustomNameType(){
+        return this.customNameType;
+    }
+    /**
+     * @return The relationship name as a string with support for custom names.
+     */
     public String getRelationshipName()
     {
         if(this.relationshipType == OTHER)
@@ -51,20 +67,37 @@ public class UMLRelationship  extends UMLDiagramElement implements Cloneable
         
         return this.relationshipType.toString();
     }
+    /**
+     * Sets a new source name, calls to update listener
+     * @param newName The new source name
+     */
     public void setSourceName(String newName)
     {
         this.sourceName = newName;
         updateListener(true);
     }
+    /**
+     * Calls the update destination name, calls to update listener
+     * @param newName The new destination name
+     */
     public void setDestinationName(String newName)
     {
         this.destinationName = newName;
         updateListener(true);
     }
+    /**
+     * Sets the relationship type, calls to update listener
+     * @param newType The new type.
+     */
     public void setRelationshipType(RelationshipType newType){
         this.relationshipType = newType;
         updateListener(true);
     }
+    /**
+     * Sets the relationship type, calls to update listener
+     * Automatically assigns relationshipType to OTHER, enforcing a new custom relationship
+     * @param newType The new type.
+     */
     public void setCustomNameType(String newTypeCustom){
         this.relationshipType = OTHER;
         this.customNameType = newTypeCustom;

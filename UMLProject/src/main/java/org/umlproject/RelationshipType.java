@@ -6,7 +6,7 @@ public enum RelationshipType {
     GENERALIZATION,
     REALIZATION,
     OTHER;
-
+    
     public static RelationshipType stringToRelationshipType(String input) {
         if (input == null)
             return OTHER;
