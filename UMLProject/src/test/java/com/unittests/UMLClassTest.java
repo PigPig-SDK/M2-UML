@@ -4,6 +4,7 @@ import org.junit.jupiter.api.*;
 import org.umlproject.*;
 
 import java.util.*;
+import javafx.geometry.Point2D;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -35,7 +36,18 @@ public class UMLClassTest {
         assertThrows(IllegalArgumentException.class, () -> new UMLClass(null));
         assertThrows(IllegalArgumentException.class, () -> new UMLClass(""));
     }
-
+    @Test
+    void constructor_locationDynamic_usedLambda() {
+        //Arrange
+        UMLClass.initializationLocation = (p) -> {return new Point2D(10, 10);};
+        //Act
+        UMLClass tester = new UMLClass("test");
+        //Assert
+        assertEquals(tester.getLocation().getX(), 10);
+        assertEquals(tester.getLocation().getY(), 10);
+        //UNDO for next test...
+        UMLClass.initializationLocation = (p) -> {return Point2D.ZERO;};
+    }
     /* ------------------------------------------------------------
      * Field operations
      * ------------------------------------------------------------ */
@@ -352,9 +364,9 @@ public class UMLClassTest {
         assertNull(testerClone.getFields(dataFieldName));
         assertNotNull(tester.getFields(dataFieldName));
     }
-    
+
     //NOTE : This class is only to be used for testing!
-    static class DummyListener implements UIListener<UMLClass> {
+    static class DummyListener implements DiagramElementListener<UMLClass> {
         public int timesUpdateCalled = 0;
 
         @Override public void update(UMLClass desiredElement) { timesUpdateCalled++; }
@@ -368,17 +380,17 @@ public class UMLClassTest {
         //Arrange
         
         //Mock : used for testing.
-        UIListener<UMLClass> dummyListner = new DummyListener();
+        DiagramElementListener<UMLClass> dummyListner = new DummyListener();
         UMLClass tester = new UMLClass("test");
         tester.setListener(dummyListner);
         
         //Act
         UMLClass testerClone = tester.clone();
-        testerClone.updateGUI();//Calls update...
+        testerClone.updateListener(false);//Calls update...
         
         //Assert
-        assertEquals(1, ((DummyListener)tester.getUIListener()).timesUpdateCalled);
-        assertEquals(tester.getUIListener(), testerClone.getUIListener());//How get the value of timesUpdateCalled?
+        assertEquals(1, ((DummyListener)tester.getListener()).timesUpdateCalled);
+        assertEquals(tester.getListener(), testerClone.getListener());//How get the value of timesUpdateCalled?
     }
     
 }
