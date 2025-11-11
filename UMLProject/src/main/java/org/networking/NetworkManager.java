@@ -6,6 +6,11 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
+/**
+ * This class manages startup and shutdown of network connections.
+ * It also contains some general network constants shared between classes.
+ * 
+ */
 public class NetworkManager {
     /*  CONSTANTS  */
     public static final int MAX_PACKET_LENGTH = 60000;
@@ -17,9 +22,12 @@ public class NetworkManager {
     private static Server serverManager = null;
     private static Client clientManager = null;
     
+    /**
+     * Called on program startup.
+     */
     public static void initialize()
     {
-        //Do nothing...
+        //While this method currently does nothing, it might come in handy later...
     }
     
     /**
@@ -104,6 +112,8 @@ public class NetworkManager {
     }
     /**
      * ONLY DO THIS IF YOU KNOW WHAT YOU ARE DOING!
+     * 
+     * This exists for edge case client shutdowns
      */
     public static void setClientNull()
     {
@@ -111,6 +121,8 @@ public class NetworkManager {
     }
     /**
      * ONLY DO THIS IF YOU KNOW WHAT YOU ARE DOING!
+     * 
+     * This exists for edge case server shutdowns
      */
     public static void setServerNull()
     {
