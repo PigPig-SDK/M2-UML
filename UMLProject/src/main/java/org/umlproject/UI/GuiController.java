@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.PrintStream;
 import java.util.*;
 
+import javafx.scene.control.TextField;
+
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
@@ -77,6 +79,7 @@ public class GuiController implements DocumentListner {
 
         singleton = this;
 
+  
         this.world.setLayoutX(0.0);
         this.world.setLayoutY(0.0);
         this.world.setPickOnBounds(false);
@@ -206,9 +209,9 @@ public class GuiController implements DocumentListner {
     {
         GuiConsole.terminalOverrideOut(true);
         String cmd = console.getText();
-        List<String> restrictedcmds = GuiConsole.restrictedCommands;
+        List<String> restrictedCommands = GuiConsole.restrictedCommands;
         
-        for (String SearchValue : restrictedcmds) {
+        for (String SearchValue : restrictedCommands) {
         if (cmd.contains(SearchValue)) {
             System.out.println("This command is unavailable in GUI mode");
             console.setText("");
