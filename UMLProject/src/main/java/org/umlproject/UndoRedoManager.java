@@ -38,7 +38,7 @@ public class UndoRedoManager implements DiagramElementListener, DocumentListner
             return;
         
         UMLDocument.saveMementoState();
-        System.out.println("SAVE STATE" + from);
+        //System.out.println("SAVE STATE" + from);//Debug information...
     }
     
     /*---------------------------[ Listeners ]---------------------------*/
@@ -74,6 +74,6 @@ public class UndoRedoManager implements DiagramElementListener, DocumentListner
     }
     
     @Override public void loadFile(UMLDocument umlDocument) {
-        System.out.println("Loaded file");
+        //Do nothing... Server handles it :^)
     }
 }

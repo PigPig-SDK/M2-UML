@@ -220,4 +220,18 @@ public class MementoTests {
         //Assert
         assertEquals(1, testListener.updateCounter);
     }
+    @Test
+    void saveState_clearRedoHistory_success() {
+        //Arrange
+        ClonableClass cloneClass = new ClonableClass(0);
+        Memento<ClonableClass> memento = new Memento<>(cloneClass);//+1
+        //Act
+        memento.saveState();//+1
+        memento.saveState();//+1
+        memento.undo();//-1
+        memento.saveState();//+1 : Clears redo history
+        //Assert
+        assertEquals(0, memento.getRedoHistoryLength());//Clears redo history.
+        assertEquals(3, memento.getHistoryLength());
+    }
 }
