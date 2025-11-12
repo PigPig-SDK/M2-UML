@@ -12,5 +12,6 @@ public enum DocumentState
     FILE_LOADING,
     MEMENTO_STATE_RESET,
     SILENT_MOVEMENT,
-    CLONING
+    CLONING,
+    NETWORK_OPERATION
 }
