@@ -189,7 +189,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         }
         String newMethodName = newMethodAsStringArray[0];
         //if there is a list of parameters, construct an arrayList of UMLParameter objects
-        ArrayList<UMLParameter> params = new ArrayList<UMLParameter>();
+        ArrayList<UMLParameter> params = new ArrayList<>();
         for(int i = 1; i < newMethodAsStringArray.length; i+=2){
             String type = newMethodAsStringArray[i];
             String customTypeName;
@@ -205,28 +205,32 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
             params.add(newParam);
         }
         UMLMethod newMethod = new UMLMethod(newMethodName, params);
-        //attempt to add method
-        boolean methodAddSuccessful = parentClass.addMethod(newMethod);
-        if(!methodAddSuccessful){
-            System.out.println("Method is a duplicate or invalid!");
-            newMethodTextField.setText((String)newMethodTextField.getUserData());
-            return;
-        }
-        // delete old method if new input can be successfully added to UMLClass, set user data of newMethodTextField
-        //to be the most recently entered string. Then set userData of methodRow to be the new method name and index
-        //in ArrayList.
-        String oldName;
-        int oldIndex;
-        String[] oldUserDataAsString = (String[])methodRow.getUserData();
-        System.out.println("length of old data " + oldUserDataAsString.length);
-        if(oldUserDataAsString != null && oldUserDataAsString.length == 2 && !(oldUserDataAsString[0].isEmpty() ||
-                oldUserDataAsString[1].isEmpty())) {
-            //old method name is 0th index, index of old method to remove is 1st index.
-            oldName = oldUserDataAsString[0];
-            oldIndex = Integer.parseInt(oldUserDataAsString[1]);
-            System.out.println("the old user data is: " + oldName + ", " + oldIndex);
-            parentClass.removeMethod(oldName, oldIndex);
-        }
+        UMLDocument.executeActionUnderState(DocumentState.MASS_OPERATION, ()->
+        {
+            //attempt to add method
+            boolean methodAddSuccessful = parentClass.addMethod(newMethod);
+            if(!methodAddSuccessful){
+                System.out.println("Method is a duplicate or invalid!");
+                newMethodTextField.setText((String)newMethodTextField.getUserData());
+                return;
+            }
+            // delete old method if new input can be successfully added to UMLClass, set user data of newMethodTextField
+            //to be the most recently entered string. Then set userData of methodRow to be the new method name and index
+            //in ArrayList.
+            String oldName;
+            int oldIndex;
+            String[] oldUserDataAsString = (String[])methodRow.getUserData();
+            System.out.println("length of old data " + oldUserDataAsString.length);
+            if(oldUserDataAsString != null && oldUserDataAsString.length == 2 && !(oldUserDataAsString[0].isEmpty() ||
+                    oldUserDataAsString[1].isEmpty())) {
+                //old method name is 0th index, index of old method to remove is 1st index.
+                oldName = oldUserDataAsString[0];
+                oldIndex = Integer.parseInt(oldUserDataAsString[1]);
+                System.out.println("the old user data is: " + oldName + ", " + oldIndex);
+                parentClass.removeMethod(oldName, oldIndex);
+            }
+            UMLDocument.saveMementoState();
+        });
     }
 
     /**Helper method for the Update function.
@@ -353,27 +357,33 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         Visibility visibility = Visibility.stringVisibility(visibilityString);
         DataType dataType = DataType.stringToDatatype(typeString);
 
+        
         UMLDataField dataField = new UMLDataField(dataFieldName, (dataType == DataType.OTHER)? textAsArray[1] : null , dataType, visibility);
-        //attempt to add the field
-        boolean success = this.parentClass.addField(dataField);
-        if(success){
-            //Must delete old data field from UMLDocument
-            UMLDataField oldField = (UMLDataField)fieldRow.getUserData();
-            if(oldField != null) {
-                this.parentClass.removeField(oldField.getName());
+        
+        UMLDocument.executeActionUnderState(DocumentState.MASS_OPERATION, () ->
+        {
+            //attempt to add the field
+            boolean success = this.parentClass.addField(dataField);
+            if(success){
+                //Must delete old data field from UMLDocument
+                UMLDataField oldField = (UMLDataField)fieldRow.getUserData();
+                if(oldField != null) {
+                    this.parentClass.removeField(oldField.getName());
+                }
+                //set newField and fieldRow user data to their new values.
+                newField.setUserData(newField.getText());
+                fieldRow.setUserData(dataField);
+                System.out.println("Field was added and class box will be updated!");
+                //update is automatically called by UMLClass to redraw class box.
+                UMLDocument.saveMementoState();
             }
-            //set newField and fieldRow user data to their new values.
-            newField.setUserData(newField.getText());
-            fieldRow.setUserData(dataField);
-            System.out.println("Field was added and class box will be updated!");
-            //update is automatically called by UMLClass to redraw class box.
-        }
-        else{
-            //if addField fails we need to reset the TextField to have its previous text.
-            System.out.println("Datafield is a duplicate or invalid!");
-            newField.setText(newField.getText());
-        }
-
+            else{
+                //if addField fails we need to reset the TextField to have its previous text.
+                System.out.println("Datafield is a duplicate or invalid!");
+                newField.setText(newField.getText());
+            }
+        });
+        
     }
 
     /**

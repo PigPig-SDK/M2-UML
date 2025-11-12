@@ -11,5 +11,6 @@ public enum PacketType {
     MESSAGE,
     IDENTIFICATION,
     DISCONNECT,
-    HEARTBEAT
+    HEARTBEAT,
+    FULL_DOCUMENT
 }

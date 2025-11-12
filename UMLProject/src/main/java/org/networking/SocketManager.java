@@ -13,7 +13,7 @@ import java.util.Timer;
  * This class is the server side management of the client.
  * This is a communication stream with a specified 'client' (Not the client class, do not be confused).
  */
-public abstract class PacketManager extends Thread
+public abstract class SocketManager extends Thread
 {
     
     private final DataInputStream in;
@@ -21,7 +21,7 @@ public abstract class PacketManager extends Thread
     private final Socket socket;
     protected boolean running = true;
     
-    public PacketManager(Socket socket, DataInputStream dataInputStream, DataOutputStream dataOutputStream) throws IOException
+    public SocketManager(Socket socket, DataInputStream dataInputStream, DataOutputStream dataOutputStream) throws IOException
     {
         this.socket = socket;
         this.in = dataInputStream;

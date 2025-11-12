@@ -15,7 +15,7 @@ import java.net.Socket;
  * Also simplifies the design of most interactions.
  * If there is an action you only want executed on non server clients, use 'isHosting' in control flow.
  */
-public class Client extends PacketManager
+public class Client extends SocketManager
 {
     private boolean isHosting = false;
     private long tick = 0;
@@ -64,6 +64,11 @@ public class Client extends PacketManager
                         System.out.println("heartbeat sending exception..." + ex.getMessage());
                     }
                 }
+            }
+            case PacketType.FULL_DOCUMENT ->
+            {
+                //Go for it bud...
+                DocumentPacketHandler.handleDocumentPacket(netPacket);
             }
             default ->
             {

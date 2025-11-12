@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.*;
 
+import javafx.scene.control.TextField;
+
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
@@ -89,6 +91,7 @@ public class GuiController implements DocumentListner {
 
         singleton = this;
 
+  
         this.world.setLayoutX(0.0);
         this.world.setLayoutY(0.0);
         this.world.setPickOnBounds(false);
@@ -228,8 +231,21 @@ public class GuiController implements DocumentListner {
     @FXML
     private void consoleSubmit()
     {
-        TerminalHandler.runCommand(console.getText());
-        console.setText("");
+        GuiConsole.terminalOverrideOut(true);
+        String cmd = console.getText();
+        List<String> restrictedCommands = GuiConsole.restrictedCommands;
+        
+        for (String SearchValue : restrictedCommands) {
+        if (cmd.contains(SearchValue)) {
+            System.out.println("This command is unavailable in GUI mode");
+            console.setText("");
+            return;
+        }
+      }
+        
+    TerminalHandler.runCommand(console.getText());
+    console.setText("");
+        
     }
 
     /**

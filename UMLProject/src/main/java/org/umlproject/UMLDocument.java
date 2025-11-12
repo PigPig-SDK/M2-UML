@@ -151,52 +151,58 @@ public class UMLDocument implements Copyable<UMLDocument>
      * @return boolean - True if the rename was successful, false if class does not exist in relationship list or
      * class set, or if the newName already exists in class set or relationship list
      * */
-    public boolean renameClass(String originClassName, String newName)
+    public boolean renameClass(String className, String newClassName)
     {
-        Objects.requireNonNull(originClassName, "originClassName cannot be null");
-        Objects.requireNonNull(newName, "newName cannot be null");
+        Objects.requireNonNull(className, "originClassName cannot be null");
+        Objects.requireNonNull(newClassName, "newName cannot be null");
         
-        originClassName = originClassName.replaceAll("\\s+", "");//Remove spaces
-        newName = newName.replaceAll("\\s+", "");//Remove spaces
+        final String originClassName = className.replaceAll("\\s+", "");//Remove spaces
+        final String newName = newClassName.replaceAll("\\s+", "");//Remove spaces
         //Ensure the newname location isnt taken.
         if(classSet.containsKey(newName) || relationshipList.containsKey(newName)) return false;
         
-        //add class Car
-        //add relationship car dest awre
+        boolean hasUpdated = UMLDocument.executeActionUnderState(DocumentState.MASS_OPERATION,
+        ()->{
         
-        
-        //Validation
-        ArrayList<UMLRelationship> tempRelationshipsPointer = getAllRelationships(originClassName);
-        if (tempRelationshipsPointer == null) return false;//Impossible state unless originClassName DNE
-        ArrayList<UMLRelationship> tempRelationships = new ArrayList<>(tempRelationshipsPointer);//I fear that java will delete tempRelationshipsPointer when the class is deleted. 
-        
-        UMLClass removedClass = removeClass(originClassName, false);
-        //Full send. Cannot retract at any point past here.
-        if(removedClass == null) return false;//Check incase something weird has happened.
-        relationshipList.remove(originClassName);//Kill duplicate.
-        
-        //Rename outgoing relationships
-        for(UMLRelationship relationship : tempRelationships)
-        {
-            relationship.setSourceName(newName);
-        }
-        //Rename destination relationships
-        for(String classString : relationshipList.keySet())
-        {
-            if(relationshipList.get(classString) == null) continue;
-            for(UMLRelationship relationship : relationshipList.get(classString))
+            //Validation
+            ArrayList<UMLRelationship> tempRelationshipsPointer = getAllRelationships(originClassName);
+            if (tempRelationshipsPointer == null) return false;//Impossible state unless originClassName DNE
+            ArrayList<UMLRelationship> tempRelationships = new ArrayList<>(tempRelationshipsPointer);//I fear that java will delete tempRelationshipsPointer when the class is deleted. 
+
+            UMLClass removedClass = removeClass(originClassName, false);
+            //Full send. Cannot retract at any point past here.
+            if(removedClass == null) return false;//Check incase something weird has happened.
+            relationshipList.remove(originClassName);//Kill duplicate.
+
+            //Rename outgoing relationships
+            for(UMLRelationship relationship : tempRelationships)
             {
-                if(relationship.getDestinationName().trim().equals(originClassName.trim()))
+                relationship.setSourceName(newName);
+            }
+            //Rename destination relationships
+            for(String classString : relationshipList.keySet())
+            {
+                if(relationshipList.get(classString) == null) continue;
+                for(UMLRelationship relationship : relationshipList.get(classString))
                 {
-                    relationship.setDestinationName(newName);//Replace with new name.
+                    if(relationship.getDestinationName().trim().equals(originClassName.trim()))
+                    {
+                        relationship.setDestinationName(newName);//Replace with new name.
+                    }
                 }
             }
-        }
 
-        removedClass.setClassName(newName);
-        classSet.put(newName, removedClass);
-        relationshipList.put(newName, tempRelationships);
-        return true;
+            removedClass.setClassName(newName);
+            classSet.put(newName, removedClass);
+            relationshipList.put(newName, tempRelationships);
+            return true;
+            
+        });
+        if(hasUpdated)
+        {
+            UMLDocument.saveMementoState();
+        }
+        return hasUpdated;
     }
     /**
      * Adds a relationship to the file
@@ -441,22 +447,27 @@ public class UMLDocument implements Copyable<UMLDocument>
             Gson gson = new Gson();
             try (BufferedReader reader = new BufferedReader(new FileReader(filename + FILEEXTENT_STRING))) {
                 // Deserialize the JSON into your Java object
-                var data = gson.fromJson(reader, UMLDocument.class);
-                //Successful loading, before we update our information, clear all GUI listeners.
-                cleanUpAllGuiListeners();
-                this.classSet=data.classSet;
-                this.fileLocation=data.fileLocation;
-                this.relationshipList=data.relationshipList;
-                instance.resetHistory(this);
+                UMLDocument data = gson.fromJson(reader, UMLDocument.class);
+                load(data);
+                this.fileLocation=filename;
             } 
             catch (IOException e) {
                 return false;
             }
-            this.fileLocation=filename;
-            //Send new information to our GUIListener...
-            suggestGuiControllerRedraw();
             return true;
         });
+    }
+    public void load(UMLDocument document)
+    {
+        if(document == null)
+            return;
+        
+        cleanUpAllGuiListeners();
+        this.classSet = document.classSet;
+        this.fileLocation = document.fileLocation;
+        this.relationshipList = document.relationshipList;
+        instance.resetHistory(this);
+        suggestGuiControllerRedraw();
     }
     /**
      * Rebinds every UMLClass,UMLRelationship... so on ... with the guiController.
