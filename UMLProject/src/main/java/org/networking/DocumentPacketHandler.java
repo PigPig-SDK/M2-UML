@@ -4,6 +4,7 @@ import com.google.gson.JsonSyntaxException;
 import java.io.IOException;
 import javafx.application.Platform;
 import org.umlproject.UMLDocument;
+import utility.ThreadUtility;
 
 /**
  * This class handles incoming packets VIA 'client' or 'clienthandler'
@@ -21,9 +22,7 @@ public class DocumentPacketHandler {
         try 
         {
             UMLDocument document = networkPacket.payloadToObject(UMLDocument.class);
-            Platform.runLater(() -> {
-            UMLDocument.getInstance().load(document);//Properly load the new document...
-            });
+            ThreadUtility.runOnMainThread(() -> {UMLDocument.getInstance().load(document);});
         } 
         catch (JsonSyntaxException e){}//Do nothing... Invalid conversion
     }
