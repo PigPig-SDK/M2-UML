@@ -100,6 +100,9 @@ public class CommandNetwork extends BaseCommand {
                 try
                 {
                     String message = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
+                    if(NetworkManager.getClientInstance() == null)
+                        return;
+                    
                     NetworkManager.getClientInstance().sendNetworkPacket(new NetworkPacket(0, PacketType.MESSAGE, message));
                 }
                 catch(IOException ex)
