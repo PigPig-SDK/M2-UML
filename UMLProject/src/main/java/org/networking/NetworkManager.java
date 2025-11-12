@@ -89,6 +89,7 @@ public class NetworkManager {
             clientManager = new Client(socket, dataInputStream, dataOutputStream, serverManager != null);
             clientManager.setDaemon(true);
             clientManager.start();
+            NetworkDocumentListener.setupListener();
         }
         catch(IOException ex)
         {
@@ -109,6 +110,7 @@ public class NetworkManager {
         
         setClientNull();
         setServerNull();
+        NetworkDocumentListener.shutdownListener();
     }
     /**
      * ONLY DO THIS IF YOU KNOW WHAT YOU ARE DOING!

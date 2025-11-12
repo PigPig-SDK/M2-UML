@@ -97,7 +97,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
             //I swear if i have to instantiate another immutable point2d im going to create a wrapper class.
             Point2D worldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
             Point2D selectionOffset = new Point2D(worldSpace.getX() - this.mouseAnchorX, worldSpace.getY() - this.mouseAnchorY);
-            this.parentClass.setLocation(selectionOffset, false);
+            UMLDocument.executeActionUnderState(DocumentState.SILENT_MOVEMENT, () -> this.parentClass.setLocation(selectionOffset, true));
             this.nodeBackground.getParent().requestLayout(); // Force layout update
             e.consume(); // Prevent event from propagating to other nodes
         });
