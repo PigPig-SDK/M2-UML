@@ -47,6 +47,11 @@
 			<artifactId>javafx-swing</artifactId>
 			<version>23</version>
 		</dependency>
+		<dependency>
+			<groupId>org.controlsfx</groupId>
+			<artifactId>controlsfx</artifactId>
+			<version>11.0.3</version>
+		</dependency>
         <!-- JUnit -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -103,6 +108,19 @@
 						</configuration>
 					</execution>
 				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.10.1</version>
+				<configuration>
+					<forkCount>1</forkCount>
+					<reuseForks>false</reuseForks>
+					<argLine>
+						--add-exports javafx.base/com.sun.javafx.event=org.controlsfx.controls
+						--add-exports javafx.base/com.sun.javafx.event=ALL-UNNAMED
+					</argLine>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
