@@ -441,22 +441,27 @@ public class UMLDocument implements Copyable<UMLDocument>
             Gson gson = new Gson();
             try (BufferedReader reader = new BufferedReader(new FileReader(filename + FILEEXTENT_STRING))) {
                 // Deserialize the JSON into your Java object
-                var data = gson.fromJson(reader, UMLDocument.class);
-                //Successful loading, before we update our information, clear all GUI listeners.
-                cleanUpAllGuiListeners();
-                this.classSet=data.classSet;
-                this.fileLocation=data.fileLocation;
-                this.relationshipList=data.relationshipList;
-                instance.resetHistory(this);
+                UMLDocument data = gson.fromJson(reader, UMLDocument.class);
+                load(data);
+                this.fileLocation=filename;
             } 
             catch (IOException e) {
                 return false;
             }
-            this.fileLocation=filename;
-            //Send new information to our GUIListener...
-            suggestGuiControllerRedraw();
             return true;
         });
+    }
+    public void load(UMLDocument document)
+    {
+        if(document == null)
+            return;
+        
+        cleanUpAllGuiListeners();
+        this.classSet = document.classSet;
+        this.fileLocation = document.fileLocation;
+        this.relationshipList = document.relationshipList;
+        instance.resetHistory(this);
+        suggestGuiControllerRedraw();
     }
     /**
      * Rebinds every UMLClass,UMLRelationship... so on ... with the guiController.
