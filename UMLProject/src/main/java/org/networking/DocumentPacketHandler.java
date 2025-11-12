@@ -2,6 +2,7 @@ package org.networking;
 
 import com.google.gson.JsonSyntaxException;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import javafx.application.Platform;
 import javafx.geometry.Point2D;
@@ -40,13 +41,10 @@ public class DocumentPacketHandler {
      */
     public synchronized static boolean handleElementMovementPacket(Client client, NetworkPacket networkPacket)
     {
-        if(networkPacket.packetType() != PacketType.ELEMENT_MOVED)
+        if(client == null || networkPacket.packetType() != PacketType.ELEMENT_MOVED)
             return false;//Cannot execute, send client back packet
-        if(client == null)
-            return false;
         
-        final String strFalse = "false";
-        AtomicReference<String> ref = new AtomicReference<>("javaJank");//fuck java fuck java fuck java
+        AtomicBoolean returnAtomicBoolean = new AtomicBoolean(true);
         ThreadUtility.runOnMainThread(() ->
         {
             try 
@@ -55,15 +53,15 @@ public class DocumentPacketHandler {
                 PayloadMoveElement payloadMoveElement = networkPacket.payloadToObject(PayloadMoveElement.class);
                 //Find the class if its valid
                 UMLClass umlc = UMLDocument.getInstance().getClass(payloadMoveElement.objectName());
-                if(umlc == null) ref.set(strFalse);//No class found, Failure!
+                if(umlc == null) returnAtomicBoolean.set(false);//No class found, Failure!
                 //We got a class, try to move it.
                 UMLDocument.executeActionUnderState( DocumentState.NETWORK_OPERATION, 
                                                     () -> umlc.setLocation(new Point2D(payloadMoveElement.x(),payloadMoveElement.y()), true));
             } 
             catch (JsonSyntaxException e){
-                ref.set(strFalse);
+                returnAtomicBoolean.set(false);
             }
         });
-        return !ref.get().equals(strFalse);//Fucking so shit.
+        return returnAtomicBoolean.get();
     }
 }
