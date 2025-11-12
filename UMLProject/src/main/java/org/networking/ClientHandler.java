@@ -1,9 +1,13 @@
 package org.networking;
 
+import com.google.gson.JsonSyntaxException;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.concurrent.TimeUnit;
+import org.umlproject.UMLDocument;
+
 
 /**
  * This class is the server side management of the client.
@@ -11,7 +15,7 @@ import java.net.Socket;
  * 
  * Do not be confused. This is only a server side object!
  */
-public class ClientHandler extends PacketManager
+public class ClientHandler extends SocketManager
 {
     private UserIdentification userID = new UserIdentification("Unknown", false);
     private boolean firstID = true;
@@ -28,7 +32,7 @@ public class ClientHandler extends PacketManager
     public boolean hasTimedOut()
     {
         long delta = getHeartbeatDelta();
-        if(delta >= TIMEOUT * 1000000000)//Multiply seconds -> Nano-Seconds
+        if(delta >= TimeUnit.SECONDS.toNanos(TIMEOUT))
         {
             return true;
         }
@@ -84,7 +88,7 @@ public class ClientHandler extends PacketManager
                         firstID = false;
                     }
                 }
-                catch(IOException e)
+                catch(JsonSyntaxException e)
                 {
                     System.out.println("User gave us bogus...");
                 }
@@ -109,7 +113,20 @@ public class ClientHandler extends PacketManager
     @Override
     protected void onConnectionStarted() {
         //Inform new users of the connection.
-        NetworkManager.getServerInstance().sendMessageToAllClients(new NetworkPacket(0,PacketType.MESSAGE, "A new user is connecting..."));
+        NetworkManager.getServerInstance().sendMessageToAllClients(new NetworkPacket(NetworkManager.getServerTick(),PacketType.MESSAGE, "A new user is connecting..."));
+        sendEntireDocument();
+    }
+    /**
+     * Will attempt to send the entire UMLDocument to the client.
+     */
+    protected void sendEntireDocument()
+    {
+        try {
+            sendNetworkPacket(NetworkPacket.objectToNetworkPacket(NetworkManager.getServerTick(), PacketType.FULL_DOCUMENT, UMLDocument.getInstance()));
+        }
+        catch(IOException ex) {
+            System.err.println("Failed to send document" + ex.getMessage()); 
+        }
     }
     /**
      * Called on connection shutdown.
