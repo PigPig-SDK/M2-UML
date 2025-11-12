@@ -1,6 +1,12 @@
 package org.umlproject.UI;
 
 import java.io.File;
+
+import javafx.event.EventHandler;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import org.controlsfx.control.textfield.AutoCompletionBinding;
+import org.controlsfx.control.textfield.TextFields;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.*;
@@ -10,6 +16,8 @@ import javafx.scene.control.TextField;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
@@ -77,7 +85,11 @@ public class GuiController implements DocumentListner {
     private Button addClassButton;
     @FXML
     private Button addRelationshipButton;
-    
+
+    private AutoCompletionBinding<String> AutoCompletionBind;
+
+    private String userInput = "";
+
     public Pane getWorld(){return this.world;}
     public TextField getTerminal(){return this.console;}
     public MenuBar getMenuBar(){return this.menubar;}
@@ -107,9 +119,18 @@ public class GuiController implements DocumentListner {
         this.addClassButton.setDefaultButton(false);
         this.menubar.setViewOrder(-100);
         this.console.setViewOrder(-100);
+        updateGUIAutoComplete();
+        this.console.setOnKeyTyped(e-> {
+            userInput = this.console.getText();
+            e.consume();
+        });
         this.consoleOut.setViewOrder(-100);
         this.workspaceText.setViewOrder(1000000);//To the back of the universe
     }
+
+
+
+
 
     @FXML
     public void aboutHelpMenuAction() {
@@ -496,6 +517,34 @@ public class GuiController implements DocumentListner {
         timeline.setCycleCount(1);
         timeline.play();
 
+    }
+
+    public void updateGUIAutoComplete(){
+
+        //binds AutoCompleter to textfield, and allows per word autocomplete suggestion.
+        //Issue: Suggestions rewrite entire textfield
+        if(this.AutoCompletionBind != null){
+            this.AutoCompletionBind.dispose();
+        }
+
+        this.AutoCompletionBind = TextFields.bindAutoCompletion(this.console
+                , (in) -> {
+            this.AutoCompletionBind.setDelay(0);
+            String [] splitInput = userInput.split(" ");
+            String last = splitInput[splitInput.length - 1];
+            ArrayList<String> matched = new ArrayList<>();
+            for(String word : AutoComplete.getInstance().getAutoWordList()){
+                if(word.startsWith(last)){matched.add(word);}
+            }
+            return (matched);
+        });
+
+        this.AutoCompletionBind.setOnAutoCompleted(e -> {
+            String [] splitInput = userInput.split(" ");
+            splitInput[splitInput.length - 1] = e.getCompletion();
+            this.console.setText(String.join(" ", splitInput));
+            this.console.positionCaret(this.console.getText().length());
+        });
     }
     @Override
     public void onClassRemove(UMLClass umlClass) {
