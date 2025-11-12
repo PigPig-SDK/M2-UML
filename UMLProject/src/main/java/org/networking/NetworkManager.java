@@ -147,13 +147,22 @@ public class NetworkManager {
         return serverManager;
     }
     /**
-     * Returns the current tick of the server
-     * @return -1 if the server is not valid.
+     * Returns the current tick of the server OR client.
+     * 
+     * If hosting a server, this returns the SERVER TICK.
+     * Else if connecting to a server this returns the CLIENT TICK
+     * @return -1 if the server and client are not valid.
      */
-    public static long getServerTick()
+    public static long getTick()
     {
-        if(serverManager == null)
-            return -1;
-        return serverManager.getTick();
+        if(serverManager != null)
+        {
+            return serverManager.getTick();
+        }
+        else if(clientManager != null)
+        {
+            return clientManager.getTick();
+        }
+        return -1;
     }
 }

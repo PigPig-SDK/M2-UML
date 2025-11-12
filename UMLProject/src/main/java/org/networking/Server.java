@@ -8,8 +8,10 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -31,7 +33,7 @@ public class Server extends Thread {
     private ServerSocket serverSocket;
     private long currentTick = 0;
     
-    private ArrayList<ClientHandler> clients = new ArrayList<>();
+    private Set<ClientHandler> clients = new HashSet<>();
     private final Object clientLock = new Object();
     private Timer clientUpdateTimer;
     
@@ -123,23 +125,37 @@ public class Server extends Thread {
      */
     public void sendMessageToAllClients(NetworkPacket netPacket)
     {
+        //Send without blacklist
+        sendMessageToAllClients(netPacket, new HashSet<ClientHandler>());
+    }
+    /**
+     * Sends a network packet to all clients
+     * If a client cannot receive a message because they have been terminated, their thread gets shutdown.
+     * @param netPacket The network packet to transmit to all users
+     * @param blackList
+     */
+    public void sendMessageToAllClients(NetworkPacket netPacket, Set<ClientHandler> blackList)
+    {
+        
+        Set<ClientHandler> allClients = getClients();
+        allClients.removeAll(blackList);
+        
         //Ensure we are not causing race conditions...
-        synchronized (clientLock) {
-            for(ClientHandler clientHandler : clients)
+        for(ClientHandler clientHandler : allClients)
+        {
+            try
             {
-                try
+                clientHandler.sendNetworkPacket(netPacket);
+            }
+            catch(IOException ex)
+            {
+                if("Socket closed".equalsIgnoreCase(ex.getMessage()))//Don't send messages to deadweight... Killem.
                 {
-                    clientHandler.sendNetworkPacket(netPacket);
-                }
-                catch(IOException ex)
-                {
-                    if("Socket closed".equalsIgnoreCase(ex.getMessage()))//Don't send messages to deadweight... Killem.
-                    {
-                        clientHandler.disconnect();//Stop talking to them...
-                    }
+                    clientHandler.disconnect();//Stop talking to them...
                 }
             }
         }
+        
     }
     /**
      * Shutsdown the current server.
@@ -208,9 +224,9 @@ public class Server extends Thread {
      * Note: this is a shallow copy of the list. Modifying the items in the list will affect the classes.
      * However, removing items from the list will not affect the 'OG' client list
      */
-    public ArrayList<ClientHandler> getClients()
+    public Set<ClientHandler> getClients()
     {
-        ArrayList<ClientHandler> tempList = new ArrayList<>();
+        Set<ClientHandler> tempList = new HashSet<>();
         synchronized (clientLock) {
             Iterator<ClientHandler> it = clients.iterator();
             while (it.hasNext()) {

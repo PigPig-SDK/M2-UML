@@ -1,6 +1,8 @@
 package org.networking;
 
+import java.io.IOException;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import org.umlproject.DiagramElementListener;
 import org.umlproject.DocumentListner;
 import org.umlproject.DocumentState;
@@ -10,15 +12,24 @@ import org.umlproject.UMLDocument;
 import org.umlproject.UMLRelationship;
 import org.umlproject.UndoRedoManager;
 
-
+/**
+ * This class acts as a clients 'DOCUMENT LISTENER'
+ * 
+ * When updates happen, the client sends them to the server.
+ */
 public class NetworkDocumentListener implements DiagramElementListener, DocumentListner {
 
     private static final Set<DocumentState> invalidDocumentStates = 
             Set.of( DocumentState.FILE_LOADING, 
                     DocumentState.CLONING, 
-                    DocumentState.MEMENTO_STATE_RESET);
+                    DocumentState.MEMENTO_STATE_RESET,
+                    DocumentState.NETWORK_OPERATION);
     
     private static NetworkDocumentListener instance;
+    
+    private static final double dragSendDelay = 0.02;//~50 times a second
+    private static long dragLastSent = 0;
+    
     /**
      * Get the memento of instance listener.
      * NOTE: This can be null! That is because setupListener() is expected to be called.
@@ -62,6 +73,30 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
         System.out.println("Update class : " + objectClass.getClassName());
     }
     /**
+     * Sends the new location for a UMLClass.
+     */
+    private void sendClassTranslation(UMLClass objectClass)
+    {
+        if(invalidDocumentStates.contains(UMLDocument.getDocumentState())) return;
+        
+        Client client = NetworkManager.getClientInstance();//Our local client.
+        //Construct packet
+        NetworkPacket networkPacket = NetworkPacket.objectToNetworkPacket(
+                NetworkManager.getTick(), 
+                PacketType.ELEMENT_MOVED, 
+                new PayloadMoveElement( objectClass.getClassName(),
+                                        (int)objectClass.getLocation().getX(), 
+                                        (int)objectClass.getLocation().getY()));
+        try
+        {
+            client.sendNetworkPacket(networkPacket);
+        }
+        catch(IOException ex)
+        {
+            System.err.println("Failed to send class location packet!" + ex.getMessage());
+        }
+    }
+    /**
      * Sends the updated relationship to the server for validation
      */
     private void sendRelationshipUpdate(UMLRelationship objectLRelationship)
@@ -85,9 +120,21 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
         }
     }
     @Override public void updateLocation(Object desiredElement) {
+        
+        // This code checks for 'mid dragging' updates.
+        //We still send 'mid dragging' updates, just at a slower rate than what javafx gives.
+        if(UMLDocument.getDocumentState().equals(DocumentState.SILENT_MOVEMENT))
+        {
+            long delta = System.nanoTime() - dragLastSent;
+            double refireDelay = TimeUnit.SECONDS.toNanos(1) * dragSendDelay;//toNanos dosnt take 'double', jank workaround.
+            
+            if(delta < refireDelay) return;//Does not quality for sending network packet.
+            dragLastSent = System.nanoTime();
+        }
+        
         switch(desiredElement)
         {
-            case UMLClass umlClass -> sendClassUpdate(umlClass);
+            case UMLClass umlClass -> sendClassTranslation(umlClass);
             default ->
             {
                 System.out.println("Got location update from invalid source!");

@@ -52,7 +52,7 @@ public class ClientHandler extends SocketManager
     @Override
     protected void managePacket(NetworkPacket netPacket) {
         //Packets are time bound...
-        if(netPacket.sendTick() > NetworkManager.getServerTick())
+        if(netPacket.sendTick() > NetworkManager.getTick())
             return;
         
         switch(netPacket.packetType())
@@ -113,7 +113,7 @@ public class ClientHandler extends SocketManager
     @Override
     protected void onConnectionStarted() {
         //Inform new users of the connection.
-        NetworkManager.getServerInstance().sendMessageToAllClients(new NetworkPacket(NetworkManager.getServerTick(),PacketType.MESSAGE, "A new user is connecting..."));
+        NetworkManager.getServerInstance().sendMessageToAllClients(new NetworkPacket(NetworkManager.getTick(),PacketType.MESSAGE, "A new user is connecting..."));
         sendEntireDocument();
     }
     /**
@@ -122,7 +122,7 @@ public class ClientHandler extends SocketManager
     protected void sendEntireDocument()
     {
         try {
-            sendNetworkPacket(NetworkPacket.objectToNetworkPacket(NetworkManager.getServerTick(), PacketType.FULL_DOCUMENT, UMLDocument.getInstance()));
+            sendNetworkPacket(NetworkPacket.objectToNetworkPacket(NetworkManager.getTick(), PacketType.FULL_DOCUMENT, UMLDocument.getInstance()));
         }
         catch(IOException ex) {
             System.err.println("Failed to send document" + ex.getMessage()); 

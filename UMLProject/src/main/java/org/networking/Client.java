@@ -109,4 +109,11 @@ public class Client extends SocketManager
         NetworkManager.setClientNull();
         super.disconnect();
     }
+    /**
+     * @return the current tick on the client side.
+     */
+    public long getTick()
+    {
+        return this.tick;
+    }
 }
