@@ -109,6 +109,19 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.10.1</version>
+				<configuration>
+					<forkCount>1</forkCount>
+					<reuseForks>false</reuseForks>
+					<argLine>
+						--add-exports javafx.base/com.sun.javafx.event=org.controlsfx.controls
+						--add-exports javafx.base/com.sun.javafx.event=ALL-UNNAMED
+					</argLine>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 </project>
