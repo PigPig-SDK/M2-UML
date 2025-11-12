@@ -29,6 +29,7 @@ public final class Memento<T extends Copyable<T>>
      */
     public void saveState()
     {
+        redoHistory.clear();
         undoHistory.add(instance.clone());
         callListenersToUpdate();
     }

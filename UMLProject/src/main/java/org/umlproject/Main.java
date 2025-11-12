@@ -10,11 +10,12 @@ import javafx.scene.image.Image;
 import javafx.scene.paint.Stop;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import org.networking.NetworkManager;
 import org.umlproject.UI.GuiController;
 
 public class Main extends Application
 {
-
+    private static boolean isInTerminalMode = true;
     private static final String terminalLaunchString = "-terminal";
 
     public static Stage mainStage;
@@ -25,6 +26,29 @@ public class Main extends Application
 
     @FXML
     private Button buttonGUI;
+    
+    
+    public static void main(String[] args) 
+    {
+        //Setup
+        NetworkManager.initialize();
+        UndoRedoManager.setupListener();
+        
+        //If terminal launch option is requested. Override JAVAFX.
+        if(args.length == 1 && args[0].equals(terminalLaunchString))
+        {
+            //Scanner scanner = new Scanner(System.in);
+            TerminalHandler.runCommand("help");
+            TerminalHandler.printLineBreak();
+            do
+            {
+                TerminalHandler.runCommand(AutoComplete.getInstance().lineInConsole().toLowerCase());
+            }while(TerminalHandler.isRunning);
+            return;
+        }
+        
+        launch(args);
+    }
 
     /**
      * Important to note: Both buttons have the onButtonPressed event in side StartupScreen.XML
@@ -34,6 +58,7 @@ public class Main extends Application
         Object buttonObject = event.getSource();
         if (buttonObject == buttonGUI){
             try {
+                isInTerminalMode = false;
                 //MainScreen.fxml BINDS TO GuiClass!
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("MainScreen.fxml"));
                 Scene scene = new Scene(loader.load());
@@ -41,7 +66,7 @@ public class Main extends Application
                 mainStage.setScene(scene);
                 mainStage.setResizable(true);
                 mainStage.setTitle("UML editor");
-                GuiController.singleton.lateInitialization();
+                GuiController.getInstance().lateInitialization();
             }
             catch(Exception e){
                 System.out.println(e);//Stop crash, print error to user.
@@ -67,27 +92,7 @@ public class Main extends Application
         }
     }
     
-    public static void main(String[] args) 
-    {
-
-        //If terminal launch option is requested. Override JAVAFX.
-        if(args.length == 1 && args[0].equals(terminalLaunchString))
-        {
-            //Scanner scanner = new Scanner(System.in);
-            TerminalHandler.runCommand("help");
-            TerminalHandler.printLineBreak();
-            do
-            {
-                TerminalHandler.runCommand(AutoComplete.getInstance().lineInConsole().toLowerCase());
-            }while(TerminalHandler.isRunning);
-            return;
-        }
-        
-        launch(args);
-    }
-    
     @Override
-
     public void start(Stage stage) throws Exception {
         //JavaFX setup...
         mainStage = stage;
@@ -107,5 +112,9 @@ public class Main extends Application
     public void stop(){
         System.out.println("Stopping Application");
 
+    }
+    public static boolean isInTerminalMode()
+    {
+        return isInTerminalMode;
     }
 }

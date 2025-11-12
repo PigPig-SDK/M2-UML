@@ -21,6 +21,22 @@ public class GuiFileBrowser {
         File selectedDirectory = fileChooser.showSaveDialog(Main.mainStage);
         return selectedDirectory;
     }
+
+    /**
+     * This method opens the user's OS's save functionality for the sake of exporting a .png screenshot
+     * of the current state of the UML diagram.
+     * @return The directory they have chosen to save to.
+     */
+    public static File promptForScreenshotExportDirectory(){
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save Screenshot Image");
+        fileChooser.setInitialFileName("UMLDiagramScreenshot.png");
+        fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
+        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("UMLDiagramScreenshot", "*.png"));
+        File selectedDirectory = fileChooser.showSaveDialog(Main.mainStage);
+        return selectedDirectory;
+    }
+
     /**
      * This will open the users OS's load functionality.
      * @return The directory they have chosen to load.

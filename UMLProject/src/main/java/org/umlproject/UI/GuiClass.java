@@ -22,7 +22,7 @@ import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
 import org.umlproject.UMLClass;
 
-public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositional {
+public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable, UIPositional {
     public static final Font DEFAULT_CLASS_FONT = Font.font("Monospaced", FontWeight.NORMAL, FontPosture.REGULAR, 18);
     
     private Pane world;
@@ -83,7 +83,12 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
             e.consume(); // Prevent event from propagating to other nodes
         });
         //Used for selection
+        //Mouse up...
         nodeBackground.setOnMouseClicked(e -> {
+            Point2D worldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
+            Point2D selectionOffset = new Point2D(worldSpace.getX() - this.mouseAnchorX, worldSpace.getY() - this.mouseAnchorY);
+            this.parentClass.setLocation(selectionOffset, true);
+            
             GuiSelect.getInstance().clickUiElement(e, this);
             e.consume(); // Prevent event from propagating to other nodes
         });
@@ -92,7 +97,7 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
             //I swear if i have to instantiate another immutable point2d im going to create a wrapper class.
             Point2D worldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
             Point2D selectionOffset = new Point2D(worldSpace.getX() - this.mouseAnchorX, worldSpace.getY() - this.mouseAnchorY);
-            this.parentClass.setLocation(selectionOffset);
+            UMLDocument.executeActionUnderState(DocumentState.SILENT_MOVEMENT, () -> this.parentClass.setLocation(selectionOffset, true));
             this.nodeBackground.getParent().requestLayout(); // Force layout update
             e.consume(); // Prevent event from propagating to other nodes
         });
@@ -184,7 +189,7 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         }
         String newMethodName = newMethodAsStringArray[0];
         //if there is a list of parameters, construct an arrayList of UMLParameter objects
-        ArrayList<UMLParameter> params = new ArrayList<UMLParameter>();
+        ArrayList<UMLParameter> params = new ArrayList<>();
         for(int i = 1; i < newMethodAsStringArray.length; i+=2){
             String type = newMethodAsStringArray[i];
             String customTypeName;
@@ -200,28 +205,32 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
             params.add(newParam);
         }
         UMLMethod newMethod = new UMLMethod(newMethodName, params);
-        //attempt to add method
-        boolean methodAddSuccessful = parentClass.addMethod(newMethod);
-        if(!methodAddSuccessful){
-            System.out.println("Method is a duplicate or invalid!");
-            newMethodTextField.setText((String)newMethodTextField.getUserData());
-            return;
-        }
-        // delete old method if new input can be successfully added to UMLClass, set user data of newMethodTextField
-        //to be the most recently entered string. Then set userData of methodRow to be the new method name and index
-        //in ArrayList.
-        String oldName;
-        int oldIndex;
-        String[] oldUserDataAsString = (String[])methodRow.getUserData();
-        System.out.println("length of old data " + oldUserDataAsString.length);
-        if(oldUserDataAsString != null && oldUserDataAsString.length == 2 && !(oldUserDataAsString[0].isEmpty() ||
-                oldUserDataAsString[1].isEmpty())) {
-            //old method name is 0th index, index of old method to remove is 1st index.
-            oldName = oldUserDataAsString[0];
-            oldIndex = Integer.parseInt(oldUserDataAsString[1]);
-            System.out.println("the old user data is: " + oldName + ", " + oldIndex);
-            parentClass.removeMethod(oldName, oldIndex);
-        }
+        UMLDocument.executeActionUnderState(DocumentState.MASS_OPERATION, ()->
+        {
+            //attempt to add method
+            boolean methodAddSuccessful = parentClass.addMethod(newMethod);
+            if(!methodAddSuccessful){
+                System.out.println("Method is a duplicate or invalid!");
+                newMethodTextField.setText((String)newMethodTextField.getUserData());
+                return;
+            }
+            // delete old method if new input can be successfully added to UMLClass, set user data of newMethodTextField
+            //to be the most recently entered string. Then set userData of methodRow to be the new method name and index
+            //in ArrayList.
+            String oldName;
+            int oldIndex;
+            String[] oldUserDataAsString = (String[])methodRow.getUserData();
+            System.out.println("length of old data " + oldUserDataAsString.length);
+            if(oldUserDataAsString != null && oldUserDataAsString.length == 2 && !(oldUserDataAsString[0].isEmpty() ||
+                    oldUserDataAsString[1].isEmpty())) {
+                //old method name is 0th index, index of old method to remove is 1st index.
+                oldName = oldUserDataAsString[0];
+                oldIndex = Integer.parseInt(oldUserDataAsString[1]);
+                System.out.println("the old user data is: " + oldName + ", " + oldIndex);
+                parentClass.removeMethod(oldName, oldIndex);
+            }
+            UMLDocument.saveMementoState();
+        });
     }
 
     /**Helper method for the Update function.
@@ -348,27 +357,33 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         Visibility visibility = Visibility.stringVisibility(visibilityString);
         DataType dataType = DataType.stringToDatatype(typeString);
 
+        
         UMLDataField dataField = new UMLDataField(dataFieldName, (dataType == DataType.OTHER)? textAsArray[1] : null , dataType, visibility);
-        //attempt to add the field
-        boolean success = this.parentClass.addField(dataField);
-        if(success){
-            //Must delete old data field from UMLDocument
-            UMLDataField oldField = (UMLDataField)fieldRow.getUserData();
-            if(oldField != null) {
-                this.parentClass.removeField(oldField.getName());
+        
+        UMLDocument.executeActionUnderState(DocumentState.MASS_OPERATION, () ->
+        {
+            //attempt to add the field
+            boolean success = this.parentClass.addField(dataField);
+            if(success){
+                //Must delete old data field from UMLDocument
+                UMLDataField oldField = (UMLDataField)fieldRow.getUserData();
+                if(oldField != null) {
+                    this.parentClass.removeField(oldField.getName());
+                }
+                //set newField and fieldRow user data to their new values.
+                newField.setUserData(newField.getText());
+                fieldRow.setUserData(dataField);
+                System.out.println("Field was added and class box will be updated!");
+                //update is automatically called by UMLClass to redraw class box.
+                UMLDocument.saveMementoState();
             }
-            //set newField and fieldRow user data to their new values.
-            newField.setUserData(newField.getText());
-            fieldRow.setUserData(dataField);
-            System.out.println("Field was added and class box will be updated!");
-            //update is automatically called by UMLClass to redraw class box.
-        }
-        else{
-            //if addField fails we need to reset the TextField to have its previous text.
-            System.out.println("Datafield is a duplicate or invalid!");
-            newField.setText(newField.getText());
-        }
-
+            else{
+                //if addField fails we need to reset the TextField to have its previous text.
+                System.out.println("Datafield is a duplicate or invalid!");
+                newField.setText(newField.getText());
+            }
+        });
+        
     }
 
     /**
@@ -515,11 +530,25 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
         //System.out.println("stackpane layout is changed to:" + ((UMLClass)(desiredElement)).getLocation());
         this.nodeBackground.getParent().requestLayout();
     }
+    /**
+     * Updates the GUI element of all my associated relationships.
+     * Note: this bypasses global listener updates.
+     */
     public void updateAllRelationships(UMLClass desiredElement)
     {
-        ArrayList<UMLRelationship> list = UMLDocument.getInstance().getAllRelationshipsInstanceOf(desiredElement.getClassName());
-        for(UMLRelationship relationship : list)//Update all relationship GUI
-            relationship.updateGUI();
+
+        if(UMLDocument.getDocumentState() != DocumentState.MEMENTO_STATE_RESET)//select newly added items.
+        {
+            ArrayList<UMLRelationship> list = UMLDocument.getInstance().getAllRelationshipsInstanceOf(desiredElement.getClassName());
+            for(UMLRelationship relationship : list)//Update all relationship GUI
+            {
+                if(relationship == null)
+                {
+                   continue;
+                }
+                relationship.updateListener(false);
+            }
+        }
     }
 
     /**
@@ -595,7 +624,7 @@ public class GuiClass implements UIListener<UMLClass>, UISelectable, UIPositiona
     public void setLocation(Point2D location) {
         if(parentClass == null)
             return;
-        parentClass.setLocation(location);
+        parentClass.setLocation(location, false);
     }
 
     /**

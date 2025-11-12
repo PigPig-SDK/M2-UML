@@ -3,19 +3,28 @@ package org.umlproject.UI;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.scene.control.CheckMenuItem;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.AnchorPane;
+import org.umlproject.AutoComplete;
 import org.umlproject.Main;
 
 public class GuiConsole extends OutputStream {
     private static TextArea console;
     
-
+    //Commands that cannot be used while in GUI mode
+    public static List<String> restrictedCommands = List.of(
+        "remove method",
+        "remove param",
+        "rename method",
+        "rename param"
+    );
+    
+    
     public GuiConsole(TextArea console) {
         this.console = console;
     }
@@ -45,12 +54,13 @@ public class GuiConsole extends OutputStream {
         } else {
             buffer.append(c);
         }
+       
     }   
+    
     public static void setupConsole() {
-
-        AnchorPane consoleAnchorPane = GuiController.singleton.consoleAnchorPane;
-        CheckMenuItem viewTerminalMenuItem = GuiController.singleton.viewTerminalMenuItem;
-        TextArea consoleOut = GuiController.singleton.consoleOut;
+        AnchorPane consoleAnchorPane = GuiController.getInstance().consoleAnchorPane;
+        CheckMenuItem viewTerminalMenuItem = GuiController.getInstance().viewTerminalMenuItem;
+        TextArea consoleOut = GuiController.getInstance().consoleOut;
         
         //Store OG output stream
         initialOutputStream = System.out;
@@ -75,6 +85,7 @@ public class GuiConsole extends OutputStream {
         });
         setupAnimationTimer();
     }
+    
     public static void terminalOverrideOut(boolean isOverriding)
     {
         if(isOverriding)//Show in our override console
@@ -82,10 +93,11 @@ public class GuiConsole extends OutputStream {
         else
             setSystemPrintLocation(initialOutputStream);
     }
+    
     private static void setSystemPrintLocation(PrintStream ps)
     {
         System.setOut(ps);
-        System.setErr(ps); 
+        //System.setErr(ps);//Impossibly hard to debug with err pushed into the tiny box.
     }
     
     private static void setupAnimationTimer()
@@ -123,14 +135,15 @@ public class GuiConsole extends OutputStream {
     }
     private static void updateTransparency()
     {
-        GuiController.singleton.consoleOut.setStyle("-fx-text-fill: rgba(255, 255, 255," +  
+        GuiController.getInstance().consoleOut.setStyle("-fx-text-fill: rgba(255, 255, 255," +  
                 Math.max(transparency, 0.005)//Failsafe, as transparency approaches zero, a crash will occur. Javafx error!
                 +");");
     }
     public static void updateSize() {
-        TextArea consoleOut = GuiController.singleton.consoleOut;
+        TextArea consoleOut = GuiController.getInstance().consoleOut;
         consoleOut.setPrefHeight(Main.mainStage.getHeight() - 80);//Allow space for console at bottom...
         consoleOut.setPrefWidth(Main.mainStage.getWidth());
     }
 
 }
+

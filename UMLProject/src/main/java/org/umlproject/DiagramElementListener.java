@@ -1,6 +1,6 @@
 package org.umlproject;
 
-public interface UIListener<T> {  
+public interface DiagramElementListener<T> {  
     /** 
      * The GUI listener should catch the update and draw its required bullshit.
      */
