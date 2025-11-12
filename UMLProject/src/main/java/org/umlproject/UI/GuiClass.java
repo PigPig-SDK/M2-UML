@@ -353,27 +353,32 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         Visibility visibility = Visibility.stringVisibility(visibilityString);
         DataType dataType = DataType.stringToDatatype(typeString);
 
+        
         UMLDataField dataField = new UMLDataField(dataFieldName, (dataType == DataType.OTHER)? textAsArray[1] : null , dataType, visibility);
-        //attempt to add the field
-        boolean success = this.parentClass.addField(dataField);
-        if(success){
-            //Must delete old data field from UMLDocument
-            UMLDataField oldField = (UMLDataField)fieldRow.getUserData();
-            if(oldField != null) {
-                this.parentClass.removeField(oldField.getName());
+        
+        UMLDocument.executeActionUnderState(DocumentState.MASS_OPERATION, () ->
+        {
+            //attempt to add the field
+            boolean success = this.parentClass.addField(dataField);
+            if(success){
+                //Must delete old data field from UMLDocument
+                UMLDataField oldField = (UMLDataField)fieldRow.getUserData();
+                if(oldField != null) {
+                    this.parentClass.removeField(oldField.getName());
+                }
+                //set newField and fieldRow user data to their new values.
+                newField.setUserData(newField.getText());
+                fieldRow.setUserData(dataField);
+                System.out.println("Field was added and class box will be updated!");
+                //update is automatically called by UMLClass to redraw class box.
             }
-            //set newField and fieldRow user data to their new values.
-            newField.setUserData(newField.getText());
-            fieldRow.setUserData(dataField);
-            System.out.println("Field was added and class box will be updated!");
-            //update is automatically called by UMLClass to redraw class box.
-        }
-        else{
-            //if addField fails we need to reset the TextField to have its previous text.
-            System.out.println("Datafield is a duplicate or invalid!");
-            newField.setText(newField.getText());
-        }
-
+            else{
+                //if addField fails we need to reset the TextField to have its previous text.
+                System.out.println("Datafield is a duplicate or invalid!");
+                newField.setText(newField.getText());
+            }
+        });
+        UMLDocument.saveMementoState();
     }
 
     /**
