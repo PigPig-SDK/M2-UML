@@ -232,6 +232,6 @@ public class MementoTests {
         memento.saveState();//+1 : Clears redo history
         //Assert
         assertEquals(0, memento.getRedoHistoryLength());//Clears redo history.
-        assertEquals(3, memento.getHistoryLength());//Clears redo history.
+        assertEquals(3, memento.getHistoryLength());
     }
 }
