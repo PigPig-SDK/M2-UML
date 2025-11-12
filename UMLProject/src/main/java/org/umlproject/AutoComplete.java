@@ -168,7 +168,7 @@ public class AutoComplete implements DocumentListner{
      * @param umlClass - Class to be checked
      */
     @Override
-    public void onClassAdded(UMLClass umlClass, boolean isLoading) {
+    public void onClassAdded(UMLClass umlClass) {
         addWord(umlClass.getClassName());
         if(!umlClass.getMethodsAll().isEmpty()){
             for(String methodNames : umlClass.getMethodsAll().keySet()){
@@ -192,7 +192,7 @@ public class AutoComplete implements DocumentListner{
      * @param isLoading - Not Used
      */
     @Override
-    public void onRelationshipAdded(UMLRelationship umlRelationship, boolean isLoading) {}
+    public void onRelationshipAdded(UMLRelationship umlRelationship) {}
 
     /**
      * Interface method. Not used.

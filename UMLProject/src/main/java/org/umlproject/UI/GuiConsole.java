@@ -58,9 +58,10 @@ public class GuiConsole extends OutputStream {
     }   
     
     public static void setupConsole() {
-        AnchorPane consoleAnchorPane = GuiController.singleton.consoleAnchorPane;
-        CheckMenuItem viewTerminalMenuItem = GuiController.singleton.viewTerminalMenuItem;
-        TextArea consoleOut = GuiController.singleton.consoleOut;
+        AnchorPane consoleAnchorPane = GuiController.getInstance().consoleAnchorPane;
+        CheckMenuItem viewTerminalMenuItem = GuiController.getInstance().viewTerminalMenuItem;
+        TextArea consoleOut = GuiController.getInstance().consoleOut;
+        
         //Store OG output stream
         initialOutputStream = System.out;
         
@@ -96,7 +97,7 @@ public class GuiConsole extends OutputStream {
     private static void setSystemPrintLocation(PrintStream ps)
     {
         System.setOut(ps);
-        System.setErr(ps); 
+        //System.setErr(ps);//Impossibly hard to debug with err pushed into the tiny box.
     }
     
     private static void setupAnimationTimer()
@@ -134,12 +135,12 @@ public class GuiConsole extends OutputStream {
     }
     private static void updateTransparency()
     {
-        GuiController.singleton.consoleOut.setStyle("-fx-text-fill: rgba(255, 255, 255," +  
+        GuiController.getInstance().consoleOut.setStyle("-fx-text-fill: rgba(255, 255, 255," +  
                 Math.max(transparency, 0.005)//Failsafe, as transparency approaches zero, a crash will occur. Javafx error!
                 +");");
     }
     public static void updateSize() {
-        TextArea consoleOut = GuiController.singleton.consoleOut;
+        TextArea consoleOut = GuiController.getInstance().consoleOut;
         consoleOut.setPrefHeight(Main.mainStage.getHeight() - 80);//Allow space for console at bottom...
         consoleOut.setPrefWidth(Main.mainStage.getWidth());
     }

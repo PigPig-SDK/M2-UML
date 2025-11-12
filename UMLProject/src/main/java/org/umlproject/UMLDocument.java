@@ -16,11 +16,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 
-public class UMLDocument
+public class UMLDocument implements Copyable<UMLDocument>
 {
-    private static UMLDocument instance;
+    private static Memento<UMLDocument> instance;
     
     transient String fileLocation = null;
     private Map<String, UMLClass> classSet = new HashMap<>();
@@ -30,16 +31,16 @@ public class UMLDocument
     private static final String DEFAULT_FILEDIRECTORY = "Documents" + File.separator + "NewUMLDocument";
 
     public static List<DocumentListner> documentListners = new ArrayList<>();
-
+    private static DocumentState documentState = DocumentState.NORMAL;
     
     /**
      * Used to return all selectable objects
      * To be used by a 'UMLGuiController' when requested
      * @return all UMLSelectables from both the classSet and relationshipList
      */
-    public List<UIListener> getUIListeners()
+    public List<DiagramElementListener> getUIListeners()
     {
-        List<UIListener> allListeners = new ArrayList();
+        List<DiagramElementListener> allListeners = new ArrayList();
         for(UMLClass umlclass : classSet.values())
         {
             if(umlclass == null || umlclass.listener == null) continue;
@@ -65,13 +66,15 @@ public class UMLDocument
     {
         if(instance == null)
         {
-            setupInstance();
+            resetInstance();
         }
-        return instance;
+        return instance.getInstance();
     }
-    public static synchronized UMLDocument setupInstance()
+    public static synchronized UMLDocument resetInstance()
     {
-        return instance = new UMLDocument(DEFAULT_FILEDIRECTORY);
+        UMLDocument doc = new UMLDocument(DEFAULT_FILEDIRECTORY);
+        instance = new Memento<UMLDocument>(doc);
+        return doc;
     }
     /**
      * Creates a new UMLDocument
@@ -89,10 +92,16 @@ public class UMLDocument
             this.fileLocation = fileLocation;
         }
     }
+    /**
+     * Get the quick-save file location.
+     */
     public String getFileLocation()
     {
         return this.fileLocation;
     }
+    /**
+     * Set the quick-save location
+     */
     public void setFileLocation(String newFileLocation)
     {
         this.fileLocation = newFileLocation;
@@ -120,6 +129,13 @@ public class UMLDocument
         classSet.remove(className);
         return removed;
     }
+    /**
+     * Removes a class from the list, returning it to the API caller
+     * Automatically removes the classes relationships...
+     * 
+     * @param className to be removed.
+     * @return NULL or the removed object.
+     */
     public UMLClass removeClass(String className)
     {
         return removeClass(className,true);
@@ -203,7 +219,7 @@ public class UMLDocument
         RelationshipType relationshipType = RelationshipType.stringToRelationshipType(relationshipTypeString);
         UMLRelationship relationship = new UMLRelationship(className, destinationName, relationshipType, (relationshipType == RelationshipType.OTHER) ? relationshipTypeString : null);
         relationshipList.get(className).add(relationship);
-        documentListners.forEach(o->o.onRelationshipAdded(relationship,false));
+        documentListners.forEach(o->o.onRelationshipAdded(relationship));
         return true;
     }
     /**
@@ -381,6 +397,11 @@ public class UMLDocument
     {
         return save(this.getFileLocation());
     }
+    /**
+     * Saves to a specified file location
+     * @param filename , the directory/name we save as.
+     * @return True if the save was successful
+     */
     public boolean save(String filename)
     {
         if(fileLocation == null)
@@ -396,31 +417,46 @@ public class UMLDocument
         this.fileLocation = filename;
         return true;
     }
-    
+    /**
+     * 
+     */
     public boolean quickLoad()
     {
         return load(this.getFileLocation());
     }
+    /**
+     * Loads a specified file.
+     * Also clears out the current memento
+     * sets the current singleton to this loaded object.
+     * 
+     * TODO: REFACTOR LOAD() TO BE STATIC!
+     * 
+     * @param filename The file name/directory to load
+     * @return True if the file was loaded without issue.
+     */
     public boolean load(String filename)
     {
-        
-        Gson gson = new Gson();
-        try (BufferedReader reader = new BufferedReader(new FileReader(filename + FILEEXTENT_STRING))) {
-            // Deserialize the JSON into your Java object
-            var data = gson.fromJson(reader, UMLDocument.class);
-            //Successful loading, before we update our information, clear all GUI listeners.
-            cleanUpAllGuiListeners();
-            this.classSet=data.classSet;
-            this.fileLocation=data.fileLocation;
-            this.relationshipList=data.relationshipList;
-        } 
-        catch (IOException e) {
-            return false;
-        }
-        this.fileLocation=filename;
-        //Send new information to our GUIListener...
-        suggestGuiControllerRedraw();
-        return true;
+        return executeActionUnderState(DocumentState.FILE_LOADING,()->
+        {
+            Gson gson = new Gson();
+            try (BufferedReader reader = new BufferedReader(new FileReader(filename + FILEEXTENT_STRING))) {
+                // Deserialize the JSON into your Java object
+                var data = gson.fromJson(reader, UMLDocument.class);
+                //Successful loading, before we update our information, clear all GUI listeners.
+                cleanUpAllGuiListeners();
+                this.classSet=data.classSet;
+                this.fileLocation=data.fileLocation;
+                this.relationshipList=data.relationshipList;
+                instance.resetHistory(this);
+            } 
+            catch (IOException e) {
+                return false;
+            }
+            this.fileLocation=filename;
+            //Send new information to our GUIListener...
+            suggestGuiControllerRedraw();
+            return true;
+        });
     }
     /**
      * Rebinds every UMLClass,UMLRelationship... so on ... with the guiController.
@@ -430,12 +466,12 @@ public class UMLDocument
     private void suggestGuiControllerRedraw()
     {
         for(UMLClass umlc : classSet.values()) {
-            documentListners.forEach(o-> o.onClassAdded(umlc, true));
+            documentListners.forEach(o-> o.onClassAdded(umlc));
         }
         for(ArrayList<UMLRelationship> relationshipList : relationshipList.values())
         {
             for(UMLRelationship umlr : relationshipList){
-                documentListners.forEach(o -> o.onRelationshipAdded(umlr, true));
+                documentListners.forEach(o -> o.onRelationshipAdded(umlr));
             }
         }
         documentListners.forEach(o -> o.loadFile(this));
@@ -450,10 +486,13 @@ public class UMLDocument
         classSet.clear();
         relationshipList.clear();
     }
+    /**
+     * Calls Cleanup on all listener instances
+     */
     private void cleanUpAllGuiListeners()
     {
-        List<UIListener> allListeners = getUIListeners();
-        for(UIListener listener : allListeners)
+        List<DiagramElementListener> allListeners = getUIListeners();
+        for(DiagramElementListener listener : allListeners)
         {
             listener.cleanUp();
         }
@@ -477,7 +516,7 @@ public class UMLDocument
         classSet.put(className, umlclass);
         ArrayList<UMLRelationship> newList = new ArrayList<>();
         relationshipList.put(className, newList);
-        documentListners.forEach(o -> o.onClassAdded(umlclass, false));
+        documentListners.forEach(o -> o.onClassAdded(umlclass));
         return umlclass;
     }
 
@@ -547,5 +586,110 @@ public class UMLDocument
     public int hashCode() {
         return this.fileLocation.hashCode();
     }
+    
+    /**
+     * Act under a specified state...
+     * @param state The document state
+     * @param action a lambda to execute under the state
+     */
+    public static void executeActionUnderState(DocumentState state, Runnable action)
+    {
+        DocumentState previousState = documentState;
+        documentState = state;
+        try 
+        {
+            action.run();
+        } 
+        catch (Exception e) 
+        {
+            System.err.println("Error: " + e.getMessage());
+        }
+        finally
+        {
+            documentState = previousState;
+        }
+    }
+    /**
+     * Act under a specified state...
+     * @param <T> The object type that is expected as output.
+     * @param state The state to execute under.
+     * @return Whatever may be returned from your action
+     */
+    public static <T> T executeActionUnderState(DocumentState state, Supplier<T> action)
+    {
+        DocumentState previousState = documentState;
+        documentState = state;
+        T temp = null;
+        try 
+        {
+            temp = action.get();
+        } 
+        catch (Exception e) 
+        {
+            System.err.println("Error: " + e.getMessage());
+        }
+        documentState = previousState;
+        return temp;
+    }
+    /**
+     * @return the current document state.
+     */
+    public static DocumentState getDocumentState() {return documentState;}
 
+    @Override
+    public UMLDocument clone() {
+        return UMLDocument.executeActionUnderState(DocumentState.CLONING, ()-> {
+            UMLDocument umldoc = new UMLDocument(this.fileLocation);
+            for (String classString : classSet.keySet()) {
+                umldoc.getClassSet().put(classString, classSet.get(classString).clone());
+            }
+            for (String relatString : relationshipList.keySet()) {
+                Map<String, ArrayList<UMLRelationship>> copyRelatList = umldoc.getRelationshipList();
+                copyRelatList.put(relatString, new ArrayList<UMLRelationship>());
+                for (UMLRelationship relationship : relationshipList.get(relatString)) {
+                    copyRelatList.get(relatString).add(relationship);
+                }
+            }
+            return umldoc;
+        });
+    }
+    /**
+     * Stores a memento state.
+    */
+    public static void saveMementoState()
+    {
+        executeActionUnderState(DocumentState.MEMENTO_STATE_RESET, () ->instance.saveState());
+    }
+    /**
+     * Returns to the previous state.
+    */
+    public static void undoMementoState()
+    {
+        if(instance.getHistoryLength() != 1)//There are items to be undone.
+        {
+            instance.getInstance().cleanUpAllGuiListeners();
+            instance.undo();
+            //Do not register this as a 'update state'
+            executeActionUnderState(DocumentState.MEMENTO_STATE_RESET, () -> instance.getInstance().suggestGuiControllerRedraw());
+        }
+    }
+    /**
+     * Returns to the previous state after an undo.
+    */
+    public static void redoMementoState()
+    {
+        if(instance.getRedoHistoryLength()!= 0)//There are items to be redone.
+        {
+            instance.getInstance().cleanUpAllGuiListeners();
+            instance.redo();
+            executeActionUnderState(DocumentState.MEMENTO_STATE_RESET, () -> instance.getInstance().suggestGuiControllerRedraw());
+        }
+    }
+    /**
+     * Returns the memento
+     */
+    public static Memento<UMLDocument> getMemento()
+    {
+        return instance;
+    }
 }
