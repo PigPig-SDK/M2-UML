@@ -6,6 +6,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.umlproject.UMLDocument;
 
 
@@ -91,6 +93,22 @@ public class ClientHandler extends SocketManager
                 catch(JsonSyntaxException e)
                 {
                     System.out.println("User gave us bogus...");
+                }
+            }
+            case PacketType.ELEMENT_MOVED ->
+            {
+                //Server has suggested we move something...
+                boolean hasMoved = DocumentPacketHandler.handleElementMovementPacket(netPacket);
+                if(hasMoved)//Accepted!
+                {
+                    Server server = NetworkManager.getServerInstance();
+                    if(server == null) return;
+                    //Send to everyone besides the speaking client...
+                    server.sendMessageToAllClients(netPacket, Stream.of(this).collect(Collectors.toSet()));
+                }
+                else
+                {
+                    //TODO: UNWIND FOR CLIENT!
                 }
             }
             default ->

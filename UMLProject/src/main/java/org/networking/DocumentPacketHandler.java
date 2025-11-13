@@ -34,14 +34,12 @@ public class DocumentPacketHandler {
     }
     /**
      * Handles a UML Element movement packet
-     * @param client The client who is suggesting the packet, 
-     *              NULL overrides and executes the packet no questions asked.
      * @param networkPacket with PacketType.ELEMENT_MOVED
      * @return True if the packet is accepted, False rejected
      */
-    public synchronized static boolean handleElementMovementPacket(Client client, NetworkPacket networkPacket)
+    public synchronized static boolean handleElementMovementPacket(NetworkPacket networkPacket)
     {
-        if(client == null || networkPacket.packetType() != PacketType.ELEMENT_MOVED)
+        if(networkPacket.packetType() != PacketType.ELEMENT_MOVED)
             return false;//Cannot execute, send client back packet
         
         AtomicBoolean returnAtomicBoolean = new AtomicBoolean(true);
