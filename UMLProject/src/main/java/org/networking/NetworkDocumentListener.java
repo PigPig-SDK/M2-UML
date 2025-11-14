@@ -69,8 +69,15 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
     private void sendClassUpdate(UMLClass objectClass)
     {
         if(invalidDocumentStates.contains(UMLDocument.getDocumentState())) return;
+        NetworkPacket networkPacket = NetworkPacket.objectToNetworkPacket(NetworkManager.getTick(), PacketType.CLASS_EDIT, objectClass);
         
-        System.out.println("Update class : " + objectClass.getClassName());
+        try {
+            NetworkManager.getClientInstance().sendNetworkPacket(networkPacket);    
+        } 
+        catch (Exception e) {}
+        
+        
+        
     }
     /**
      * Sends the new location for a UMLClass.
@@ -80,6 +87,12 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
         if(invalidDocumentStates.contains(UMLDocument.getDocumentState())) return;
         
         Client client = NetworkManager.getClientInstance();//Our local client.
+        if(client == null)
+        {
+            client.disconnect();
+            return;
+        }
+        
         //Construct packet
         NetworkPacket networkPacket = NetworkPacket.objectToNetworkPacket(
                 NetworkManager.getTick(), 
@@ -108,6 +121,7 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
     
     /*---------------------------[ Listeners ]---------------------------*/
     @Override public void update(Object desiredElement) {
+        System.out.println("PreSwitch");
         switch(desiredElement)
         {
             case UMLClass umlClass -> sendClassUpdate(umlClass);

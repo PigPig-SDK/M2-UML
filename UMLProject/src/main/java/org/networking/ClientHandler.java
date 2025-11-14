@@ -5,6 +5,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -95,13 +97,19 @@ public class ClientHandler extends SocketManager
                     System.out.println("User gave us bogus...");
                 }
             }
+            case PacketType.CLASS_EDIT ->
+            {
+                DocumentPacketHandler.handleElementModified(this,netPacket);
+            }
             case PacketType.ELEMENT_MOVED ->
             {
                 //Server has suggested we move something...
                 Server server = NetworkManager.getServerInstance();
                 if(server == null) return;
                 //Send to everyone besides the speaking client...
-                server.sendMessageToAllClients(netPacket, Stream.of(this).collect(Collectors.toSet()));
+                Set<ClientHandler> blacklist = new HashSet<>();
+                blacklist.add(this);
+                server.sendMessageToAllClients(netPacket, blacklist);
             }
             default ->
             {

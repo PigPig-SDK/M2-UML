@@ -37,11 +37,16 @@ public class Server extends Thread {
     private final Object clientLock = new Object();
     private Timer clientUpdateTimer;
     
+    
+    //Local client stuff
+    private boolean awaitingLocalClient = false;
+    private ClientHandler localClient = null;
+    
     /**
      * @param port The Port we are going to host under.
      * @throws java.io.IOException When the socket throws.
      */
-    public Server(int port) throws IOException
+    public Server(int port, boolean summonsLocalClient) throws IOException
     {
         this.port = port;
         this.serverSocket = new ServerSocket(port);
@@ -74,6 +79,7 @@ public class Server extends Thread {
         sendMessageToAllClients(timestep);
         currentTick++;
     }
+    
     @Override
     public void run()
     {
@@ -92,7 +98,12 @@ public class Server extends Thread {
                 //Assign new thread for the client...
                 Thread clientThread = new ClientHandler(socket, dataInputStream, dataOutputStream);
                 synchronized (clientLock) {
-                    clients.add((ClientHandler) clientThread);
+                    if(awaitingLocalClient)
+                    {
+                        this.awaitingLocalClient = false;
+                        this.localClient = (ClientHandler)clientThread;
+                    }
+                    this.clients.add((ClientHandler) clientThread);
                 }
                 clientThread.setDaemon(true);
                 clientThread.start();
@@ -235,5 +246,13 @@ public class Server extends Thread {
             }
         }
         return tempList;
+    }
+    /**
+     * Gets the server
+     * @return NULL if no local client exists.
+     */
+    public ClientHandler getServerClient()
+    {
+        return localClient;
     }
 }

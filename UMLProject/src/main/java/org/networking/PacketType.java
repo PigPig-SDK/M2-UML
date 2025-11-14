@@ -14,4 +14,6 @@ public enum PacketType {
     HEARTBEAT,
     FULL_DOCUMENT,
     ELEMENT_MOVED,
+    CLASS_EDIT,
+    RELATIONSHIP_EDIT
 }

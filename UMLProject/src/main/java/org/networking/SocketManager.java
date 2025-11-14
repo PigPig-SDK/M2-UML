@@ -1,5 +1,6 @@
 package org.networking;
 
+import com.google.gson.stream.MalformedJsonException;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -63,6 +64,11 @@ public abstract class SocketManager extends Thread
                 NetworkPacket netPacket = NetworkPacket.jsonToPacket(new String(data, StandardCharsets.UTF_8));
                 
                 managePacket(netPacket);
+            }
+            catch(MalformedJsonException e)
+            {
+                System.out.println("Malformed JSON!" + e.getMessage());
+                continue;
             }
             catch(SocketTimeoutException e)//Timeout
             {

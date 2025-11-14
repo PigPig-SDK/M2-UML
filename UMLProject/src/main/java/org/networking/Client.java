@@ -65,6 +65,12 @@ public class Client extends SocketManager
                     }
                 }
             }
+            case PacketType.CLASS_EDIT ->
+            {
+                if(isHosting)
+                    return;
+                DocumentPacketHandler.handleDocumentPacket(netPacket);
+            }
             case PacketType.FULL_DOCUMENT ->
             {
                 //Go for it bud...
@@ -72,9 +78,6 @@ public class Client extends SocketManager
             }
             case PacketType.ELEMENT_MOVED ->
             {
-                
-                if(isHosting) return;//Host dosn't care, serverlogic handles this.
-                
                 //Server has suggested we move something...
                 DocumentPacketHandler.handleElementMovementPacket(netPacket);
             }

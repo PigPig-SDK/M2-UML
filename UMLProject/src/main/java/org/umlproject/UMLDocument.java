@@ -530,7 +530,31 @@ public class UMLDocument implements Copyable<UMLDocument>
         documentListners.forEach(o -> o.onClassAdded(umlclass));
         return umlclass;
     }
-
+    /**
+     * Adds/Replaces a class with a given UMLClass instance...
+     *
+     * @param umlClass A given class to insert or replace...
+     *
+     * @return True if the class replacement operation worked.
+     */
+    public boolean addClass(UMLClass umlClass){
+        
+        Objects.requireNonNull(umlClass.getClassName(), "newName cannot be null");
+        umlClass.setClassName(umlClass.getClassName().replaceAll("\\s+", ""));
+        
+        //Remove for replacement!
+        UMLDocument.getInstance().removeClass(umlClass.getClassName(), false);
+        classSet.put(umlClass.getClassName(), umlClass);
+        
+        if(relationshipList.get(umlClass.getClassName()) == null)//No relationship exists...
+        {
+            ArrayList<UMLRelationship> newList = new ArrayList<>();
+            relationshipList.put(umlClass.getClassName(), newList);
+        }
+        
+        documentListners.forEach(o -> o.onClassAdded(umlClass));
+        return true;//uhh...
+    }
     /**
      * @return number of classes added
      */
