@@ -70,6 +70,14 @@ public class Client extends SocketManager
                 //Go for it bud...
                 DocumentPacketHandler.handleDocumentPacket(netPacket);
             }
+            case PacketType.ELEMENT_MOVED ->
+            {
+                
+                if(isHosting) return;//Host dosn't care, serverlogic handles this.
+                
+                //Server has suggested we move something...
+                DocumentPacketHandler.handleElementMovementPacket(netPacket);
+            }
             default ->
             {
                 System.out.println("-> " +netPacket.payload());
@@ -108,5 +116,12 @@ public class Client extends SocketManager
     {
         NetworkManager.setClientNull();
         super.disconnect();
+    }
+    /**
+     * @return the current tick on the client side.
+     */
+    public long getTick()
+    {
+        return this.tick;
     }
 }
