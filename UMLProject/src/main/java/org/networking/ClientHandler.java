@@ -98,18 +98,10 @@ public class ClientHandler extends SocketManager
             case PacketType.ELEMENT_MOVED ->
             {
                 //Server has suggested we move something...
-                boolean hasMoved = DocumentPacketHandler.handleElementMovementPacket(netPacket);
-                if(hasMoved)//Accepted!
-                {
-                    Server server = NetworkManager.getServerInstance();
-                    if(server == null) return;
-                    //Send to everyone besides the speaking client...
-                    server.sendMessageToAllClients(netPacket, Stream.of(this).collect(Collectors.toSet()));
-                }
-                else
-                {
-                    //TODO: UNWIND FOR CLIENT!
-                }
+                Server server = NetworkManager.getServerInstance();
+                if(server == null) return;
+                //Send to everyone besides the speaking client...
+                server.sendMessageToAllClients(netPacket, Stream.of(this).collect(Collectors.toSet()));
             }
             default ->
             {

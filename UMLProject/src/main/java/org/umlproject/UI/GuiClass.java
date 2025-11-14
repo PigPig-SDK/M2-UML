@@ -14,9 +14,20 @@ import org.umlproject.*;
 
 import java.util.*;
 import java.util.Set;
+import javafx.application.Platform;
 import javafx.geometry.Bounds;
 import javafx.geometry.Rectangle2D;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.Border;
+import javafx.scene.layout.BorderStroke;
+import javafx.scene.layout.BorderStrokeStyle;
+import javafx.scene.layout.BorderWidths;
+import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.Pane;
+import javafx.scene.shape.StrokeLineCap;
+import javafx.scene.shape.StrokeLineJoin;
+import javafx.scene.shape.StrokeType;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
@@ -34,7 +45,6 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     VBox methodTextFields;
     //VBox that holds className TextField and VBoxes for data fields and methods.
     VBox parentVBox;
-    Rectangle background;
     
     private boolean isSelected = false;
     /**
@@ -439,16 +449,8 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
 
 
         //create a rectangle background for the class.
-        Rectangle background = new Rectangle();
-        background.setFill(GuiColor.CLASS_BACKGROUND_COLOR);
-        background.setStroke(Color.BLACK);
-        background.widthProperty().bind(this.parentVBox.widthProperty().add(20));
-        background.heightProperty().bind(this.parentVBox.heightProperty().add(20));
-        background.setArcHeight(30);
-        background.setArcWidth(30);
-        //Strip TextFields of focus if we click on rectangle.
+        updateVbox(false, 0);
 
-        this.background = background;
         //Create modifiable className and put into VBox
         TextField classNameField = new TextField(parentClass.getClassName());
         classNameField.setStyle("-fx-font-size: 16px; -fx-font-weight: bold");
@@ -484,7 +486,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         this.parentVBox.getChildren().addAll(methodsLabel, this.methodTextFields, addMethod);
         //-------------------------------------------------------------------------------------------------
 
-        this.nodeBackground.getChildren().addAll(background, this.parentVBox);
+        this.nodeBackground.getChildren().add(this.parentVBox);
 
         //Here we bind the StackPane to the location of the UMLClass, then
         //make the rectangle background draggable.
@@ -501,7 +503,63 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         updateAllRelationships(desiredElement);
         setSelected(isSelected);//Update our selected state
     }
+    private void updateVbox(boolean isSelected, double time)
+    {
+        if(this.parentVBox == null)
+            return;
+        
+        double arc = 30;
+        double borderWidth = 5;
+        if(isSelected)
+        {
+            borderWidth = 5 + 2*Math.sin(time * 0.00000001);
+            //this.parentVBox.setStrokeDashOffset();
+            
+            BorderStrokeStyle dashedStyle = new BorderStrokeStyle(
+                    StrokeType.INSIDE,                  // stroke type
+                    StrokeLineJoin.MITER,               // corner join
+                    StrokeLineCap.BUTT,                 // line cap
+                    10,                                 // miter limit
+                    10*Math.sin(time * 0.000000001),
+                Arrays.asList(30.0, 15.0)
+            );
+            Insets borderInsets = new Insets(5);
+            // Background with adjusted radii for the border
+            parentVBox.setBackground(new Background(new BackgroundFill(
+                GuiColor.CLASS_BACKGROUND_COLOR,
+                new CornerRadii(arc - borderWidth / 2),
+                new Insets(-10)
+            )));
 
+            // Border with proper radii
+            parentVBox.setBorder(new Border(new BorderStroke(
+                GuiColor.SELECTION_COLOR,
+                dashedStyle,
+                new CornerRadii(arc),
+                new BorderWidths(borderWidth),
+                new Insets(-15)
+            )));
+        }
+        else
+        {
+            Insets borderInsets = new Insets(5);
+            // Background with adjusted radii for the border
+            parentVBox.setBackground(new Background(new BackgroundFill(
+                GuiColor.CLASS_BACKGROUND_COLOR,
+                new CornerRadii(arc - borderWidth / 2),
+                new Insets(-10)
+            )));
+
+            // Border with proper radii
+            parentVBox.setBorder(new Border(new BorderStroke(
+                Color.BLACK,
+                    BorderStrokeStyle.SOLID,
+                new CornerRadii(arc),
+                new BorderWidths(borderWidth),
+                new Insets(-15)
+            )));
+        }
+    }
 
 
     /**This method will update the location of the gui element representing
@@ -564,23 +622,11 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
             return;
         this.world.getChildren().remove(this.nodeBackground);
     }
-    
     @Override
     public void setSelected(boolean isSelected) {
         
         this.isSelected = isSelected;
-        if(isSelected)
-        {
-            this.background.setFill(GuiColor.GENERIC_LINE_COLOR);//Idk it looks good.
-            this.background.setStroke(GuiColor.SELECTION_COLOR);
-            this.background.setStrokeWidth(5);
-            this.background.getStrokeDashArray().addAll(30.0, 15.0);
-        }
-        else
-        {
-            this.background.setFill(GuiColor.CLASS_BACKGROUND_COLOR);
-            this.background.setStrokeWidth(0);
-        }
+        updateVbox(isSelected, 0);
     }
 
     @Override
@@ -647,9 +693,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
 
     @Override
     public void selectionAnimationUpdate(float time) {
-        if(this.background == null)
-            return;
-        this.background.setStrokeWidth(5+ 2*Math.sin(time * 0.00000001));
-        this.background.setStrokeDashOffset(10*Math.sin(time * 0.000000001));
+
+        updateVbox(true, time);
     }
 }
