@@ -1,23 +1,12 @@
 package org.umlproject;
 
-import org.controlsfx.control.textfield.TextFields;
 import org.fusesource.jansi.AnsiConsole;
-import org.jline.reader.*;
-import org.jline.reader.impl.DefaultHighlighter;
-import org.jline.reader.impl.DefaultParser;
-import org.jline.reader.impl.completer.ArgumentCompleter;
+import org.jline.reader.LineReader;
+import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.impl.completer.StringsCompleter;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
-import org.jline.terminal.impl.ExternalTerminal;
-import org.umlproject.UI.GuiConsole;
-import org.umlproject.UI.GuiController;
-import org.umlproject.UI.GuiRelationship;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class AutoComplete implements DocumentListner{
@@ -28,7 +17,6 @@ public class AutoComplete implements DocumentListner{
 
     private static LineReader reader;
 
-
     private static AutoComplete instance;
 
     /**
@@ -36,7 +24,6 @@ public class AutoComplete implements DocumentListner{
      */
     private AutoComplete(){
 
-        AnsiConsole.systemInstall();
         this.autoWordList =  new ArrayList<>(Arrays.asList(
                 "add", "help", "list", "load", "quit", "remove", "rename", "save",
                 "class", "classes", "relationship", "method","field", "param", "params",
@@ -70,7 +57,7 @@ public class AutoComplete implements DocumentListner{
 
     private LineReader newLineReader(){
 
-
+        AnsiConsole.systemInstall();
         try {
             if(terminal == null) terminal = TerminalBuilder.builder().system(true).build();
             return LineReaderBuilder.builder().terminal(terminal)
@@ -82,7 +69,6 @@ public class AutoComplete implements DocumentListner{
         }
     }
 
-
     /**
      * Adds a word to the line reader
      *
@@ -92,7 +78,6 @@ public class AutoComplete implements DocumentListner{
 
         this.autoWordList.add(in);
         reader = newLineReader();
-        GuiController.singleton.updateGUIAutoComplete();
 
     }
 
@@ -105,7 +90,6 @@ public class AutoComplete implements DocumentListner{
 
         this.autoWordList.addAll(in);
         reader = newLineReader();
-        GuiController.singleton.updateGUIAutoComplete();
 
     }
 
@@ -118,7 +102,6 @@ public class AutoComplete implements DocumentListner{
 
         this.autoWordList.remove(in);
         reader = newLineReader();
-        GuiController.singleton.updateGUIAutoComplete();
 
     }
 
@@ -131,7 +114,6 @@ public class AutoComplete implements DocumentListner{
 
         this.autoWordList.removeAll(in);
         reader = newLineReader();
-        GuiController.singleton.updateGUIAutoComplete();
 
     }
 
@@ -140,6 +122,13 @@ public class AutoComplete implements DocumentListner{
      */
     public String lineInConsole(){
         return reader.readLine();
+    }
+
+    /**
+     * Reads a line. Used with the GUI launch option.
+     */
+    public String lineInGUI(String in){
+        return reader.readLine(in);
     }
 
     /**
@@ -213,9 +202,5 @@ public class AutoComplete implements DocumentListner{
     @Override
     public void loadFile(UMLDocument umlDocument) {
 
-    }
-
-    public ArrayList<String> getAutoWordList(){
-        return this.autoWordList;
     }
 }

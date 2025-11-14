@@ -57,9 +57,10 @@
             <SeparatorMenuItem mnemonicParsing="false" />
             <MenuItem mnemonicParsing="false" onAction="#saveFileMenuAction" text="Save" />
             <MenuItem mnemonicParsing="false" onAction="#saveAsFileMenuAction" text="Save As…" />
+                  <SeparatorMenuItem mnemonicParsing="false" />
+                  <MenuItem mnemonicParsing="false" onAction="#exportScreenshotMenuAction" text="Export Screenshot" />
             <SeparatorMenuItem mnemonicParsing="false" />
             <MenuItem mnemonicParsing="false" onAction="#quitFileMenuAction" text="Quit" />
-                  <MenuItem mnemonicParsing="false" onAction="#exportScreenshotMenuAction" text="Export Screenshot" />
           </items>
         </Menu>
         <Menu mnemonicParsing="false" text="Edit">
@@ -68,6 +69,9 @@
             <SeparatorMenuItem mnemonicParsing="false" />
             <MenuItem mnemonicParsing="false" onAction="#selectAllEditMenuAction" text="Select All" />
             <MenuItem mnemonicParsing="false" onAction="#unSelectAllEditMenuAction" text="Unselect All" />
+                  <SeparatorMenuItem mnemonicParsing="false" />
+                  <MenuItem mnemonicParsing="false" onAction="#editUndo" text="Undo" />
+                  <MenuItem mnemonicParsing="false" onAction="#editRedo" text="Redo" />
           </items>
         </Menu>
             <Menu mnemonicParsing="false" text="View">

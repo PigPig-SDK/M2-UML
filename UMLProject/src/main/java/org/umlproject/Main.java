@@ -28,7 +28,7 @@ public class Main extends Application
     private Button buttonGUI;
     
     
-    public static void main(String[] args) 
+    public static void main(String[] args) throws InterruptedException 
     {
         //Setup
         NetworkManager.initialize();
@@ -37,14 +37,29 @@ public class Main extends Application
         //If terminal launch option is requested. Override JAVAFX.
         if(args.length == 1 && args[0].equals(terminalLaunchString))
         {
-            //Scanner scanner = new Scanner(System.in);
+            //Run main terminal stuff...
             TerminalHandler.runCommand("help");
             TerminalHandler.printLineBreak();
-            do
+            //Create dispatcher for main thread...
+            MainThreadDispatcher.dispatcher = new MainThreadDispatcher();
+            //Push the user onto their own thread.
+            Thread userInputThread = new Thread(()->{
+                    while(true)
+                    {
+                        String inputString = AutoComplete.getInstance().lineInConsole().toLowerCase();
+                        //When we get user input, execute the input on main thread...
+                        MainThreadDispatcher.dispatcher.dispatch(()->TerminalHandler.runCommand(inputString));
+                    }
+                });
+            userInputThread.setDaemon(true);
+            userInputThread.start();//Bombs away!
+            
+            //Do incoming work forever on main thread
+            while(true)
             {
-                TerminalHandler.runCommand(AutoComplete.getInstance().lineInConsole().toLowerCase());
-            }while(TerminalHandler.isRunning);
-            return;
+                MainThreadDispatcher.dispatcher.processQueuedActions();
+                Thread.sleep(15);//Stop 100% cpu usage when nothing is going on...
+            }
         }
         
         launch(args);
@@ -94,6 +109,11 @@ public class Main extends Application
     
     @Override
     public void start(Stage stage) throws Exception {
+        //Setup thread dispatcher for potental network traffic...
+        FXDispatcher dispatcher = new FXDispatcher();
+        dispatcher.start();
+        MainThreadDispatcher.dispatcher = dispatcher;
+        
         //JavaFX setup...
         mainStage = stage;
         //StartupScreen.fxml BINDS TO THIS CLASS!

@@ -22,6 +22,8 @@ public class GuiKeyBinds {
     {
         //Setup CTRL+S for "Save"
         addAccelerator(new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN), "Save");
+        addAccelerator(new KeyCodeCombination(KeyCode.Z, KeyCombination.CONTROL_DOWN), "Undo");
+        addAccelerator(new KeyCodeCombination(KeyCode.Y, KeyCombination.CONTROL_DOWN), "Redo");
         addAccelerator(new KeyCodeCombination(KeyCode.O, KeyCombination.CONTROL_DOWN), "Open…");
         addAccelerator(new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN), "Save As…");
         addAccelerator(new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN), "New");
@@ -88,12 +90,12 @@ public class GuiKeyBinds {
                 }
                 //UNDO
                 case Z ->{
-                    UMLDocument.undoMementoState();
+                    GuiController.getInstance().editUndo();
                     event.consume();
                 }
                 //Redo
                 case Y ->{
-                    UMLDocument.redoMementoState();
+                    GuiController.getInstance().editRedo();
                     event.consume();
                 }
             }

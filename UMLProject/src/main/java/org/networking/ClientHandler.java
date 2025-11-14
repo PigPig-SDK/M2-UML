@@ -6,6 +6,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.umlproject.UMLDocument;
 
 
@@ -52,7 +54,7 @@ public class ClientHandler extends SocketManager
     @Override
     protected void managePacket(NetworkPacket netPacket) {
         //Packets are time bound...
-        if(netPacket.sendTick() > NetworkManager.getServerTick())
+        if(netPacket.sendTick() > NetworkManager.getTick())
             return;
         
         switch(netPacket.packetType())
@@ -93,6 +95,14 @@ public class ClientHandler extends SocketManager
                     System.out.println("User gave us bogus...");
                 }
             }
+            case PacketType.ELEMENT_MOVED ->
+            {
+                //Server has suggested we move something...
+                Server server = NetworkManager.getServerInstance();
+                if(server == null) return;
+                //Send to everyone besides the speaking client...
+                server.sendMessageToAllClients(netPacket, Stream.of(this).collect(Collectors.toSet()));
+            }
             default ->
             {
                 System.out.println("Got message : " + netPacket.payload());
@@ -113,7 +123,7 @@ public class ClientHandler extends SocketManager
     @Override
     protected void onConnectionStarted() {
         //Inform new users of the connection.
-        NetworkManager.getServerInstance().sendMessageToAllClients(new NetworkPacket(NetworkManager.getServerTick(),PacketType.MESSAGE, "A new user is connecting..."));
+        NetworkManager.getServerInstance().sendMessageToAllClients(new NetworkPacket(NetworkManager.getTick(),PacketType.MESSAGE, "A new user is connecting..."));
         sendEntireDocument();
     }
     /**
@@ -122,7 +132,7 @@ public class ClientHandler extends SocketManager
     protected void sendEntireDocument()
     {
         try {
-            sendNetworkPacket(NetworkPacket.objectToNetworkPacket(NetworkManager.getServerTick(), PacketType.FULL_DOCUMENT, UMLDocument.getInstance()));
+            sendNetworkPacket(NetworkPacket.objectToNetworkPacket(NetworkManager.getTick(), PacketType.FULL_DOCUMENT, UMLDocument.getInstance()));
         }
         catch(IOException ex) {
             System.err.println("Failed to send document" + ex.getMessage()); 
