@@ -176,6 +176,22 @@ public class GuiController implements DocumentListner {
         UMLDocument.getInstance().load(pathString);
     }
     /**
+     * Handles the "open" menu action.
+     */
+    @FXML
+    public void editUndo()
+    {
+        UMLDocument.undoMementoState();
+    }
+    /**
+     * Handles the "open" menu action.
+     */
+    @FXML
+    public void editRedo()
+    {
+        UMLDocument.redoMementoState();
+    }
+    /**
      * Handles the "Save" menu action.
      * 
      * If no save location is set, SaveAs will be executed
