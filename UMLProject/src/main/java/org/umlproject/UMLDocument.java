@@ -654,11 +654,12 @@ public class UMLDocument implements Copyable<UMLDocument>
             for (String classString : classSet.keySet()) {
                 umldoc.getClassSet().put(classString, classSet.get(classString).clone());
             }
+            
             for (String relatString : relationshipList.keySet()) {
                 Map<String, ArrayList<UMLRelationship>> copyRelatList = umldoc.getRelationshipList();
                 copyRelatList.put(relatString, new ArrayList<UMLRelationship>());
                 for (UMLRelationship relationship : relationshipList.get(relatString)) {
-                    copyRelatList.get(relatString).add(relationship);
+                    copyRelatList.get(relatString).add(relationship.clone());
                 }
             }
             return umldoc;

@@ -12,6 +12,8 @@ import org.junit.jupiter.api.Test;
 import org.umlproject.DiagramElementListener;
 import org.umlproject.DocumentListner;
 import org.umlproject.DocumentState;
+import org.umlproject.RelationshipType;
+import static org.umlproject.RelationshipType.GENERALIZATION;
 import org.umlproject.UMLClass;
 import org.umlproject.UMLDiagramElement;
 import org.umlproject.UMLDocument;
@@ -392,19 +394,20 @@ public class UMLDocumentTests
         assertNotEquals(clone.getRelationshipList(), umldocument.getRelationshipList());
     }
     @Test 
-    public void copy_removeClass_isDeepCopy()
+    public void copy_modifyRelationship_isDeepCopy()
     {
         // Arrange
         UMLDocument umldocument = new UMLDocument("Foobar");
         umldocument.addClass("a");
         umldocument.addClass("b");
-        umldocument.addClass("c");
+        umldocument.addRelationship("a", "b", "COMPOSITION");
         // Act
         UMLDocument clone = umldocument.clone();
-        boolean isRemoved = (clone.removeClass("a") != null);
+        UMLRelationship relationship = clone.getRelationship("a", "b");
+        relationship.setRelationshipType(RelationshipType.GENERALIZATION);
         // Assert
-        assertTrue(isRemoved);
-        assertNotEquals(clone.getClassSet(), umldocument.getClassSet());
+        assertNotEquals(RelationshipType.GENERALIZATION, umldocument.getRelationship("a", "b").getRelationshipType());
+        assertNotEquals(umldocument.getRelationship("a", "b").getRelationshipType(), relationship.getRelationshipType());
     }
     @Test 
     public void singletonReset_isProperReset_Success()
