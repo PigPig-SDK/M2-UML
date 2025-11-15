@@ -1,0 +1,4 @@
+Command design pattern: consists of the ExportCommand interface, CommandInvoker class, ScreenshotCommand class, and the exportScreenshotMenuAction() method in the GuiController class on lines 274-298.
+This design pattern allows us to convert actions into objects and then have a generalized Invoker class that executes those actions via a comman interface. Having a generalized command invoker like this
+makes the project more scalable since now we don't have to rely on lots of conditional branching to decide which command we want our code to use, we can just create a new concrete command class and then
+have our Invoker execute the command's methods. This will make it easier to introduce new Commands on a whim as the project progresses.
