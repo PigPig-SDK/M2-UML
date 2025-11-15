@@ -1,9 +1,7 @@
 package org.umlproject;
 
 import org.fusesource.jansi.AnsiConsole;
-import org.jline.reader.LineReader;
-import org.jline.reader.LineReaderBuilder;
-import org.jline.reader.impl.completer.StringsCompleter;
+import org.jline.reader.*;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 
@@ -64,8 +62,16 @@ public class AutoComplete implements MementoListener<UMLDocument> {
         AnsiConsole.systemInstall();
         try {
             if(terminal == null) terminal = TerminalBuilder.builder().system(true).build();
+            //Uses custom complete method with StringCompleter
             return LineReaderBuilder.builder().terminal(terminal)
-                    .completer(new StringsCompleter(this.autoWordList)).build();
+                    .completer((non, in, available) -> {
+                        String parsedIn = in.word().trim();
+                        for (String options : autoWordList) {
+                            if (parsedIn.isEmpty() || options.startsWith(parsedIn)) {
+                                available.add(new Candidate(options));
+                            }
+                        }
+                    }).build();
         }
         catch (Exception e){
             System.out.println("Error: " + e);
@@ -91,9 +97,7 @@ public class AutoComplete implements MementoListener<UMLDocument> {
 
     @Override
     public void update(Memento<UMLDocument> memento) {
-
         this.autoWordList.clear();
-
         //Add classes
         this.autoWordList.addAll(memento.getInstance().getClassSet().keySet());
         for(UMLClass currentClass : memento.getInstance().getClassSet().values()){
@@ -110,7 +114,7 @@ public class AutoComplete implements MementoListener<UMLDocument> {
                 }
             }
         }
-
+        
         for(ArrayList<UMLRelationship> currentClassRelationships : memento.getInstance().getRelationshipList().values()){
             for(UMLRelationship currentRelationship : currentClassRelationships){
                 if(currentRelationship.getRelationshipType() == RelationshipType.OTHER){
@@ -119,8 +123,7 @@ public class AutoComplete implements MementoListener<UMLDocument> {
                 }
             }
         }
-
-
+        reader = newLineReader();
     }
 
 }
