@@ -144,8 +144,6 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
             return false;
         }
 
-        AutoComplete.getInstance().addWord(name);
-
         fields.put(name, field);
         updateListener(true);
         return true;
@@ -170,8 +168,6 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
         boolean isRemoved = fields.remove(fieldName) != null;
         if(isRemoved)//Update our GUI listener.
             updateListener(true);
-
-        AutoComplete.getInstance().removeWord(fieldName);
 
         return isRemoved;
     }
@@ -319,13 +315,6 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
 
         //no duplicates found. Safe to add to list.
         list.add(method);
-
-        AutoComplete.getInstance().addWord(name);
-        if(!method.getParameters().isEmpty()){
-            for(UMLParameter p :  method.getParameters()){
-                AutoComplete.getInstance().addWord(p.getName());
-            }
-        }
 
         methods.put(name, list);
         updateListener(true);

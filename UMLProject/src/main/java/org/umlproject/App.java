@@ -53,7 +53,8 @@ public class App extends Application {
                 //Terminal Launch: Assumes that terminalscript.cmd, javafxlibrary, and jar are in the same directory
                 String location = Main.class.getProtectionDomain().getCodeSource().
                         getLocation().getPath();
-                location = location.substring(6, location.indexOf("!")) + " -terminal";
+                System.out.println(location);
+                location = location.substring(3) + " -terminal";
                 System.out.println(location);
                 Runtime.getRuntime().exec("cmd /c start " + location);
 
