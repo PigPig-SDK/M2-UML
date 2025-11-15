@@ -2,6 +2,7 @@ package org.umlproject.UI;
 
 import java.io.File;
 import javafx.stage.FileChooser;
+import org.umlproject.App;
 import org.umlproject.Main;
 import org.umlproject.UMLDocument;
 
@@ -18,7 +19,7 @@ public class GuiFileBrowser {
         fileChooser.setInitialFileName("MyUMLDocument.json");
         fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
         fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("UMLDocument", "*.json"));
-        File selectedDirectory = fileChooser.showSaveDialog(Main.mainStage);
+        File selectedDirectory = fileChooser.showSaveDialog(App.mainStage);
         return selectedDirectory;
     }
 
@@ -33,7 +34,7 @@ public class GuiFileBrowser {
         fileChooser.setInitialFileName("UMLDiagramScreenshot.png");
         fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
         fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("UMLDiagramScreenshot", "*.png"));
-        File selectedDirectory = fileChooser.showSaveDialog(Main.mainStage);
+        File selectedDirectory = fileChooser.showSaveDialog(App.mainStage);
         return selectedDirectory;
     }
 
@@ -47,7 +48,7 @@ public class GuiFileBrowser {
         fileChooser.setTitle("Load UML File");
         fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
         fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("UMLDocument", "*.json"));
-        File selectedDirectory = fileChooser.showOpenDialog(Main.mainStage);
+        File selectedDirectory = fileChooser.showOpenDialog(App.mainStage);
         return selectedDirectory;
     }
     /**

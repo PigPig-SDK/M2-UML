@@ -8,6 +8,7 @@ import javafx.scene.input.KeyEvent;
 import static javafx.scene.input.MouseButton.MIDDLE;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Pane;
+import org.umlproject.App;
 import org.umlproject.Main;
 
 public class GuiCamera {
@@ -62,10 +63,10 @@ public class GuiCamera {
     }
     private static void manageCameraInput()
     {
-        if(Main.currentScene == null)
+        if(App.currentScene == null)
             return;
         //Key down
-        Main.currentScene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+        App.currentScene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
             if (event.isControlDown())
                 return;
             
@@ -77,7 +78,7 @@ public class GuiCamera {
             }
         });
         //Key up
-        Main.currentScene.addEventHandler(KeyEvent.KEY_RELEASED, event -> {
+        App.currentScene.addEventHandler(KeyEvent.KEY_RELEASED, event -> {
             switch (event.getCode()) {
                 case UP, W -> {up = false;event.consume();}
                 case DOWN, S -> {down = false;event.consume();}
@@ -86,7 +87,7 @@ public class GuiCamera {
             }
         });
         //Mouse zoom
-        Main.currentScene.setOnScroll(event ->{
+        App.currentScene.setOnScroll(event ->{
             double zoomAmmount = event.getDeltaY();
             
             if(zoomAmmount == 0)
@@ -95,7 +96,7 @@ public class GuiCamera {
         });
         
         //Logic to drag the camera around
-        Main.currentScene.setOnMouseDragged(event -> {
+        App.currentScene.setOnMouseDragged(event -> {
             double currentX = event.getScreenX();
             double currentY = event.getScreenY();
             switch (event.getButton()) {
@@ -111,7 +112,7 @@ public class GuiCamera {
             startDragY = currentY; 
         });
         //Clicking into the void deselects any textbox...
-        Main.currentScene.setOnMousePressed(event -> {
+        App.currentScene.setOnMousePressed(event -> {
             //Reset our current drag distance.
             startDragX = event.getScreenX();
             startDragY = event.getScreenY(); 

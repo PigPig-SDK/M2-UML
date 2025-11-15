@@ -10,6 +10,7 @@ import javafx.application.Platform;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.AnchorPane;
+import org.umlproject.App;
 import org.umlproject.AutoComplete;
 import org.umlproject.Main;
 
@@ -141,8 +142,8 @@ public class GuiConsole extends OutputStream {
     }
     public static void updateSize() {
         TextArea consoleOut = GuiController.getInstance().consoleOut;
-        consoleOut.setPrefHeight(Main.mainStage.getHeight() - 80);//Allow space for console at bottom...
-        consoleOut.setPrefWidth(Main.mainStage.getWidth());
+        consoleOut.setPrefHeight(App.mainStage.getHeight() - 80);//Allow space for console at bottom...
+        consoleOut.setPrefWidth(App.mainStage.getWidth());
     }
 
 }
