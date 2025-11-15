@@ -494,8 +494,7 @@ public class UMLDocument implements Copyable<UMLDocument>
     public void clearFile()
     {
         cleanUpAllGuiListeners();
-        classSet.clear();
-        relationshipList.clear();
+        UMLDocument.resetInstance();
     }
     /**
      * Calls Cleanup on all listener instances
