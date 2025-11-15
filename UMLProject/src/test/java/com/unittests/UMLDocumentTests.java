@@ -413,7 +413,7 @@ public class UMLDocumentTests
     public void singletonReset_isProperReset_Success()
     {
         // Arrange
-        UMLDocument.resetInstance();
+        UMLDocument.resetInstance(true);
         UMLDocument.getInstance().addClass("A");
         UMLDocument.saveMementoState();
         UMLDocument.getInstance().addClass("B");
@@ -423,7 +423,7 @@ public class UMLDocumentTests
         UMLDocument.undoMementoState();
         // Act
         assertEquals(3, UMLDocument.getMemento().getHistoryLength());
-        UMLDocument.resetInstance();
+        UMLDocument.resetInstance(true);
         // Assert
         assertEquals(1, UMLDocument.getMemento().getHistoryLength());
         assertEquals(0, UMLDocument.getMemento().getRedoHistoryLength());
@@ -432,7 +432,7 @@ public class UMLDocumentTests
     public void undoMementoState_savesHistory_Success()
     {
         // Arrange
-        UMLDocument.resetInstance();
+        UMLDocument.resetInstance(true);
         UMLDocument.getInstance().addClass("A");
         UMLDocument.saveMementoState();
         UMLDocument.getInstance().addClass("B");
@@ -472,7 +472,7 @@ public class UMLDocumentTests
     public void redoMementoState_savesHistory_Success()
     {
         // Arrange
-        UMLDocument.resetInstance();
+        UMLDocument.resetInstance(true);
         UMLDocument.getInstance().addClass("A");
         UMLDocument.saveMementoState();
         UMLDocument.getInstance().addClass("B");

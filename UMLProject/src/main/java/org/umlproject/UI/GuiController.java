@@ -161,7 +161,7 @@ public class GuiController implements DocumentListner {
             saveLocationSet = false;
             GuiCamera.setCameraLocation(Point2D.ZERO);//Reset camera...
             UMLDocument.getInstance().clearFile();
-            UMLDocument.resetInstance();
+            
         }
     }
     /**

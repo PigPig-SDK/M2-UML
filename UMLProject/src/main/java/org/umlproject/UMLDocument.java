@@ -16,6 +16,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Supplier;
 
 
@@ -64,16 +65,21 @@ public class UMLDocument implements Copyable<UMLDocument>
      */
     public static synchronized UMLDocument getInstance()
     {
-        if(instance == null)
+        if(instance == null)//Setup...
         {
-            resetInstance();
+            resetInstance(true);
         }
         return instance.getInstance();
     }
-    public static synchronized UMLDocument resetInstance()
+    public static synchronized UMLDocument resetInstance(boolean clearListeners)
     {
         UMLDocument doc = new UMLDocument(DEFAULT_FILEDIRECTORY);
-        instance = new Memento<UMLDocument>(doc);
+        if(clearListeners || instance == null)
+            instance = new Memento<UMLDocument>(doc);
+        else
+        {
+            instance.resetHistory(doc);
+        }
         return doc;
     }
     /**
@@ -494,7 +500,7 @@ public class UMLDocument implements Copyable<UMLDocument>
     public void clearFile()
     {
         cleanUpAllGuiListeners();
-        UMLDocument.resetInstance();
+        UMLDocument.resetInstance(false);
     }
     /**
      * Calls Cleanup on all listener instances

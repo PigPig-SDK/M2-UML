@@ -26,7 +26,7 @@ public class DocumentPacketHandlerTests {
         MainThreadDispatcher.dispatcher.processQueuedActions();
         //Assert
         Assertions.assertNotNull(UMLDocument.getInstance().getClass("a"));
-        UMLDocument.resetInstance();
+        UMLDocument.resetInstance(true);
         
         MainThreadDispatcher.dispatcher = null;
     }
@@ -41,7 +41,7 @@ public class DocumentPacketHandlerTests {
         MainThreadDispatcher.dispatcher.processQueuedActions();
         //Assert
         Assertions.assertNotNull(UMLDocument.getInstance().getClass("a"));
-        UMLDocument.resetInstance();
+        UMLDocument.resetInstance(true);
         MainThreadDispatcher.dispatcher = null;
     }
     @Test
@@ -53,7 +53,7 @@ public class DocumentPacketHandlerTests {
         DocumentPacketHandler.handleDocumentPacket(packet);
         //Assert
         Assertions.assertNotNull(UMLDocument.getInstance().getClass("a"));
-        UMLDocument.resetInstance();
+        UMLDocument.resetInstance(true);
     }
     @Test
     public void handleDocumentPacket_invalidStringInPacketFragmented_doesNothing() throws IOException {
@@ -68,6 +68,6 @@ public class DocumentPacketHandlerTests {
         DocumentPacketHandler.handleDocumentPacket(packet);
         //Assert
         Assertions.assertNotNull(UMLDocument.getInstance().getClass("b"));
-        UMLDocument.resetInstance();
+        UMLDocument.resetInstance(true);
     }
 }
