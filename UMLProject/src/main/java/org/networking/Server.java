@@ -134,7 +134,7 @@ public class Server extends Thread {
      * If a client cannot receive a message because they have been terminated, their thread gets shutdown.
      * @param netPacket The network packet to transmit to all users
      */
-    public void sendMessageToAllClients(NetworkPacket netPacket)
+    public synchronized void sendMessageToAllClients(NetworkPacket netPacket)
     {
         //Send without blacklist
         sendMessageToAllClients(netPacket, new HashSet<ClientHandler>());
@@ -145,7 +145,7 @@ public class Server extends Thread {
      * @param netPacket The network packet to transmit to all users
      * @param blackList
      */
-    public void sendMessageToAllClients(NetworkPacket netPacket, Set<ClientHandler> blackList)
+    public synchronized void sendMessageToAllClients(NetworkPacket netPacket, Set<ClientHandler> blackList)
     {
         
         Set<ClientHandler> allClients = getClients();

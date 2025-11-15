@@ -126,7 +126,7 @@ public abstract class SocketManager extends Thread
      * Sends a network packet to the client.
      * @param netpacket The network packet we decide to send to the client...
      */
-    public void sendNetworkPacket(NetworkPacket netpacket) throws IOException 
+    public synchronized void sendNetworkPacket(NetworkPacket netpacket) throws IOException 
     {
         byte[] jsonBytes = netpacket.packetToJson().getBytes(StandardCharsets.UTF_8);
         out.writeInt(jsonBytes.length);//Start by informing the client of our packet size.
