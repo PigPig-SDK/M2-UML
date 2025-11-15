@@ -140,7 +140,7 @@ public class ClientHandler extends SocketManager
     protected void sendEntireDocument()
     {
         try {
-            sendNetworkPacket(NetworkPacket.objectToNetworkPacket(NetworkManager.getTick(), PacketType.FULL_DOCUMENT, UMLDocument.getInstance()));
+            sendNetworkPacket(Server.generateDocumentPacket());
         }
         catch(IOException ex) {
             System.err.println("Failed to send document" + ex.getMessage()); 

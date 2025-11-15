@@ -69,10 +69,12 @@ public class Client extends SocketManager
             {
                 if(isHosting)
                     return;
-                DocumentPacketHandler.handleDocumentPacket(netPacket);
+                DocumentPacketHandler.handleElementModified(null, netPacket);
             }
             case PacketType.FULL_DOCUMENT ->
             {
+                if(isHosting)
+                    return;
                 //Go for it bud...
                 DocumentPacketHandler.handleDocumentPacket(netPacket);
             }

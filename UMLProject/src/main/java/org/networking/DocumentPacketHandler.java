@@ -2,6 +2,7 @@ package org.networking;
 
 import com.google.gson.JsonSyntaxException;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -106,6 +107,7 @@ public class DocumentPacketHandler {
     }
     /**
      * This handles the network packet for modifying UMLClasses...
+     * @param client If null, than no reporting packet will be sent back.
      */
     private static void handleClassPacket(ClientHandler client, NetworkPacket networkPacket)
     {
@@ -116,7 +118,7 @@ public class DocumentPacketHandler {
         //////////////////////////
         ///
         ///
-        if(networkPacket == null || client == null) return;
+        if(networkPacket == null) return;
         //Run on main thread.
         try {
             UMLClass umlclass = networkPacket.payloadToObject(UMLClass.class);
@@ -124,24 +126,27 @@ public class DocumentPacketHandler {
                 return;//Nothing we can do with null...
 
             UMLClass docVersion = UMLDocument.getInstance().getClass(umlclass.getClassName());
-            if(docVersion == null || docVersion.lastNetworkEditTime < networkPacket.sendTick())//Null or older than clients suggestion...
+            if(docVersion == null || docVersion.lastNetworkEditTime < networkPacket.sendTick() || client == null)//Null or older than clients suggestion...
             {
                 UMLDocument.executeActionUnderState(DocumentState.NETWORK_OPERATION, () -> {
                     boolean switchWorked = UMLDocument.getInstance().addClass(umlclass);
-
-                    if(!switchWorked)//Switch failed... Send the client back the latest version...
-                        sendValidClass(client, UMLDocument.getInstance().getClass(umlclass.getClassName()));
-                    else//Send update back to everyone...
+                    
+                    //Server handles reportbacks...
+                    if(client != null)
                     {
-                        Server server = NetworkManager.getServerInstance();
-                        if(server == null) return;//Safety first...
+                        if(!switchWorked)//Switch failed... Send the client back the latest version...
+                            sendValidClass(client, UMLDocument.getInstance().getClass(umlclass.getClassName()));
+                        else//Send update back to everyone...
+                        {
+                            Server server = NetworkManager.getServerInstance();
+                            if(server == null) return;//Safety first...
 
-                        //Avoid sending back to server AND the client who sent it.
-                        Set<ClientHandler> clients =  server.getClients();
-                        clients.remove(NetworkManager.getServerInstance().getServerClient());
-                        clients.remove(client);
-
-                        server.sendMessageToAllClients(networkPacket, clients);//Update. Send back to all.
+                            //Avoid sending back to server AND the client who sent it.
+                            Set<ClientHandler> clients =  new HashSet<>();
+                            clients.add(NetworkManager.getServerInstance().getServerClient());
+                            clients.add(client);
+                            server.sendMessageToAllClients(networkPacket, clients);//Update. Send back to all.
+                        }
                     }
                 });
             }
@@ -160,6 +165,11 @@ public class DocumentPacketHandler {
      */
     private static void sendValidClass(ClientHandler client, UMLClass umlClass)
     {
+        Server server = NetworkManager.getServerInstance();
+        if(server == null)
+            return;
         
+        NetworkPacket netPacket = NetworkPacket.objectToNetworkPacket(NetworkManager.getTick(), PacketType.CLASS_EDIT, umlClass);
+        server.sendMessageToClient(netPacket, client);
     }
 }

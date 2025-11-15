@@ -172,6 +172,7 @@ public class UMLDocument implements Copyable<UMLDocument>
             UMLClass removedClass = removeClass(originClassName, false);
             //Full send. Cannot retract at any point past here.
             if(removedClass == null) return false;//Check incase something weird has happened.
+            
             relationshipList.remove(originClassName);//Kill duplicate.
 
             //Rename outgoing relationships
@@ -461,13 +462,15 @@ public class UMLDocument implements Copyable<UMLDocument>
     {
         if(document == null)
             return;
-        
-        cleanUpAllGuiListeners();
-        this.classSet = document.classSet;
-        this.fileLocation = document.fileLocation;
-        this.relationshipList = document.relationshipList;
-        instance.resetHistory(this);
-        suggestGuiControllerRedraw();
+        executeActionUnderState(DocumentState.FILE_LOADING,()->
+        {
+            cleanUpAllGuiListeners();
+            this.classSet = document.classSet;
+            this.fileLocation = document.fileLocation;
+            this.relationshipList = document.relationshipList;
+            instance.resetHistory(this);
+            suggestGuiControllerRedraw();
+        });
     }
     /**
      * Rebinds every UMLClass,UMLRelationship... so on ... with the guiController.
@@ -543,15 +546,17 @@ public class UMLDocument implements Copyable<UMLDocument>
         umlClass.setClassName(umlClass.getClassName().replaceAll("\\s+", ""));
         
         //Remove for replacement!
-        UMLDocument.getInstance().removeClass(umlClass.getClassName(), false);
-        classSet.put(umlClass.getClassName(), umlClass);
-        
-        if(relationshipList.get(umlClass.getClassName()) == null)//No relationship exists...
+        UMLClass removedClass = UMLDocument.getInstance().removeClass(umlClass.getClassName(), false);
+        if(removedClass != null)
+            removedClass.disposeOfListener();
+        //Add relationships if they DNE
+        if(!relationshipList.containsKey(umlClass.getClassName()))
         {
             ArrayList<UMLRelationship> newList = new ArrayList<>();
             relationshipList.put(umlClass.getClassName(), newList);
         }
         
+        classSet.put(umlClass.getClassName(), umlClass);
         documentListners.forEach(o -> o.onClassAdded(umlClass));
         return true;//uhh...
     }
@@ -638,6 +643,7 @@ public class UMLDocument implements Copyable<UMLDocument>
         catch (Exception e) 
         {
             System.err.println("Error: " + e.getMessage());
+            e.printStackTrace();
         }
         finally
         {
@@ -662,6 +668,7 @@ public class UMLDocument implements Copyable<UMLDocument>
         catch (Exception e) 
         {
             System.err.println("Error: " + e.getMessage());
+            e.printStackTrace();
         }
         documentState = previousState;
         return temp;

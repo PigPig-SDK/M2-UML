@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import org.umlproject.UMLDocument;
 
 /**
  * Server is a class which manages existing connections, and establishes continuous connections.
@@ -154,19 +155,29 @@ public class Server extends Thread {
         //Ensure we are not causing race conditions...
         for(ClientHandler clientHandler : allClients)
         {
-            try
+            sendMessageToClient(netPacket, clientHandler);
+        }
+    }
+    /**
+     * Sends a network packet to all clients
+     * If a client cannot receive a message because they have been terminated, their thread gets shutdown.
+     * @param netPacket The network packet to transmit to all users
+     * @param client The client you want to send messages to
+     */
+    public synchronized void sendMessageToClient(NetworkPacket netPacket, ClientHandler client)
+    {
+        //Ensure we are not causing race conditions...
+        try
+        {
+            client.sendNetworkPacket(netPacket);
+        }
+        catch(IOException ex)
+        {
+            if("Socket closed".equalsIgnoreCase(ex.getMessage()))//Don't send messages to deadweight... Killem.
             {
-                clientHandler.sendNetworkPacket(netPacket);
-            }
-            catch(IOException ex)
-            {
-                if("Socket closed".equalsIgnoreCase(ex.getMessage()))//Don't send messages to deadweight... Killem.
-                {
-                    clientHandler.disconnect();//Stop talking to them...
-                }
+                client.disconnect();//Stop talking to them...
             }
         }
-        
     }
     /**
      * Shutsdown the current server.
@@ -246,6 +257,10 @@ public class Server extends Thread {
             }
         }
         return tempList;
+    }
+    public static NetworkPacket generateDocumentPacket()
+    {
+        return NetworkPacket.objectToNetworkPacket(NetworkManager.getTick(), PacketType.FULL_DOCUMENT, UMLDocument.getInstance());
     }
     /**
      * Gets the server
