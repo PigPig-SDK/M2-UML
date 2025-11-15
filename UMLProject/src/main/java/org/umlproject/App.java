@@ -9,6 +9,8 @@ import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import org.umlproject.UI.GuiController;
 
+import java.io.BufferedInputStream;
+
 public class App extends Application {
     
 
@@ -49,16 +51,16 @@ public class App extends Application {
         else if (buttonObject == buttonTerminal) {
             //Open terminal.. I'll let someone else figure that out.
             try{
-
                 //Terminal Launch: Assumes that terminalscript.cmd, javafxlibrary, and jar are in the same directory
                 String location = Main.class.getProtectionDomain().getCodeSource().
                         getLocation().getPath();
+                System.out.println(location);
                 location = location.substring(6, location.indexOf("!")) + " -terminal";
                 System.out.println(location);
                 Runtime.getRuntime().exec("cmd /c start " + location);
 
 
-            }
+                }
             catch (Exception e){
                 System.out.println("CMD Error");
             }

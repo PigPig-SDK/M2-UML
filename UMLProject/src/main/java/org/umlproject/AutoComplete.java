@@ -1,15 +1,15 @@
 package org.umlproject;
 
 import org.fusesource.jansi.AnsiConsole;
-import org.jline.reader.LineReader;
-import org.jline.reader.LineReaderBuilder;
-import org.jline.reader.impl.completer.StringsCompleter;
+import org.jline.reader.*;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 
 import java.util.*;
 
-public class AutoComplete implements DocumentListner{
+public class AutoComplete implements MementoListener<UMLDocument> {
+
+    private final ArrayList<String> defaultWordList;
 
     private final ArrayList<String> autoWordList;
 
@@ -24,14 +24,15 @@ public class AutoComplete implements DocumentListner{
      */
     private AutoComplete(){
 
-        this.autoWordList =  new ArrayList<>(Arrays.asList(
+        this.defaultWordList =  new ArrayList<>(Arrays.asList(
                 "add", "help", "list", "load", "quit", "remove", "rename", "save",
                 "class", "classes", "relationship", "method","field", "param", "params",
                 "byte", "short", "int", "integer", "long", "float", "double", "char", "character",
                 "bool", "boolean", "aggregation", "composition", "generalization", "realization"));
 
+        this.autoWordList = new ArrayList<>();
         reader = newLineReader();
-        UMLDocument.documentListners.add(this);
+        UMLDocument.getMemento().addListener(this);
 
     }
 
@@ -57,11 +58,20 @@ public class AutoComplete implements DocumentListner{
 
     private LineReader newLineReader(){
 
+        this.autoWordList.addAll(this.defaultWordList);
         AnsiConsole.systemInstall();
         try {
             if(terminal == null) terminal = TerminalBuilder.builder().system(true).build();
+            //Uses custom complete method with StringCompleter
             return LineReaderBuilder.builder().terminal(terminal)
-                    .completer(new StringsCompleter(this.autoWordList)).build();
+                    .completer((non, in, available) -> {
+                        String parsedIn = in.word().trim();
+                        for (String options : autoWordList) {
+                            if (parsedIn.isEmpty() || options.startsWith(parsedIn)) {
+                                available.add(new Candidate(options));
+                            }
+                        }
+                    }).build();
         }
         catch (Exception e){
             System.out.println("Error: " + e);
@@ -69,53 +79,6 @@ public class AutoComplete implements DocumentListner{
         }
     }
 
-    /**
-     * Adds a word to the line reader
-     *
-     * @param in - Word to be added
-     */
-    public void addWord(String in){
-
-        this.autoWordList.add(in);
-        reader = newLineReader();
-
-    }
-
-    /**
-     * Adds a set of words to the line reader
-     *
-     * @param in - Set to be added
-     */
-    public void addWordSet(Set<String> in){
-
-        this.autoWordList.addAll(in);
-        reader = newLineReader();
-
-    }
-
-    /**
-     * Removes a word from the line reader
-     *
-     * @param in - Word to be removed
-     */
-    public void removeWord(String in){
-
-        this.autoWordList.remove(in);
-        reader = newLineReader();
-
-    }
-
-    /**
-     * Removes a set of words from the line reader
-     *
-     * @param in - Set to be removed
-     */
-    public void removeWordSet(Set<String> in){
-
-        this.autoWordList.removeAll(in);
-        reader = newLineReader();
-
-    }
 
     /**
      * Reads a line. Used with the terminal launch option
@@ -131,76 +94,36 @@ public class AutoComplete implements DocumentListner{
         return reader.readLine(in);
     }
 
-    /**
-     * Interface method onClassRemove. Removes all relevant autocomplete words when a class is removed.
-     *
-     * @param umlClass - Class to be checked
-     */
+
     @Override
-    public void onClassRemove(UMLClass umlClass) {
-        removeWord(umlClass.getClassName());
-        if(!umlClass.getMethodsAll().isEmpty()){
-            for(String methodNames : umlClass.getMethodsAll().keySet()){
-                for(UMLMethod m : umlClass.getMethods(methodNames))    {
-                    removeWord(m.getMethodName());
-                    for(UMLParameter p : m.getParameters()){
-                        removeWord(p.getName());
+    public void update(Memento<UMLDocument> memento) {
+        this.autoWordList.clear();
+        //Add classes
+        this.autoWordList.addAll(memento.getInstance().getClassSet().keySet());
+        for(UMLClass currentClass : memento.getInstance().getClassSet().values()){
+            //Add class fields
+            this.autoWordList.addAll(currentClass.getFieldsAll().keySet());
+            //Add class methods
+            this.autoWordList.addAll(currentClass.getMethodsAll().keySet());
+            for(ArrayList<UMLMethod> currentMethodName : currentClass.getMethodsAll().values()){
+                for(UMLMethod currentOverloadedMethod : currentMethodName){
+                    for(UMLParameter currentParameter : currentOverloadedMethod.getParameters()){
+                        //Add method parameters
+                        this.autoWordList.add(currentParameter.getName());
                     }
                 }
             }
         }
-        if(!umlClass.getFieldsAll().isEmpty()){
-            removeWordSet(umlClass.getFieldsAll().keySet());
-        }
-    }
-
-    /**
-     * Interface method. Not used.
-     *
-     * @param umlClass - Not Used
-     */
-    @Override
-    public void onRelationshipRemove(UMLRelationship umlClass) {}
-
-    /**
-     * Interface method onClassAdded. Adds all relevant autocomplete words when a class is added.
-     *
-     * @param umlClass - Class to be checked
-     */
-    @Override
-    public void onClassAdded(UMLClass umlClass) {
-        addWord(umlClass.getClassName());
-        if(!umlClass.getMethodsAll().isEmpty()){
-            for(String methodNames : umlClass.getMethodsAll().keySet()){
-                for(UMLMethod m : umlClass.getMethods(methodNames))    {
-                    addWord(m.getMethodName());
-                    for(UMLParameter p : m.getParameters()){
-                        addWord(p.getName());
-                    }
+        
+        for(ArrayList<UMLRelationship> currentClassRelationships : memento.getInstance().getRelationshipList().values()){
+            for(UMLRelationship currentRelationship : currentClassRelationships){
+                if(currentRelationship.getRelationshipType() == RelationshipType.OTHER){
+                    //Add custom relationship type
+                    this.autoWordList.add(currentRelationship.getCustomNameType());
                 }
             }
         }
-        if(!umlClass.getFieldsAll().isEmpty()){
-            addWordSet(umlClass.getFieldsAll().keySet());
-        }
+        reader = newLineReader();
     }
 
-    /**
-     * Interface method. Not used.
-     *
-     * @param umlRelationship - Not Used
-     * @param isLoading - Not Used
-     */
-    @Override
-    public void onRelationshipAdded(UMLRelationship umlRelationship) {}
-
-    /**
-     * Interface method. Not used.
-     *
-     * @param umlDocument - Not Used
-     */
-    @Override
-    public void loadFile(UMLDocument umlDocument) {
-
-    }
 }
