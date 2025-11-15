@@ -10,6 +10,7 @@ import static javafx.scene.input.KeyCode.Z;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
+import org.umlproject.App;
 import org.umlproject.Main;
 import org.umlproject.UMLDocument;
 
@@ -34,7 +35,7 @@ public class GuiKeyBinds {
         addAccelerator(new KeyCodeCombination(KeyCode.F12), GuiController.getInstance().viewTerminalMenuItem);
         
         
-        Main.currentScene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+        App.currentScene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
             if(GuiController.getInstance() == null)//Cannot execute quickbind. The menu dosn't exist.
                 return;
           
