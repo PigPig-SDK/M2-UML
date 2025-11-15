@@ -16,6 +16,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Supplier;
 
 
@@ -64,16 +65,21 @@ public class UMLDocument implements Copyable<UMLDocument>
      */
     public static synchronized UMLDocument getInstance()
     {
-        if(instance == null)
+        if(instance == null)//Setup...
         {
-            resetInstance();
+            resetInstance(true);
         }
         return instance.getInstance();
     }
-    public static synchronized UMLDocument resetInstance()
+    public static synchronized UMLDocument resetInstance(boolean clearListeners)
     {
         UMLDocument doc = new UMLDocument(DEFAULT_FILEDIRECTORY);
-        instance = new Memento<UMLDocument>(doc);
+        if(clearListeners || instance == null)
+            instance = new Memento<UMLDocument>(doc);
+        else
+        {
+            instance.resetHistory(doc);
+        }
         return doc;
     }
     /**
@@ -494,8 +500,7 @@ public class UMLDocument implements Copyable<UMLDocument>
     public void clearFile()
     {
         cleanUpAllGuiListeners();
-        classSet.clear();
-        relationshipList.clear();
+        UMLDocument.resetInstance(false);
     }
     /**
      * Calls Cleanup on all listener instances
@@ -654,11 +659,12 @@ public class UMLDocument implements Copyable<UMLDocument>
             for (String classString : classSet.keySet()) {
                 umldoc.getClassSet().put(classString, classSet.get(classString).clone());
             }
+            
             for (String relatString : relationshipList.keySet()) {
                 Map<String, ArrayList<UMLRelationship>> copyRelatList = umldoc.getRelationshipList();
                 copyRelatList.put(relatString, new ArrayList<UMLRelationship>());
                 for (UMLRelationship relationship : relationshipList.get(relatString)) {
-                    copyRelatList.get(relatString).add(relationship);
+                    copyRelatList.get(relatString).add(relationship.clone());
                 }
             }
             return umldoc;

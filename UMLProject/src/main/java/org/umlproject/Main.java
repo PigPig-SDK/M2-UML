@@ -13,6 +13,8 @@ public class Main
         //Setup
         NetworkManager.initialize();
         UndoRedoManager.setupListener();
+        UMLDocument.resetInstance(true);
+        
         
         //If terminal launch option is requested. Override JAVAFX.
         if(args.length == 1 && args[0].equals(terminalLaunchString))

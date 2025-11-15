@@ -105,7 +105,17 @@ public final class Memento<T extends Copyable<T>>
         if(listeners.contains(mementoListener))        
             listeners.remove(mementoListener);
     }
-    
+    /**
+     * returns the listeners set.
+     * @return A fresh set of all listeners
+     */
+    public Set<MementoListener<T>> getListeners()
+    {
+        
+        Set<MementoListener<T>> cloneSet = new HashSet<>();
+        cloneSet.addAll(listeners);
+        return cloneSet;
+    }
     private void callListenersToUpdate()
     {
         for(MementoListener<T> mementoListener : listeners)
