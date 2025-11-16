@@ -2,3 +2,11 @@ Command design pattern: consists of the ExportCommand interface, CommandInvoker 
 This design pattern allows us to convert actions into objects and then have a generalized Invoker class that executes those actions via a comman interface. Having a generalized command invoker like this
 makes the project more scalable since now we don't have to rely on lots of conditional branching to decide which command we want our code to use, we can just create a new concrete command class and then
 have our Invoker execute the command's methods. This will make it easier to introduce new Commands on a whim as the project progresses.
+
+Singleton design pattern: Consists of the UMLDocument class. We used this design pattern because each instance of a UMLDocument represents a single specific UML diagram that the user is creating
+and this way each time the user loads a file they know for certain that it represents only a single UML diagram. That is we prevent any uncertainty about the state of the program by using a singleton. 
+This way there is no uncertainty about which UML diagram to display or which one is having a class added to it or a method modified etc.
+
+Model View Controller: The primary Model class is UMLDocument, the controller is the GuiController class, and the View is comprised of GuiClass and GuiRelationship in combination with our FXML file.
+We implemented this pattern to decouple the three core aspects of our code from each other to make it easier to track down and fix bugs in the code, as well as simplifying testing. The Model for example,
+can now be tested in isolation from the View and the Controller. Furthermore, MVC allowed us to implement the Memento design pattern directly on the Model.
