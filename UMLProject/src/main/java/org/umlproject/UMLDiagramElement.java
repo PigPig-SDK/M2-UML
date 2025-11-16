@@ -11,6 +11,10 @@ public abstract class UMLDiagramElement
 {
     transient protected DiagramElementListener listener;
     transient public static Set<DiagramElementListener> globalListeners = new HashSet();
+    /**
+     * Used for storing a elements 'last edit network time'
+     */
+    public long lastNetworkEditTime = 0;
     
     /**
      * @return the dynamic listener OR null

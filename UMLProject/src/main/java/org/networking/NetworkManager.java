@@ -44,7 +44,7 @@ public class NetworkManager {
         try
         {
             System.out.println("Starting host on : " + port);
-            serverManager = new Server(port);
+            serverManager = new Server(port, summonLocalClient);
             serverManager.setDaemon(true);
             serverManager.start();
         }
@@ -111,6 +111,7 @@ public class NetworkManager {
         setClientNull();
         setServerNull();
         NetworkDocumentListener.shutdownListener();
+        
     }
     /**
      * ONLY DO THIS IF YOU KNOW WHAT YOU ARE DOING!

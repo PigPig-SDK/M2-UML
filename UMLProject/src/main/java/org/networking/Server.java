@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import org.umlproject.UMLDocument;
 
 /**
  * Server is a class which manages existing connections, and establishes continuous connections.
@@ -37,11 +38,16 @@ public class Server extends Thread {
     private final Object clientLock = new Object();
     private Timer clientUpdateTimer;
     
+    
+    //Local client stuff
+    private boolean awaitingLocalClient = false;
+    private ClientHandler localClient = null;
+    
     /**
      * @param port The Port we are going to host under.
      * @throws java.io.IOException When the socket throws.
      */
-    public Server(int port) throws IOException
+    public Server(int port, boolean summonsLocalClient) throws IOException
     {
         this.port = port;
         this.serverSocket = new ServerSocket(port);
@@ -74,6 +80,7 @@ public class Server extends Thread {
         sendMessageToAllClients(timestep);
         currentTick++;
     }
+    
     @Override
     public void run()
     {
@@ -92,7 +99,12 @@ public class Server extends Thread {
                 //Assign new thread for the client...
                 Thread clientThread = new ClientHandler(socket, dataInputStream, dataOutputStream);
                 synchronized (clientLock) {
-                    clients.add((ClientHandler) clientThread);
+                    if(awaitingLocalClient)
+                    {
+                        this.awaitingLocalClient = false;
+                        this.localClient = (ClientHandler)clientThread;
+                    }
+                    this.clients.add((ClientHandler) clientThread);
                 }
                 clientThread.setDaemon(true);
                 clientThread.start();
@@ -123,7 +135,7 @@ public class Server extends Thread {
      * If a client cannot receive a message because they have been terminated, their thread gets shutdown.
      * @param netPacket The network packet to transmit to all users
      */
-    public void sendMessageToAllClients(NetworkPacket netPacket)
+    public synchronized void sendMessageToAllClients(NetworkPacket netPacket)
     {
         //Send without blacklist
         sendMessageToAllClients(netPacket, new HashSet<ClientHandler>());
@@ -134,7 +146,7 @@ public class Server extends Thread {
      * @param netPacket The network packet to transmit to all users
      * @param blackList
      */
-    public void sendMessageToAllClients(NetworkPacket netPacket, Set<ClientHandler> blackList)
+    public synchronized void sendMessageToAllClients(NetworkPacket netPacket, Set<ClientHandler> blackList)
     {
         
         Set<ClientHandler> allClients = getClients();
@@ -143,19 +155,29 @@ public class Server extends Thread {
         //Ensure we are not causing race conditions...
         for(ClientHandler clientHandler : allClients)
         {
-            try
+            sendMessageToClient(netPacket, clientHandler);
+        }
+    }
+    /**
+     * Sends a network packet to all clients
+     * If a client cannot receive a message because they have been terminated, their thread gets shutdown.
+     * @param netPacket The network packet to transmit to all users
+     * @param client The client you want to send messages to
+     */
+    public synchronized void sendMessageToClient(NetworkPacket netPacket, ClientHandler client)
+    {
+        //Ensure we are not causing race conditions...
+        try
+        {
+            client.sendNetworkPacket(netPacket);
+        }
+        catch(IOException ex)
+        {
+            if("Socket closed".equalsIgnoreCase(ex.getMessage()))//Don't send messages to deadweight... Killem.
             {
-                clientHandler.sendNetworkPacket(netPacket);
-            }
-            catch(IOException ex)
-            {
-                if("Socket closed".equalsIgnoreCase(ex.getMessage()))//Don't send messages to deadweight... Killem.
-                {
-                    clientHandler.disconnect();//Stop talking to them...
-                }
+                client.disconnect();//Stop talking to them...
             }
         }
-        
     }
     /**
      * Shutsdown the current server.
@@ -235,5 +257,17 @@ public class Server extends Thread {
             }
         }
         return tempList;
+    }
+    public static NetworkPacket generateDocumentPacket()
+    {
+        return NetworkPacket.objectToNetworkPacket(NetworkManager.getTick(), PacketType.FULL_DOCUMENT, UMLDocument.getInstance());
+    }
+    /**
+     * Gets the server
+     * @return NULL if no local client exists.
+     */
+    public ClientHandler getServerClient()
+    {
+        return localClient;
     }
 }

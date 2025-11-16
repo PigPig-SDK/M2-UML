@@ -516,6 +516,7 @@ public class GuiController implements DocumentListner {
     }
     @Override
     public void onClassRemove(UMLClass umlClass) {
+        System.out.println("CLeaned up. " + umlClass.getListener());
         umlClass.disposeOfListener();
     }
     @Override

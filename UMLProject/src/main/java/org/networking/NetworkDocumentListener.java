@@ -69,8 +69,15 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
     private void sendClassUpdate(UMLClass objectClass)
     {
         if(invalidDocumentStates.contains(UMLDocument.getDocumentState())) return;
+        NetworkPacket networkPacket = NetworkPacket.objectToNetworkPacket(objectClass.lastNetworkEditTime + 1, PacketType.CLASS_EDIT, objectClass);//Try for a new edit time
         
-        System.out.println("Update class : " + objectClass.getClassName());
+        try {
+            NetworkManager.getClientInstance().sendNetworkPacket(networkPacket);    
+        } 
+        catch (Exception e) {}
+        
+        
+        
     }
     /**
      * Sends the new location for a UMLClass.
@@ -80,6 +87,12 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
         if(invalidDocumentStates.contains(UMLDocument.getDocumentState())) return;
         
         Client client = NetworkManager.getClientInstance();//Our local client.
+        if(client == null)
+        {
+            client.disconnect();
+            return;
+        }
+        
         //Construct packet
         NetworkPacket networkPacket = NetworkPacket.objectToNetworkPacket(
                 NetworkManager.getTick(), 
@@ -108,6 +121,8 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
     
     /*---------------------------[ Listeners ]---------------------------*/
     @Override public void update(Object desiredElement) {
+        
+        if(invalidDocumentStates.contains(UMLDocument.getDocumentState())) return;
         switch(desiredElement)
         {
             case UMLClass umlClass -> sendClassUpdate(umlClass);
@@ -152,5 +167,10 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
     }
     /* Those no good do nothings */
     @Override public void cleanUp() {}//Do nothing!
-    @Override public void loadFile(UMLDocument umlDocument) {}//Do nothing!
+    @Override public void loadFile(UMLDocument umlDocument) {
+        Server server = NetworkManager.getServerInstance();
+        if(server == null)
+            return;//Not hosting...
+        server.sendMessageToAllClients(Server.generateDocumentPacket());
+    }//Do nothing!
 }
