@@ -29,7 +29,7 @@ public class GuiCopyPasteTests {
         GuiCopyPaste.getInstance().copy();
         GuiCopyPaste.getInstance().paste();
         // Assert
-        assertTrue(UMLDocument.getInstance().getClassSet().containsKey("test-copy"));
+        assertTrue(UMLDocument.getInstance().getClassSet().containsKey("test-copy1"));
     }
 
     @Test
@@ -42,8 +42,8 @@ public class GuiCopyPasteTests {
         GuiCopyPaste.getInstance().copy();
         GuiCopyPaste.getInstance().paste();
         // Assert
-        assertTrue(UMLDocument.getInstance().getClassSet().containsKey("test-copy"));
-        assertTrue(UMLDocument.getInstance().getClassSet().containsKey("test2-copy"));
+        assertTrue(UMLDocument.getInstance().getClassSet().containsKey("test-copy1"));
+        assertTrue(UMLDocument.getInstance().getClassSet().containsKey("test2-copy1"));
     }
 
     @Test
@@ -57,7 +57,7 @@ public class GuiCopyPasteTests {
         GuiCopyPaste.getInstance().copy();
         GuiCopyPaste.getInstance().paste();
         // Assert
-        assertNotNull(UMLDocument.getInstance().getRelationship("test-copy", "test2-copy"));
+        assertNotNull(UMLDocument.getInstance().getRelationship("test-copy1", "test2-copy1"));
     }
 
     @Test
@@ -73,8 +73,8 @@ public class GuiCopyPasteTests {
         GuiCopyPaste.getInstance().copy();
         GuiCopyPaste.getInstance().paste();
         // Assert
-        assertNotNull(UMLDocument.getInstance().getRelationship("test-copy", "test2-copy"));
-        assertNotNull(UMLDocument.getInstance().getRelationship("test2-copy", "test3-copy"));
+        assertNotNull(UMLDocument.getInstance().getRelationship("test-copy1", "test2-copy1"));
+        assertNotNull(UMLDocument.getInstance().getRelationship("test2-copy1", "test3-copy1"));
     }
 
     @Test
@@ -87,8 +87,8 @@ public class GuiCopyPasteTests {
         GuiCopyPaste.getInstance().paste();
         GuiCopyPaste.getInstance().paste();
         // Assert
-        assertTrue(UMLDocument.getInstance().getClassSet().containsKey("test-copy"));
-        assertTrue(UMLDocument.getInstance().getClassSet().containsKey("test-copy-copy"));
+        assertTrue(UMLDocument.getInstance().getClassSet().containsKey("test-copy1"));
+        assertTrue(UMLDocument.getInstance().getClassSet().containsKey("test-copy2"));
     }
     @Test
     public void copyPasteMultipleTimes(){
@@ -101,9 +101,9 @@ public class GuiCopyPasteTests {
         GuiCopyPaste.getInstance().copy();
         GuiCopyPaste.getInstance().paste();
         // Assert
-        assertTrue(UMLDocument.getInstance().getClassSet().containsKey("test-copy"));
-        assertTrue(UMLDocument.getInstance().getClassSet().containsKey("test-copy-copy"));
-        assertTrue(UMLDocument.getInstance().getClassSet().containsKey("test-copy-copy-copy"));
+        assertTrue(UMLDocument.getInstance().getClassSet().containsKey("test-copy1"));
+        assertTrue(UMLDocument.getInstance().getClassSet().containsKey("test-copy2"));
+        assertTrue(UMLDocument.getInstance().getClassSet().containsKey("test-copy1-copy1"));
     }
 
     @Test
@@ -118,8 +118,8 @@ public class GuiCopyPasteTests {
         GuiCopyPaste.getInstance().paste();
         GuiCopyPaste.getInstance().paste();
         // Assert
-        assertNotNull(UMLDocument.getInstance().getRelationship("test-copy", "test2-copy"));
-        assertNotNull(UMLDocument.getInstance().getRelationship("test-copy-copy", "test2-copy-copy"));
+        assertNotNull(UMLDocument.getInstance().getRelationship("test-copy1", "test2-copy1"));
+        assertNotNull(UMLDocument.getInstance().getRelationship("test-copy2", "test2-copy2"));
     }
 
     @Test
@@ -135,11 +135,9 @@ public class GuiCopyPasteTests {
         GuiCopyPaste.getInstance().copy();
         GuiCopyPaste.getInstance().paste();
         // Assert
-        assertNotNull(UMLDocument.getInstance().getRelationship("test-copy", "test2-copy"));
-        assertNotNull(UMLDocument.getInstance().getRelationship("test-copy-copy",
-                "test2-copy-copy-copy"));
-        assertNotNull(UMLDocument.getInstance().getRelationship("test-copy-copy-copy",
-                "test2-copy-copy"));
+        assertNotNull(UMLDocument.getInstance().getRelationship("test-copy1", "test2-copy1"));
+        assertNotNull(UMLDocument.getInstance().getRelationship("test-copy2", "test2-copy2"));
+        assertNotNull(UMLDocument.getInstance().getRelationship("test-copy1-copy1", "test2-copy1-copy1"));
     }
 
 
