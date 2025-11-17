@@ -102,9 +102,13 @@ public class GuiCopyPaste {
                 {
                     UMLClass classCopy = umlClass.clone();
 
-                    while(UMLDocument.getInstance().getClassSet().containsKey(classCopy.getClassName())){
-                        classCopy.setClassName(classCopy.getClassName() + "-copy");
+                    int increment = 1;
+                    while(UMLDocument.getInstance().getClassSet().containsKey(classCopy.getClassName() +
+                            "-copy" + increment)){
+                        increment++;
                     }
+                    classCopy.setClassName(classCopy.getClassName() + "-copy" + increment);
+
 
                     if(!Main.isInTerminalMode()){
                         classCopy.setLocation(umlClass.getLocation().add(
