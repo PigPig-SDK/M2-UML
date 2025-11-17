@@ -1,6 +1,7 @@
 package org.umlproject;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -54,6 +55,9 @@ public class App extends Application {
                 //Terminal Launch: Assumes that terminalscript.cmd, javafxlibrary, and jar are in the same directory
                 String location = Main.class.getProtectionDomain().getCodeSource().
                         getLocation().getPath();
+                if(!location.contains("!")){
+                    Main.main(new String[]{"-terminal"});
+                }
                 System.out.println(location);
                 location = location.substring(6, location.indexOf("!")) + " -terminal";
                 System.out.println(location);

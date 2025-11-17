@@ -162,4 +162,8 @@ public class GuiSelect {
             }
         }
     }
+
+    public ArrayList<UISelectable> getSelectedObjects(){
+        return selectedObjects;
+    }
 }

@@ -30,6 +30,8 @@ public class GuiKeyBinds {
         addAccelerator(new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN), "New");
         addAccelerator(new KeyCodeCombination(KeyCode.A, KeyCombination.CONTROL_DOWN), "Select All");
         addAccelerator(new KeyCodeCombination(KeyCode.DELETE, KeyCombination.CONTROL_DOWN), "Delete");
+        addAccelerator(new KeyCodeCombination(KeyCode.C, KeyCombination.CONTROL_DOWN), "Copy");
+        addAccelerator(new KeyCodeCombination(KeyCode.V, KeyCombination.CONTROL_DOWN), "Paste");
         addAccelerator(new KeyCodeCombination(KeyCode.F1), "Help");
         addAccelerator(new KeyCodeCombination(KeyCode.F2), "About UML Editor");
         addAccelerator(new KeyCodeCombination(KeyCode.F12), GuiController.getInstance().viewTerminalMenuItem);
@@ -97,6 +99,16 @@ public class GuiKeyBinds {
                 //Redo
                 case Y ->{
                     GuiController.getInstance().editRedo();
+                    event.consume();
+                }
+                //Copy all (CTRL+C)
+                case C ->{
+                    GuiCopyPaste.getInstance().copy();
+                    event.consume();
+                }
+                //Copy all (CTRL+V)
+                case V ->{
+                    GuiCopyPaste.getInstance().paste();
                     event.consume();
                 }
             }
