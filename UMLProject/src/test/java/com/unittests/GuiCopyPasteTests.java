@@ -3,26 +3,28 @@ package com.unittests;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.umlproject.Main;
-import org.umlproject.RelationshipType;
+import org.umlproject.*;
 import org.umlproject.UI.GuiCamera;
 import org.umlproject.UI.GuiController;
 import org.umlproject.UI.GuiCopyPaste;
-import org.umlproject.UMLDocument;
-import org.umlproject.UMLRelationship;
+
+import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class GuiCopyPasteTests {
 
-    public static Stage mainStage;
-    public static Scene currentScene;
+    @BeforeEach
+    void setUp() {
+        UMLDocument.getInstance().getClassSet().clear();
+        UMLDocument.getInstance().getRelationshipList().clear();
+    }
     @Test
     public void copySingleClass(){
         // Arrange
-        UMLDocument doc = UMLDocument.getInstance();
-        doc.addClass("test");
+        UMLDocument.getInstance().addClass("test");
         // Act
         GuiCopyPaste.getInstance().copy();
         GuiCopyPaste.getInstance().paste();
