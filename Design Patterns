@@ -1,0 +1,27 @@
+Command design pattern: consists of the ExportCommand interface, CommandInvoker class, ScreenshotCommand class, and the exportScreenshotMenuAction() method in the GuiController class on lines 274-298.
+This design pattern allows us to convert actions into objects and then have a generalized Invoker class that executes those actions via a comman interface. Having a generalized command invoker like this
+makes the project more scalable since now we don't have to rely on lots of conditional branching to decide which command we want our code to use, we can just create a new concrete command class and then
+have our Invoker execute the command's methods. This will make it easier to introduce new Commands on a whim as the project progresses.
+
+Singleton design pattern: Consists of the UMLDocument class at lines 25, and 66-84. We used this design pattern because each instance of a UMLDocument represents a single specific UML diagram that the user is creating
+and this way each time the user loads a file they know for certain that it represents only a single UML diagram. That is we prevent any uncertainty about the state of the program by using a singleton. 
+This way there is no uncertainty about which UML diagram to display or which one is having a class added to it or a method modified etc.
+
+Model View Controller: The primary Model class is UMLDocument, the controller is the GuiController class, and the View is comprised of GuiClass and GuiRelationship in combination with our FXML file.
+We implemented this pattern to decouple the three core aspects of our code from each other to make it easier to track down and fix bugs in the code, as well as simplifying testing. The Model for example,
+can now be tested in isolation from the View and the Controller. Furthermore, MVC allowed us to implement the Memento design pattern directly on the Model.
+
+Memento design pattern: This was used for undo/redo to save the state of the current UMLDocument. When the user 'undoes' their last action, the program returns to a previously saved state inside the memento class.
+This design pattern was chosen for its implementation simplicity. Once deep coppies can be made from our UMLDocument, than memento is a breeze to implement.
+Memento.java is our implementation for design pattern, it was chosen to be a generic type for testability.
+
+Observer design pattern: The observer design pattern helped us quantify 'updates' inside our UMLDocument and its associated classes. This was useful when it came to undo/redo, as the observer of our main document would need to know when to create
+a new memento state. UndoRedoManager.java is the implementation of this. The observer pattern simplified the codebase in many ways while also providing some refactoring challenges. After the required re-tooling to ensure consistency in observer 'updates',
+the process for adding more listeners (such as for network updates) has become trivial. The observer can also be found in: GuiRelationship.java, GuiController.java, GuiClass.java, NetworkDocumentListener.java and AutoComplete.java.
+All of these classes listen for some sort of update from their 'attached' object.
+
+State design pattern: Our document observer was great at first, but then we came to realize some operations would call an update multiple times. One example of this is deleting multiple objects at once. 
+Before storing a document state, when each object was deleted an undo/redo save state would be made. This was counterintuitive to the user, as their 'deletion' action was only one keypress, yet it may accomplished many deletions at once. 
+To solve this we added 'state' to each action, specifically 'DocumentState.java'. Whenever the observer notices a change, the observer checks what state the UMLDocument was under during said change. 
+So now when deleting multiple objects at once, we can place the UMLDocument under 'MASS_OPERATION' before the operations are executed. Allowing the UMLDocument observers to ignore specific mass actions. Once all actions are executed, the document returns to the initial state it was in before execution.
+The implementation of the state changing process can be seen in UMLDocument's function "executeActionUnderState", in which a lambda of code will be executed under a specified document state.

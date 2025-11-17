@@ -20,7 +20,7 @@ public class GuiDebugging {
     
     public static void drawLocationalDot(Point2D location, double lifetime, double radius, Color color)
     {
-        if(GuiController.singleton == null || GuiController.singleton.getWorld() == null)
+        if(GuiController.getInstance() == null || GuiController.getInstance().getWorld() == null)
         {
             System.out.println("GuiDebugging::showBounds() ERROR! World/GuiController DNE! Something is completely screwed!");
             return;
@@ -28,7 +28,7 @@ public class GuiDebugging {
         
         Circle circle = new Circle(location.getX(), location.getY(), radius);
         circle.setStroke(color);
-        GuiController.singleton.getWorld().getChildren().add(circle);
+        GuiController.getInstance().getWorld().getChildren().add(circle);
         destroyNodeAfterTime(circle, lifetime);
     }
     /**
@@ -36,7 +36,7 @@ public class GuiDebugging {
      */
     public static void showBounds(Rectangle2D bounds, double lifetime, double strokeWidth, Color color)
     {
-        if(GuiController.singleton == null || GuiController.singleton.getWorld() == null)
+        if(GuiController.getInstance() == null || GuiController.getInstance().getWorld() == null)
         {
             System.out.println("GuiDebugging::showBounds() ERROR! World/GuiController DNE! Something is completely screwed!");
             return;
@@ -50,7 +50,7 @@ public class GuiDebugging {
         for (Line line : new Line[]{top, bottom, left, right}) {
             line.setStrokeWidth(strokeWidth);
             line.setStroke(color);
-            GuiController.singleton.getWorld().getChildren().add(line);
+            GuiController.getInstance().getWorld().getChildren().add(line);
             destroyNodeAfterTime(line, lifetime);
         }
     }

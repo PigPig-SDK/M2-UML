@@ -1,14 +1,18 @@
 package org.umlproject.UI;
 
+import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.input.KeyCode;
 import static javafx.scene.input.KeyCode.N;
+import static javafx.scene.input.KeyCode.Z;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
+import org.umlproject.App;
 import org.umlproject.Main;
+import org.umlproject.UMLDocument;
 
 public class GuiKeyBinds {
     /**
@@ -19,6 +23,8 @@ public class GuiKeyBinds {
     {
         //Setup CTRL+S for "Save"
         addAccelerator(new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN), "Save");
+        addAccelerator(new KeyCodeCombination(KeyCode.Z, KeyCombination.CONTROL_DOWN), "Undo");
+        addAccelerator(new KeyCodeCombination(KeyCode.Y, KeyCombination.CONTROL_DOWN), "Redo");
         addAccelerator(new KeyCodeCombination(KeyCode.O, KeyCombination.CONTROL_DOWN), "Open…");
         addAccelerator(new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN), "Save As…");
         addAccelerator(new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN), "New");
@@ -26,23 +32,30 @@ public class GuiKeyBinds {
         addAccelerator(new KeyCodeCombination(KeyCode.DELETE, KeyCombination.CONTROL_DOWN), "Delete");
         addAccelerator(new KeyCodeCombination(KeyCode.F1), "Help");
         addAccelerator(new KeyCodeCombination(KeyCode.F2), "About UML Editor");
+        addAccelerator(new KeyCodeCombination(KeyCode.F12), GuiController.getInstance().viewTerminalMenuItem);
         
-        Main.currentScene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
-            if(GuiController.singleton == null)//Cannot execute quickbind. The menu dosn't exist.
+        
+        App.currentScene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+            if(GuiController.getInstance() == null)//Cannot execute quickbind. The menu dosn't exist.
                 return;
           
             switch(event.getCode())
             {
                 case F2->
                 {
-                    GuiController.singleton.aboutHelpMenuAction();
+                    GuiController.getInstance().aboutHelpMenuAction();
                 }
                 case F1->
                 {
-                    GuiController.singleton.infoHelpMenuAction();
+                    GuiController.getInstance().infoHelpMenuAction();
+                }
+                case F12->
+                {
+                    CheckMenuItem terminalButton = GuiController.getInstance().viewTerminalMenuItem;
+                    GuiConsole.terminalOverrideOut(!terminalButton.isSelected());//Override output, this is required due to a javafx bug...
+                    terminalButton.setSelected(!terminalButton.isSelected());
                 }
             }
-            
             
             if (!event.isControlDown())
                 return;
@@ -51,29 +64,39 @@ public class GuiKeyBinds {
             {
                 case S -> {
                     if(event.isShiftDown())//CTRL+SHIFT+S for "Save As"
-                        GuiController.singleton.saveAsFileMenuAction();
+                        GuiController.getInstance().saveAsFileMenuAction();
                     else//CTRL+S for Save
-                        GuiController.singleton.saveFileMenuAction();
+                        GuiController.getInstance().saveFileMenuAction();
                     event.consume();
                 }
                 //Select all (CTRL+A)
                 case A -> {
-                    GuiController.singleton.selectAllEditMenuAction();
+                    GuiController.getInstance().selectAllEditMenuAction();
                     event.consume();
                 }
                 //New file (CTRL+N)
                 case N -> {
-                    GuiController.singleton.newFileMenuAction();
+                    GuiController.getInstance().newFileMenuAction();
                     event.consume();
                 }
                 //Open file (CTRL+O)
                 case O -> {
-                    GuiController.singleton.openFileMenuAction();
+                    GuiController.getInstance().openFileMenuAction();
                     event.consume();
                 }
                 //Delete all (CTRL+DELETE)
                 case DELETE -> {
                     GuiSelect.getInstance().deleteAllSelected();
+                    event.consume();
+                }
+                //UNDO
+                case Z ->{
+                    GuiController.getInstance().editUndo();
+                    event.consume();
+                }
+                //Redo
+                case Y ->{
+                    GuiController.getInstance().editRedo();
                     event.consume();
                 }
             }
@@ -88,18 +111,29 @@ public class GuiKeyBinds {
      */
     public static void addAccelerator(KeyCodeCombination keyAccelerator, String menuItemName)
     {
-        if(GuiController.singleton == null)//Ensure not some odd case.
+        if(GuiController.getInstance() == null)//Ensure not some odd case.
             return;
         //Search for menuitem in our menu bar.
-        MenuItem saveMenuItem =  findMenuItemFromMenuBar(GuiController.singleton.getMenuBar(),menuItemName);
+        MenuItem saveMenuItem =  findMenuItemFromMenuBar(GuiController.getInstance().getMenuBar(),menuItemName);
         if(saveMenuItem == null)
         {
             System.out.println(String.format("GuiKeyCodes::setupKeyCodes() : '%s' SUBMENU NOT FOUND!",menuItemName));
             return;
         }
-        KeyCombination saveKeybind = keyAccelerator;
-        saveMenuItem.setAccelerator(saveKeybind);
+        addAccelerator(keyAccelerator, saveMenuItem);
     }
+    /**
+     * PURELY DECORATION! No function comes from this!
+     * This will inform the user of specific keybinds in the main menu. (CTRL+S, ect...)
+     * @param keyAccelerator The key accelerator to add to the specified menu
+     * @param menuItem A MenuItem which the accelerator be applied.
+     */
+    public static void addAccelerator(KeyCodeCombination keyAccelerator, MenuItem menuItem)
+    {
+        KeyCombination saveKeybind = keyAccelerator;
+        menuItem.setAccelerator(saveKeybind);
+    }
+    
     /**
      * Realistically, there should be no need to search for these menus.
      * However, to limit people poking in the .FXML file, this has been created.

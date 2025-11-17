@@ -13,7 +13,7 @@ public class CommandQuit extends BaseCommand
     public void act(String[] args)
     {
         System.out.println("Have a nice day!");
-        TerminalHandler.isRunning = false;//Stop the loop, basically closing the program...
+        System.exit(0);//Die.
     }
     @Override
     public String description()

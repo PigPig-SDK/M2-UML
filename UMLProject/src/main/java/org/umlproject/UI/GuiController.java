@@ -1,7 +1,11 @@
 package org.umlproject.UI;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
 import java.util.*;
+
+import javafx.scene.control.TextField;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -28,16 +32,27 @@ import org.umlproject.UMLClass;
 import org.umlproject.UMLDocument;
 import org.umlproject.UMLRelationship;
 import org.umlproject.DocumentListner;
-import org.umlproject.UIListener;
+import org.umlproject.DiagramElementListener;
+import org.umlproject.DocumentState;
 
 public class GuiController implements DocumentListner {
     
-    public static GuiController singleton;
+    private static GuiController singleton;
+
+    /**
+     * @return NULL if javaFX didn't setup the singleton
+     */
+    public static GuiController getInstance()
+    {
+        //Note. This singleton can be null!
+        //In terminal mode, this will 100% be null!
+        return singleton;
+    }
     
     @FXML
-    private Group world;//'World' is where all UI objects should live.
+    private Pane world;//'World' is where all UI objects should live.
     @FXML
-    private TextField console;
+    public TextField console;
     @FXML
     private MenuBar menubar;
     @FXML
@@ -45,9 +60,13 @@ public class GuiController implements DocumentListner {
     @FXML 
     private Text workspaceText;
     @FXML
-    private AnchorPane consoleAnchorPane;
+    public AnchorPane consoleAnchorPane;
     @FXML
     private VBox rootVBox;
+    @FXML
+    public TextArea consoleOut;
+    @FXML
+    public CheckMenuItem viewTerminalMenuItem;
 
     final double initialClassBoxWidthOffset = 100;
     final double initialClassBoxHeightOffset = 100;
@@ -59,7 +78,7 @@ public class GuiController implements DocumentListner {
     @FXML
     private Button addRelationshipButton;
     
-    public Group getWorld(){return this.world;}
+    public Pane getWorld(){return this.world;}
     public TextField getTerminal(){return this.console;}
     public MenuBar getMenuBar(){return this.menubar;}
     public Pane getViewPane(){return this.viewpane;}
@@ -72,9 +91,11 @@ public class GuiController implements DocumentListner {
 
         singleton = this;
 
-        world.setLayoutX(0.0);
-        world.setLayoutY(0.0);
-
+  
+        this.world.setLayoutX(0.0);
+        this.world.setLayoutY(0.0);
+        this.world.setPickOnBounds(false);
+        
         VBox.setVgrow(viewpane, Priority.ALWAYS);
         if(rootVBox != null){
             this.rootVBox.setAlignment(Pos.TOP_LEFT);
@@ -86,25 +107,36 @@ public class GuiController implements DocumentListner {
         this.addClassButton.setDefaultButton(false);
         this.menubar.setViewOrder(-100);
         this.console.setViewOrder(-100);
+        this.consoleOut.setViewOrder(-100);
         this.workspaceText.setViewOrder(1000000);//To the back of the universe
-
-        setTerminalVisibility(false);
     }
-
 
     @FXML
     public void aboutHelpMenuAction() {
-        AboutWindow.showAbout();
+        GuiAboutWindow.showAbout();
     }
 
     /**
      * This is called after initialize. 
      * This is because some things are not fully initialized during the call of 'initialize'.
      */
-    public void lateInitialization() {
+    public void lateInitialization() { 
+        
+        UMLClass.initializationLocation = (UMLClass umlclass) ->
+        {
+            //If we are not loading
+            if((UMLDocument.getDocumentState() == DocumentState.NORMAL))
+            {
+                return findSafeLocation(GuiCamera.getScreenCenter(), extractGuiClasses());
+            }
+            else
+                return umlclass.getLocation();
+        };
+        
         GuiResizeManager.bindToSizeUpdates();
         GuiCamera.setupCamera();
         GuiKeyBinds.setupKeyBinds();
+        GuiConsole.setupConsole();
         //Setup button icons.
         applyIconsToButtons(addClassButton,"/org/umlproject/icons/new_class.png");
         applyIconsToButtons(addRelationshipButton,"/org/umlproject/icons/new_relationship.png");
@@ -129,6 +161,7 @@ public class GuiController implements DocumentListner {
             saveLocationSet = false;
             GuiCamera.setCameraLocation(Point2D.ZERO);//Reset camera...
             UMLDocument.getInstance().clearFile();
+            
         }
     }
     /**
@@ -142,6 +175,22 @@ public class GuiController implements DocumentListner {
             return;
         String pathString = GuiFileBrowser.removeFileExtension(outputDirectory.getAbsolutePath());
         UMLDocument.getInstance().load(pathString);
+    }
+    /**
+     * Handles the "open" menu action.
+     */
+    @FXML
+    public void editUndo()
+    {
+        UMLDocument.undoMementoState();
+    }
+    /**
+     * Handles the "open" menu action.
+     */
+    @FXML
+    public void editRedo()
+    {
+        UMLDocument.redoMementoState();
     }
     /**
      * Handles the "Save" menu action.
@@ -199,8 +248,54 @@ public class GuiController implements DocumentListner {
     @FXML
     private void consoleSubmit()
     {
-        TerminalHandler.runCommand(console.getText());
-        console.setText("");
+        GuiConsole.terminalOverrideOut(true);
+        String cmd = console.getText();
+        List<String> restrictedCommands = GuiConsole.restrictedCommands;
+        
+        for (String SearchValue : restrictedCommands) {
+        if (cmd.contains(SearchValue)) {
+            System.out.println("This command is unavailable in GUI mode");
+            console.setText("");
+            return;
+        }
+      }
+        
+    TerminalHandler.runCommand(console.getText());
+    console.setText("");
+        
+    }
+
+    /**
+     * Handler for the Export Screenshot action within the Gui's file drop down menu. This method functions
+     * as the "client" in the command design pattern. It is responsible for retrieving
+     * the necessary information for constructing the concrete ScreenshotCommand object
+     * and then passing it to the invoker object that calls execute().
+     */
+    @FXML
+    private void exportScreenshotMenuAction() throws IOException {
+        //Generate an alert in case the file path is invalid and the screenshot cannot be saved.
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle("Failed To Export Image");
+        alert.setHeaderText("Screenshot cannot be saved in this location.");
+        alert.setContentText("Ensure a valid file path and then retry exporting.");
+
+        //Retrieve the location where the image should be exported.
+        File exportLocation = GuiFileBrowser.promptForScreenshotExportDirectory();
+        if(exportLocation == null){
+            alert.showAndWait();
+            return;
+        }
+        //Create a ScreenshotCommand instance to call execute() on.
+        ScreenshotCommand newScreenshot = new ScreenshotCommand(exportLocation, world);
+        CommandInvoker invoker = new CommandInvoker(newScreenshot);
+        try {
+            //Export the image.
+            invoker.invoke();
+        }
+        catch(IOException e){
+            alert.showAndWait();
+            return;
+        }
     }
     //----------------- UMLGuiController Interface -----------------
 
@@ -293,15 +388,12 @@ public class GuiController implements DocumentListner {
     }
     //This method will bind a guiClass listener to the new umlClass
     @Override
-    public void onClassAdded(UMLClass umlClass, boolean isLoading) {
-        if(!isLoading)//The class addition is from 'newclass button'
-        {
-            Point2D safeLocation = findSafeLocation(GuiCamera.getScreenCenter(), extractGuiClasses());
-            umlClass.setLocation(safeLocation);
-        }
+    public void onClassAdded(UMLClass umlClass) {
         GuiClass guiClass = new GuiClass(world, umlClass);
         umlClass.setListener(guiClass);
-        if(!isLoading)//Calls this late so items are setup...
+        
+        if(UMLDocument.getDocumentState() != DocumentState.FILE_LOADING &&
+           UMLDocument.getDocumentState() != DocumentState.MEMENTO_STATE_RESET)//select newly added items.
         {
             GuiSelect.getInstance().resetSelect();//Clear our selection...
             GuiSelect.getInstance().selectUiElement(guiClass);
@@ -317,7 +409,7 @@ public class GuiController implements DocumentListner {
         ArrayList<String> umlClassKeys = new ArrayList<>(umlClassMap.keySet());
         List<GuiClass> guiClasses = new ArrayList<GuiClass>();
         for(String umlClass : umlClassKeys){
-            guiClasses.add((GuiClass)umlClassMap.get(umlClass).getUIListener());
+            guiClasses.add((GuiClass)umlClassMap.get(umlClass).getListener());
 
         }
         return guiClasses;
@@ -326,48 +418,72 @@ public class GuiController implements DocumentListner {
     /**
      * This method will compare a test Rectangles dimensions and location against that of every
      * Rectangle background in each of the GuiClass objects that already exist. If there is no intersection
-     * between the test Rectangle and an existion one, then the location of the test Rectangle will be returned.
+     * between the test Rectangle and an existing one, then the location of the test Rectangle will be returned.
+     * Utilizes a closed set to store locations that have been previously checked or are about to be checked
+     * and utilizes an open set for locations that still need to be checked.
+     * @param currentCameraCenter, the current camera center coordinates
      * @param existingClasses, list of existing GuiClasses
-     * @return, safe location for a new class box
+     * @return, safe location for a new class box.
      */
-    public static Point2D findSafeLocation(Point2D location, List<GuiClass> existingClasses){
-        final double NEW_CLASS_WIDTH = 250.0;
-        final double NEW_CLASS_HEIGHT = 150.0;
+    public static Point2D findSafeLocation(Point2D currentCameraCenter, List<GuiClass> existingClasses) {
+        //Initial class boxes have the following specifications.
+        final double NEW_CLASS_WIDTH = 350.0;
+        final double NEW_CLASS_HEIGHT = 350.0;
         final double PADDING = 20.0;
+        Point2D testLocation = currentCameraCenter;
 
-        double currentX = location.getX();
-        double currentY = location.getY();
-        final double STEP = NEW_CLASS_WIDTH + PADDING;
-        final int MAX_COLUMNS = 5;
-        int currentColumn = 0;
+        //Sstep sizes for calculating the horizontal and vertical neighbor tiles of the current testLocation.
+        final double STEPX = NEW_CLASS_WIDTH + PADDING;
+        final double STEPY = NEW_CLASS_HEIGHT + PADDING;
 
-        while(true){
-            Rectangle2D newRect = new Rectangle2D(currentX, currentY, NEW_CLASS_WIDTH, NEW_CLASS_HEIGHT);
+        //OpenSet for tile locations to check.
+        //ClosedSet stores tile locations we have already checked or that are in openSet.
+        Queue<Point2D> openSet = new LinkedList<>();
+        Set<Point2D> closedSet = new HashSet<>();
+
+        //Initialize both sets with currentCameraLocation
+        openSet.offer(currentCameraCenter);
+        closedSet.add(currentCameraCenter);
+
+        //Begin search for a safe location. Compare a testRectangle against all rectangle bounds of
+        //existing classes.
+        while (!openSet.isEmpty()) {
+            testLocation = openSet.poll();
+            Rectangle2D newRect = new Rectangle2D(testLocation.getX(), testLocation.getY(), NEW_CLASS_WIDTH, NEW_CLASS_HEIGHT);
             boolean overlaps = false;
-            for(GuiClass existingClass : existingClasses){
-                if(existingClass == null)
-                    continue;
+            for (GuiClass existingClass : existingClasses) {
+                if (existingClass == null) continue;
+                
                 Rectangle2D existingBounds = existingClass.getRectBounds();
-                if(existingBounds != null && newRect.intersects(existingBounds)){
+                if (existingBounds != null && newRect.intersects(existingBounds)) {
                     overlaps = true;
+                    //testLocation overlapped with existing tile, so create Up, Down, Left, Right neighbors
+                    Point2D up = new Point2D(testLocation.getX(), testLocation.getY() - STEPY);
+                    Point2D down = new Point2D(testLocation.getX(), testLocation.getY() + STEPY);
+                    Point2D left = new Point2D(testLocation.getX() - STEPX, testLocation.getY());
+                    Point2D right = new Point2D(testLocation.getX() + STEPX, testLocation.getY());
+                    
+                    //Compare neighbors with closed set. If not in closed set, add to both open and closed sets.
+                    for(Point2D checkLocation : List.of(left, right, up, down))//Order chosen because most aspect ratios are wider than they are tall
+                    {
+                        if (!closedSet.contains(checkLocation)) {
+                            closedSet.add(checkLocation);
+                            openSet.offer(checkLocation);
+                        }
+                    }
                     break;
                 }
             }
-            if(!overlaps){
-                return new Point2D(currentX, currentY);
-            }
-            currentX += STEP;
-            currentColumn++;
-            if(currentColumn >= MAX_COLUMNS){
-                currentX = PADDING;
-                currentY += STEP;
-                currentColumn = 0;
+            //if no overlapping, break from while loop and return testLocation
+            if (!overlaps) {
+                break;
             }
         }
+        return testLocation;
     }
 
     @Override
-    public void onRelationshipAdded(UMLRelationship umlRelationship, boolean isLoading) {
+    public void onRelationshipAdded(UMLRelationship umlRelationship) {
         GuiRelationship guiRelationship = new GuiRelationship(world, umlRelationship);
         umlRelationship.setListener(guiRelationship);
     }
@@ -376,7 +492,7 @@ public class GuiController implements DocumentListner {
      */
     private void redrawAllRelationships()
     {
-        for(UIListener uIListener : UMLDocument.getInstance().getUIListeners())
+        for(DiagramElementListener uIListener : UMLDocument.getInstance().getUIListeners())
         {
             if(uIListener instanceof GuiRelationship rgui)
             {
@@ -400,11 +516,12 @@ public class GuiController implements DocumentListner {
     }
     @Override
     public void onClassRemove(UMLClass umlClass) {
-        umlClass.disposeOfGuiListener();
+        System.out.println("CLeaned up. " + umlClass.getListener());
+        umlClass.disposeOfListener();
     }
     @Override
     public void onRelationshipRemove(UMLRelationship umlRelationship) {
-        umlRelationship.disposeOfGuiListener();
+        umlRelationship.disposeOfListener();
     }
 
     private void applyIconsToButtons(Button button, String iconDirectory)
@@ -425,15 +542,5 @@ public class GuiController implements DocumentListner {
         button.setOnMouseExited(e -> iconView.setOpacity(0.7));
         //Set graphic
         button.setGraphic(iconView);
-    }
-    /**
-     * Used for hiding console.
-     * @param isShown : If the console should be displayed
-     */
-    public void setTerminalVisibility(boolean isShown)
-    {
-        this.console.setVisible(isShown);
-        this.console.setManaged(isShown);
-        this.consoleAnchorPane.setVisible(isShown);
     }
 }

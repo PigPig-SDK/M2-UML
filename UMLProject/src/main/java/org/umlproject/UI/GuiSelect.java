@@ -11,7 +11,9 @@ import org.umlproject.UMLRelationship;
 import java.util.ArrayList;
 import java.util.Optional;
 import javafx.animation.AnimationTimer;
-import org.umlproject.UIListener;
+import org.umlproject.App;
+import org.umlproject.DiagramElementListener;
+import org.umlproject.DocumentState;
 
 public class GuiSelect {
 
@@ -24,7 +26,7 @@ public class GuiSelect {
      */
     private GuiSelect(){
         selectedObjects = new ArrayList<>();
-        Main.currentScene.setOnMouseClicked(e -> {
+        App.currentScene.setOnMouseClicked(e -> {
             GuiSelect.getInstance().checkResetSelect(e);
             e.consume();
         });
@@ -109,38 +111,41 @@ public class GuiSelect {
      */
     public void deleteAllSelected(){
 
-        //Checks if any items are selected
-        if(selectedObjects.isEmpty()){
-            return;
-        }
-        //Displays confirmation box for deletion
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setContentText(String.format("Are you sure you want to delete %d items?", selectedObjects.size()));
-        Optional choice = alert.showAndWait();
+        UMLDocument.executeActionUnderState(DocumentState.MASS_OPERATION,()->{
+            //Checks if any items are selected
+            if(selectedObjects.isEmpty()){
+                return;
+            }
+            //Displays confirmation box for deletion
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setContentText(String.format("Are you sure you want to delete %d items?", selectedObjects.size()));
+            Optional choice = alert.showAndWait();
 
-        if(choice.get() == ButtonType.CANCEL){
-            return;
-        }
-        //Deletes all classes.
-        UMLClass errorClass;
-        for(UISelectable selectable : selectedObjects){
-            
-            if(selectable instanceof GuiClass guiClass)//Manage deletion of classes
-            {
-                String className = guiClass.getParentClass().getClassName();
-                errorClass = UMLDocument.getInstance().removeClass(className);
-                if(errorClass == null)
-                    System.out.println("An error occurred removing class ");
+            if(choice.get() == ButtonType.CANCEL){
+                return;
             }
-            else if (selectable instanceof GuiRelationship guiRelationship)//Handle deletion of relationships
-            {
-                UMLRelationship relationship = guiRelationship.getRelationship();
-                if(relationship == null)//This is a 100% valid possibility. Classes removes relationship before we do.
-                    continue;
-                UMLDocument.getInstance().removeRelationship(relationship.getSourceName(), relationship.getDestinationName());
+            //Deletes all classes.
+            UMLClass errorClass;
+            for(UISelectable selectable : selectedObjects){
+
+                if(selectable instanceof GuiClass guiClass)//Manage deletion of classes
+                {
+                    String className = guiClass.getParentClass().getClassName();
+                    errorClass = UMLDocument.getInstance().removeClass(className);
+                    if(errorClass == null)
+                        System.out.println("An error occurred removing class ");
+                }
+                else if (selectable instanceof GuiRelationship guiRelationship)//Handle deletion of relationships
+                {
+                    UMLRelationship relationship = guiRelationship.getRelationship();
+                    if(relationship == null)//This is a 100% valid possibility. Classes removes relationship before we do.
+                        continue;
+                    UMLDocument.getInstance().removeRelationship(relationship.getSourceName(), relationship.getDestinationName());
+                }
             }
-        }
-        selectedObjects.clear();
+            selectedObjects.clear();
+        });
+        UMLDocument.saveMementoState();
     }
     /**
      * Selects all elements
@@ -148,7 +153,7 @@ public class GuiSelect {
     public void selectAll()
     {
         resetSelect();
-        for(UIListener listner : UMLDocument.getInstance().getUIListeners())
+        for(DiagramElementListener listner : UMLDocument.getInstance().getUIListeners())
         {
             if(listner instanceof UISelectable selectable)
             {

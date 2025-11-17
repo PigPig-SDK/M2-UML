@@ -22,12 +22,12 @@ public interface DocumentListner {
      * @param umlClass that was added
      * @param isLoading If the addition is due to the document reloading
      */
-    void onClassAdded(UMLClass umlClass, boolean  isLoading);
+    void onClassAdded(UMLClass umlClass);
     /**
      * @param umlRelationship that was added
      * @param isLoading If the addition is due to the document reloading
      */
-    void onRelationshipAdded(UMLRelationship umlRelationship, boolean  isLoading);
+    void onRelationshipAdded(UMLRelationship umlRelationship);
     /**
      * @param umlDocument When a UMLDocument is loaded, this is called.
      */

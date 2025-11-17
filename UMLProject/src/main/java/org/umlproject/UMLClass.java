@@ -2,11 +2,18 @@ package org.umlproject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.function.Function;
 import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
 import org.umlproject.UI.GuiClass;
 
-public class UMLClass extends UMLDiagramElement {
+public class UMLClass extends UMLDiagramElement implements Cloneable{
+    
+    /**
+     * Used for overriding the default spawn location.
+     */
+    public static Function<UMLClass, Point2D> initializationLocation = (umlclass) -> Point2D.ZERO;
+    
     private String className;
     /**
      * use hashmap for UMLDataFields where a unique DataField name is the key
@@ -24,10 +31,16 @@ public class UMLClass extends UMLDiagramElement {
     
     public Point2D getLocation() { return new Point2D(locationX, locationY); }
     
-    public void setLocation(Point2D location) { 
+    public void setLocation(Point2D location, boolean informGlobals) { 
+        setLocationSilent(location);
+        updateListnerAboutLocation(informGlobals);
+    }
+    /**
+     * Set the location of this class without alerting the horde of observers
+     */
+    public void setLocationSilent(Point2D location) { 
         this.locationX = location.getX();
         this.locationY = location.getY();
-        updateGUILocation();
     }
     
     /**
@@ -50,9 +63,12 @@ public class UMLClass extends UMLDiagramElement {
         if(className == null || className.isEmpty() || fields == null || methods == null){
             throw new IllegalArgumentException("The arguments provided are invalid!");
         }
+
         this.className = className;
         this.fields = fields;
         this.methods = methods;
+        if(initializationLocation != null)
+            setLocationSilent(initializationLocation.apply(this));
     }
     /**
      * getter method for a single field
@@ -106,7 +122,7 @@ public class UMLClass extends UMLDiagramElement {
      */
     public void setClassName(String name) {
         this.className = name;
-        updateGUI();
+        updateListener(true);
     }
     /**
      * addField method will add a new UMLDataField object to the fields hashMap under the
@@ -129,7 +145,7 @@ public class UMLClass extends UMLDiagramElement {
         }
 
         fields.put(name, field);
-        updateGUI();
+        updateListener(true);
         return true;
     }
 
@@ -151,7 +167,8 @@ public class UMLClass extends UMLDiagramElement {
         //The != null ensures a boolean value is returned
         boolean isRemoved = fields.remove(fieldName) != null;
         if(isRemoved)//Update our GUI listener.
-            updateGUI();
+            updateListener(true);
+
         return isRemoved;
     }
 
@@ -177,7 +194,7 @@ public class UMLClass extends UMLDiagramElement {
         //update field name
         field.setName(newName);
         fields.put(newName, field);
-        updateGUI();
+        updateListener(true);
         return true;
     }
 
@@ -250,7 +267,7 @@ public class UMLClass extends UMLDiagramElement {
         target.setMethodName(newName);
         newList.add(target);
         methods.put(newName, newList);
-        updateGUI();
+        updateListener(true);
         return true;
     }
 
@@ -298,8 +315,9 @@ public class UMLClass extends UMLDiagramElement {
 
         //no duplicates found. Safe to add to list.
         list.add(method);
+
         methods.put(name, list);
-        updateGUI();
+        updateListener(true);
         return true;
     }
 
@@ -319,13 +337,21 @@ public class UMLClass extends UMLDiagramElement {
         if (methodName == null || methodName.isEmpty()) {
             return false;
         }
-        //    private HashMap<String, ArrayList<UMLMethod>> methods;
 
         if(!methods.containsKey(methodName))
             return  false;
         boolean isRemoved = methods.get(methodName).remove(index) != null;
         if(isRemoved)
-            updateGUI();
+            updateListener(true);
+        /*
+        //TODO: Implement in a new way later.
+        AutoComplete.getInstance().removeWord(methodName);
+        if(!getMethods(methodName).get(index).getParameters().isEmpty()){
+            for(UMLParameter p :  getMethods(methodName).get(index).getParameters()) {
+                AutoComplete.getInstance().removeWord(p.getName());
+            }
+        }
+        */
         return isRemoved;
     }
 
@@ -363,7 +389,7 @@ public class UMLClass extends UMLDiagramElement {
         for (UMLMethod method : list) {
             if (method.getParameters().equals(parameters)) {
                 method.addParameter(newParameter);
-                updateGUI();
+                updateListener(true);
                 return true;
             }
         }
@@ -399,7 +425,7 @@ public class UMLClass extends UMLDiagramElement {
         for (UMLMethod method : overloads) {
             if (method.getParameters().equals(parameters)) {
                 boolean removed = method.removeParameter(paramToRemove);
-                if(removed) updateGUI();
+                if(removed) updateListener(true);
                 return removed;
             }
         }
@@ -434,7 +460,7 @@ public class UMLClass extends UMLDiagramElement {
             if (method.getParameters().equals(oldParameters)) {
                 //match found, so swap parameter with parameter list
                 method.changeParameter(paramToRemove, newParameters);
-                updateGUI();
+                updateListener(true);
                 return true;
             }
         }
@@ -470,7 +496,7 @@ public class UMLClass extends UMLDiagramElement {
             if (method.getParameters().equals(oldParameters)) {
                 //match found, so swap parameter with parameter list
                 method.setListParameters(newParameters);
-                updateGUI();
+                updateListener(true);
                 return true;
             }
         }
@@ -548,5 +574,31 @@ public class UMLClass extends UMLDiagramElement {
     @Override
     public int hashCode() {
         return this.className.hashCode();
+    }
+    
+    @Override
+    public UMLClass clone()
+    {
+       return UMLDocument.executeActionUnderState(DocumentState.CLONING, ()-> {
+
+           UMLClass umlc = new UMLClass(this.className);
+           umlc.setLocationSilent(this.getLocation());
+           for (UMLDataField dataField : this.fields.values()) {
+               umlc.addField(dataField.clone());
+           }
+           for (String methodName : this.methods.keySet()) {
+               umlc.methods.put(methodName, new ArrayList<UMLMethod>());//Allocate the new memory for the item...
+               for (UMLMethod method : this.methods.get(methodName)) {
+                   try {
+                       umlc.methods.get(methodName).add(method.clone());
+                   } catch (CloneNotSupportedException e)//Exception. Do skip over the class.
+                   {
+                       continue;
+                   }
+               }
+           }
+           umlc.listener = this.listener;//NOTE THIS IS THE ONLY THING THAT SHOULDNT BE A DEEP COPY!
+           return umlc;
+       });
     }
 }

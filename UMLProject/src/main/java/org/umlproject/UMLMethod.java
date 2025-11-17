@@ -11,7 +11,7 @@ import java.util.ArrayList;
  * name, list of parameters, as well as a boolean variable to indicate if method is static or not.
  *But for the mean time all that is relevant is the methodName and the arrayList of parameters.
  */
-public class UMLMethod
+public class UMLMethod implements Cloneable
 {
     /** The below is functionality that this method will most likely need in the future
      *private boolean isStatic;
@@ -59,6 +59,7 @@ public class UMLMethod
             }
 
         }
+
         parameters.add(param);
         return true;
     }
@@ -76,6 +77,7 @@ public class UMLMethod
                 return true;
             }
         }
+
         return false;
     }
 
@@ -144,10 +146,9 @@ public class UMLMethod
     /**setter method for list of parameters
      * @param parameters, the new list of paramters for the method
      */
-    public void setListParameters(ArrayList<UMLParameter> parameters){
-        this.parameters = parameters;
+    public void setListParameters(ArrayList<UMLParameter> parameters){        
+        this.parameters =(parameters == null)? new ArrayList<UMLParameter>(): parameters;
     }
-
 
     /** toString method will convert method into a string consisting of its name
      * and a list of its parameters
@@ -194,5 +195,16 @@ public class UMLMethod
     public int hashCode() {
         return this.methodName.hashCode();
     }
-
+    @Override
+    public UMLMethod clone() throws CloneNotSupportedException {
+        UMLMethod clone = new UMLMethod();
+        //deep copy
+        clone.methodName = this.methodName;
+        for(UMLParameter parameter : parameters)
+        {
+            clone.addParameter(parameter.clone());
+        }
+        
+        return clone;
+    }
 }

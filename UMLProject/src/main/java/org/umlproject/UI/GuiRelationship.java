@@ -5,6 +5,7 @@ import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Polygon;
@@ -14,15 +15,15 @@ import static org.umlproject.RelationshipType.COMPOSITION;
 import static org.umlproject.RelationshipType.GENERALIZATION;
 import static org.umlproject.RelationshipType.OTHER;
 import static org.umlproject.RelationshipType.REALIZATION;
-import org.umlproject.UIListener;
 import org.umlproject.UMLClass;
 import org.umlproject.UMLDocument;
 import org.umlproject.UMLRelationship;
+import org.umlproject.DiagramElementListener;
 
-public final class GuiRelationship implements UIListener<UMLRelationship>, UISelectable{
+public final class GuiRelationship implements DiagramElementListener<UMLRelationship>, UISelectable{
 
     private UMLRelationship relationship;
-    private Group world;
+    private Pane world;
     private Line lineMain, lineOutline, selectionOutline;
     private boolean isSelected = false;
     private Node relationshipDiagramElement;
@@ -33,7 +34,7 @@ public final class GuiRelationship implements UIListener<UMLRelationship>, UISel
     private static final double MIN_LINE_DISTANCE_FOR_TEXT = 500;
     
     
-    public GuiRelationship(Group world, UMLRelationship umlRelationship)
+    public GuiRelationship(Pane world, UMLRelationship umlRelationship)
     {
         this.world = world;
         this.relationship = umlRelationship;
@@ -162,7 +163,10 @@ public final class GuiRelationship implements UIListener<UMLRelationship>, UISel
      */
     void placeRelationshipMarker(UMLClass endClass, RelationshipType desiredElement)
     {
-        Rectangle2D targetBounds = ((GuiClass)endClass.getUIListener()).getRectBounds();
+        if(endClass == null || endClass.getListener() == null)
+            return;
+        
+        Rectangle2D targetBounds = ((GuiClass)endClass.getListener()).getRectBounds();
         // In the future when we untangle the wire of relationships, only this function needs to change.
         Double angle = computeLineAngle();
         

@@ -48,7 +48,6 @@ public class UMLMethodTest {
         assertEquals("calculateArea", method.getMethodName());
         assertEquals(2, method.getParameters().size());
     }
-
     @Test
     @DisplayName("Constructor throws exception for null or empty method name")
         // Ensures IllegalArgumentException is thrown if method name is null or blank.

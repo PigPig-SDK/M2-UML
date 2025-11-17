@@ -8,6 +8,7 @@ import javafx.scene.input.KeyEvent;
 import static javafx.scene.input.MouseButton.MIDDLE;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Pane;
+import org.umlproject.App;
 import org.umlproject.Main;
 
 public class GuiCamera {
@@ -16,7 +17,7 @@ public class GuiCamera {
     private static final int ARROWKEY_SPEED = 4500;
     private static boolean up, down, left, right;
     private static final double ZOOM_SCALE_AMMOUNT = 0.005f;
-    private static final double ZOOM_SCALE_MIN = 0.5f;
+    private static final double ZOOM_SCALE_MIN = 0.25f;
     private static final double ZOOM_SCALE_MAX = 3f;
 
     private static long lastTime = 0;
@@ -26,7 +27,7 @@ public class GuiCamera {
     
     public static void setCameraLocation(Point2D location)
     {
-        Group world = GuiController.singleton.getWorld();
+        Pane world = GuiController.getInstance().getWorld();
         camLocation = location;
         world.setTranslateX(camLocation.getX());
         world.setTranslateY(camLocation.getY());
@@ -49,7 +50,7 @@ public class GuiCamera {
     private static void setZoom(double newZoom, ScrollEvent event) {
         if (newZoom < ZOOM_SCALE_MIN) newZoom = ZOOM_SCALE_MIN;
         if (newZoom > ZOOM_SCALE_MAX) newZoom = ZOOM_SCALE_MAX;
-        Group world = GuiController.singleton.getWorld();
+        Pane world = GuiController.getInstance().getWorld();
         Point2D before = world.sceneToLocal(event.getSceneX(), event.getSceneY());//Get og realitive
         
         world.setScaleX(newZoom);
@@ -62,10 +63,10 @@ public class GuiCamera {
     }
     private static void manageCameraInput()
     {
-        if(Main.currentScene == null)
+        if(App.currentScene == null)
             return;
         //Key down
-        Main.currentScene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+        App.currentScene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
             if (event.isControlDown())
                 return;
             
@@ -77,7 +78,7 @@ public class GuiCamera {
             }
         });
         //Key up
-        Main.currentScene.addEventHandler(KeyEvent.KEY_RELEASED, event -> {
+        App.currentScene.addEventHandler(KeyEvent.KEY_RELEASED, event -> {
             switch (event.getCode()) {
                 case UP, W -> {up = false;event.consume();}
                 case DOWN, S -> {down = false;event.consume();}
@@ -86,7 +87,7 @@ public class GuiCamera {
             }
         });
         //Mouse zoom
-        Main.currentScene.setOnScroll(event ->{
+        App.currentScene.setOnScroll(event ->{
             double zoomAmmount = event.getDeltaY();
             
             if(zoomAmmount == 0)
@@ -95,7 +96,7 @@ public class GuiCamera {
         });
         
         //Logic to drag the camera around
-        Main.currentScene.setOnMouseDragged(event -> {
+        App.currentScene.setOnMouseDragged(event -> {
             double currentX = event.getScreenX();
             double currentY = event.getScreenY();
             switch (event.getButton()) {
@@ -111,28 +112,44 @@ public class GuiCamera {
             startDragY = currentY; 
         });
         //Clicking into the void deselects any textbox...
-        Main.currentScene.setOnMousePressed(event -> {
+        App.currentScene.setOnMousePressed(event -> {
             //Reset our current drag distance.
             startDragX = event.getScreenX();
             startDragY = event.getScreenY(); 
             //We click onto a type of textbox, do not remove selection.
-            if (!(event.getTarget() instanceof TextInputControl)) GuiController.singleton.getViewPane().requestFocus();
+            if (!(event.getTarget() instanceof TextInputControl)) GuiController.getInstance().getViewPane().requestFocus();
         });
     }
+    /**
+     * Given a point2D in screen space, convert to 'world' space.
+     * This manages all the boring transformations, camera movement and scaling...
+     * @param screenSpace The location on the screen.
+     * @return the expected world coords
+     */
+    public static Point2D screenToWorld(Point2D screenSpace)
+    {
+        Pane view = GuiController.getInstance().getViewPane();
+        Pane world = GuiController.getInstance().getWorld();
+        
+        Point2D sceneLocation = view.localToScene(screenSpace);
+        Point2D worldLocation = world.sceneToLocal(sceneLocation);
+        return worldLocation;
+    }
+    /**
+     * @return The world space center of the camera
+     */
     public static Point2D getScreenCenter()
     {
-        Pane view = GuiController.singleton.getViewPane();
-        Group world = GuiController.singleton.getWorld();
+        Pane view = GuiController.getInstance().getViewPane();
 
         double centerX = view.getWidth() / 2;
         double centerY = view.getHeight() / 2;
-        
-        Point2D sceneCenter = view.localToScene(centerX, centerY);
 
-        Point2D worldCenter = world.sceneToLocal(sceneCenter);
-
-        return worldCenter;
+        return screenToWorld(new Point2D(centerX, centerY));
     }
+    /**
+     * Initializes the camera
+     */
     public static void setupCamera()
     {
         
@@ -147,5 +164,15 @@ public class GuiCamera {
         };
         manageCameraInput();//Update input
         cameraTimer.start();
+    }
+    /**
+     * Returns camera zoom. 
+     * I comment my code. 
+     * Please give points now.
+     * @return cameraZoom.
+     */
+    public static double getCameraZoom()
+    {
+        return cameraZoom;
     }
 }

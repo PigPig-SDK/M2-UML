@@ -1,0 +1,176 @@
+package org.networking;
+
+import java.io.IOException;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import org.umlproject.DiagramElementListener;
+import org.umlproject.DocumentListner;
+import org.umlproject.DocumentState;
+import org.umlproject.UMLClass;
+import org.umlproject.UMLDiagramElement;
+import org.umlproject.UMLDocument;
+import org.umlproject.UMLRelationship;
+import org.umlproject.UndoRedoManager;
+
+/**
+ * This class acts as a clients 'DOCUMENT LISTENER'
+ * 
+ * When updates happen, the client sends them to the server.
+ */
+public class NetworkDocumentListener implements DiagramElementListener, DocumentListner {
+
+    private static final Set<DocumentState> invalidDocumentStates = 
+            Set.of( DocumentState.FILE_LOADING, 
+                    DocumentState.CLONING, 
+                    DocumentState.MEMENTO_STATE_RESET,
+                    DocumentState.NETWORK_OPERATION);
+    
+    private static NetworkDocumentListener instance;
+    
+    private static final double dragSendDelay = 0.02;//~50 times a second
+    private static long dragLastSent = 0;
+    
+    /**
+     * Get the memento of instance listener.
+     * NOTE: This can be null! That is because setupListener() is expected to be called.
+     */
+    public NetworkDocumentListener getInstance()
+    {
+        //Null is an intended return value.
+        return instance;
+    }
+    /**
+     * Setup and bind the listener.
+     */
+    public static void setupListener()
+    {
+        if(instance != null)
+            return;
+        
+        instance = new NetworkDocumentListener();
+        UMLDiagramElement.globalListeners.add(instance);
+        UMLDocument.documentListners.add(instance);
+    }
+    /**
+     * Unbind the listener
+     */
+    public static void shutdownListener()
+    {
+        if(instance == null)
+            return;
+        UMLDiagramElement.globalListeners.remove(instance);
+        UMLDocument.documentListners.remove(instance);
+        instance = null;
+    }
+    
+    /**
+     * Sends the updated class to the server for validation
+     */
+    private void sendClassUpdate(UMLClass objectClass)
+    {
+        if(invalidDocumentStates.contains(UMLDocument.getDocumentState())) return;
+        NetworkPacket networkPacket = NetworkPacket.objectToNetworkPacket(objectClass.lastNetworkEditTime + 1, PacketType.CLASS_EDIT, objectClass);//Try for a new edit time
+        
+        try {
+            NetworkManager.getClientInstance().sendNetworkPacket(networkPacket);    
+        } 
+        catch (Exception e) {}
+        
+        
+        
+    }
+    /**
+     * Sends the new location for a UMLClass.
+     */
+    private void sendClassTranslation(UMLClass objectClass)
+    {
+        if(invalidDocumentStates.contains(UMLDocument.getDocumentState())) return;
+        
+        Client client = NetworkManager.getClientInstance();//Our local client.
+        if(client == null)
+        {
+            client.disconnect();
+            return;
+        }
+        
+        //Construct packet
+        NetworkPacket networkPacket = NetworkPacket.objectToNetworkPacket(
+                NetworkManager.getTick(), 
+                PacketType.ELEMENT_MOVED, 
+                new PayloadMoveElement( objectClass.getClassName(),
+                                        (int)objectClass.getLocation().getX(), 
+                                        (int)objectClass.getLocation().getY()));
+        try
+        {
+            client.sendNetworkPacket(networkPacket);
+        }
+        catch(IOException ex)
+        {
+            System.err.println("Failed to send class location packet!" + ex.getMessage());
+        }
+    }
+    /**
+     * Sends the updated relationship to the server for validation
+     */
+    private void sendRelationshipUpdate(UMLRelationship objectLRelationship)
+    {
+        if(invalidDocumentStates.contains(UMLDocument.getDocumentState())) return;
+        
+        System.out.println("Update relationship : " + objectLRelationship.getSourceName());
+    }
+    
+    /*---------------------------[ Listeners ]---------------------------*/
+    @Override public void update(Object desiredElement) {
+        
+        if(invalidDocumentStates.contains(UMLDocument.getDocumentState())) return;
+        switch(desiredElement)
+        {
+            case UMLClass umlClass -> sendClassUpdate(umlClass);
+            case UMLRelationship umlRelationship -> sendRelationshipUpdate(umlRelationship);
+
+            default ->
+            {
+                System.out.println("Got update from unknown source!");
+            }
+        }
+    }
+    @Override public void updateLocation(Object desiredElement) {
+        
+        // This code checks for 'mid dragging' updates.
+        //We still send 'mid dragging' updates, just at a slower rate than what javafx gives.
+        if(UMLDocument.getDocumentState().equals(DocumentState.SILENT_MOVEMENT))
+        {
+            long delta = System.nanoTime() - dragLastSent;
+            double refireDelay = TimeUnit.SECONDS.toNanos(1) * dragSendDelay;//toNanos dosnt take 'double', jank workaround.
+            
+            if(delta < refireDelay) return;//Does not quality for sending network packet.
+            dragLastSent = System.nanoTime();
+        }
+        
+        switch(desiredElement)
+        {
+            case UMLClass umlClass -> sendClassTranslation(umlClass);
+            default ->
+            {
+                System.out.println("Got location update from invalid source!");
+            }
+        }
+    }
+    @Override public void onClassAdded(UMLClass umlClass) { sendClassUpdate(umlClass); }
+    @Override public void onRelationshipAdded(UMLRelationship umlRelationship) { sendRelationshipUpdate(umlRelationship); }
+    
+    @Override public void onClassRemove(UMLClass umlClass) {
+        System.out.println("TODO: IMPLEMENT onClassRemove!");
+    }
+    @Override public void onRelationshipRemove(UMLRelationship umlClass) {
+        System.out.println("TODO: IMPLEMENT onRelationshipRemove!");
+    }
+    /* Those no good do nothings */
+    @Override public void cleanUp() {}//Do nothing!
+    @Override public void loadFile(UMLDocument umlDocument) {
+        Server server = NetworkManager.getServerInstance();
+        if(server == null)
+            return;//Not hosting...
+        server.sendMessageToAllClients(Server.generateDocumentPacket());
+    }//Do nothing!
+}

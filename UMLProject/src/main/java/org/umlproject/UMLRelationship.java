@@ -5,7 +5,7 @@ import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
 import static org.umlproject.RelationshipType.OTHER;
 
-public class UMLRelationship  extends UMLDiagramElement
+public class UMLRelationship  extends UMLDiagramElement implements Cloneable
 {
     private String sourceName;
     private String destinationName;
@@ -31,19 +31,35 @@ public class UMLRelationship  extends UMLDiagramElement
         this.destinationName = destinationName;
         this.relationshipType = relationshipType;
     }
-    
+    /**
+     * @return the source name
+     */
     public String getSourceName()
     {
         return this.sourceName;
     }
+    /**
+     * @return the destination name
+     */
     public String getDestinationName()
     {
         return this.destinationName;
     }
-    public RelationshipType getRelationshipType(){return this.relationshipType;}
-    
-    public String getCustomNameType(){return this.customNameType;}
-    
+    /**
+     * @return the relationship type
+     */
+    public RelationshipType getRelationshipType(){
+        return this.relationshipType;
+    }
+    /**
+     * @return NULL or the custom name
+     */
+    public String getCustomNameType(){
+        return this.customNameType;
+    }
+    /**
+     * @return The relationship name as a string with support for custom names.
+     */
     public String getRelationshipName()
     {
         if(this.relationshipType == OTHER)
@@ -51,24 +67,41 @@ public class UMLRelationship  extends UMLDiagramElement
         
         return this.relationshipType.toString();
     }
+    /**
+     * Sets a new source name, calls to update listener
+     * @param newName The new source name
+     */
     public void setSourceName(String newName)
     {
         this.sourceName = newName;
-        updateGUI();
+        updateListener(true);
     }
+    /**
+     * Calls the update destination name, calls to update listener
+     * @param newName The new destination name
+     */
     public void setDestinationName(String newName)
     {
         this.destinationName = newName;
-        updateGUI();
+        updateListener(true);
     }
+    /**
+     * Sets the relationship type, calls to update listener
+     * @param newType The new type.
+     */
     public void setRelationshipType(RelationshipType newType){
         this.relationshipType = newType;
-        updateGUI();
+        updateListener(true);
     }
+    /**
+     * Sets the relationship type, calls to update listener
+     * Automatically assigns relationshipType to OTHER, enforcing a new custom relationship
+     * @param newType The new type.
+     */
     public void setCustomNameType(String newTypeCustom){
         this.relationshipType = OTHER;
         this.customNameType = newTypeCustom;
-        updateGUI();
+        updateListener(true);
     }
     @Override
     public String toString() {
@@ -98,5 +131,17 @@ public class UMLRelationship  extends UMLDiagramElement
         hash = 29 * hash + Objects.hashCode(this.destinationName);
         hash = 29 * hash + Objects.hashCode(this.customNameType);
         return hash;
+    }
+    
+    @Override
+    public UMLRelationship clone()
+    {
+        return UMLDocument.executeActionUnderState(DocumentState.CLONING, ()-> {
+            UMLRelationship relationship = this.relationshipType == RelationshipType.OTHER ?
+                    new UMLRelationship(sourceName, destinationName, relationshipType, customNameType) :
+                    new UMLRelationship(sourceName, destinationName, relationshipType);
+            relationship.setListener(this.listener);
+            return relationship;
+        });
     }
 }

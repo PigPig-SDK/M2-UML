@@ -3,15 +3,25 @@ package com.unittests;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
+import org.umlproject.DiagramElementListener;
+import org.umlproject.DocumentListner;
+import org.umlproject.DocumentState;
+import org.umlproject.RelationshipType;
+import static org.umlproject.RelationshipType.GENERALIZATION;
 import org.umlproject.UMLClass;
+import org.umlproject.UMLDiagramElement;
 import org.umlproject.UMLDocument;
+import org.umlproject.UMLRelationship;
 
 public class UMLDocumentTests
 {
+
     @Test
     public void getFileLocation_constructor_success()
     {
@@ -45,7 +55,7 @@ public class UMLDocumentTests
         assertEquals(1, umldocument.getClassCount());
         assertNull(testclass);
     }
-
+    
     @Test
     public void deleteClass_successfulDeletion_success()
     {
@@ -67,6 +77,7 @@ public class UMLDocumentTests
         // Assert
         assertNotNull(umldocument.removeClass("testclass1"));
     }
+    
     @Test
     public void deleteClass_classDoesntExist_success()
     {
@@ -98,7 +109,7 @@ public class UMLDocumentTests
         // Assert
         assertFalse(umldocument.renameClass("test class 2", "test class 3"));
     }
-
+    
     @Test
     public void renameClass_successfulRename_success()
     {
@@ -113,6 +124,9 @@ public class UMLDocumentTests
         assertNull(umldocument.getClass("testclass1"));
         assertNotNull(umldocument.getClass("testclass2"));
     }
+    
+
+    
     @Test
     public void getClass_doesntExist_success()
     {
@@ -125,6 +139,7 @@ public class UMLDocumentTests
         assertEquals(testclass1,testclass2);
         assertNull(umldocument.getClass("this class isnt real"));
     }
+     
     @Test
     public void addRelationship_nonExisting_success()
     {
@@ -265,8 +280,245 @@ public class UMLDocumentTests
         // Assert
         assertFalse(umldocument.isFileLocationValid());
     }
+    /********/
+    /********/
+    /********/
+    /********/
+    /*
+        DOC LISTENER DEBUG stuff.
+    
+    */
+    /********/
+    /********/
+    /********/
+    /********/
+    protected abstract class MockListener implements DiagramElementListener, DocumentListner
+    {
+        public int incrementor = 0;
+        private MockListener()
+        {
+            UMLDiagramElement.globalListeners.add(this);
+            UMLDocument.documentListners.add(this);
+        }
+        private void cleanUpListener()
+        {
+            UMLDiagramElement.globalListeners.remove(this);
+            UMLDocument.documentListners.remove(this);
+            assertFalse(UMLDiagramElement.globalListeners.contains(this));
+            assertFalse(UMLDocument.documentListners.contains(this));
+        }
+        protected abstract void eventCalled();
+        @Override public void update(Object desiredElement) { eventCalled();}
+        @Override public void updateLocation(Object desiredElement) { eventCalled();}
+        @Override public void onClassRemove(UMLClass umlClass) { eventCalled();}
+        @Override public void onRelationshipRemove(UMLRelationship umlClass) { eventCalled();}
+        @Override public void onClassAdded(UMLClass umlClass) { eventCalled();}
+        @Override public void onRelationshipAdded(UMLRelationship umlRelationship) { eventCalled();}
+        @Override public void cleanUp() {}
+        @Override public void loadFile(UMLDocument umlDocument) {}
+    }
+    protected class NoMassOperationsListener extends MockListener
+    {
+        @Override
+        protected void eventCalled() {
+            if(UMLDocument.getDocumentState() == DocumentState.NORMAL)
+                this.incrementor++;
+        }
+    }
+    @Test 
+    public void executeActionUnderState_MassOperation_Success()
+    {
+        // Arrange
+        NoMassOperationsListener listener = new NoMassOperationsListener();
+        UMLDocument umldocument = new UMLDocument("file");
+        UMLDocument.executeActionUnderState(DocumentState.MASS_OPERATION, () -> umldocument.addClass("A"));
+        // Act
+        UMLClass toBeRemoved = UMLDocument.executeActionUnderState(DocumentState.MASS_OPERATION, () -> umldocument.removeClass("A"));
+        
+        UMLDocument.documentListners.remove(listener);
+        // Assert
+        assertNotNull(toBeRemoved);
+        assertEquals(0, listener.incrementor);
+        //Cleanup, includes assertions...
+        listener.cleanUp();
+    }
+    
+    /*
+    ------------------------------------------------------------
+    CLONABLE TESTING
+    ------------------------------------------------------------
+    */
+    @Test 
+    public void copy_classList_isEqual()
+    {
+        // Arrange
+        UMLDocument umldocument = new UMLDocument("Foobar");
+        umldocument.addClass("Boring_Name");
+        umldocument.addClass("Something_Else");
+        // Act
+        UMLDocument clone = umldocument.clone();
+        // Assert
+        assertEquals(clone.getClassCount(), umldocument.getClassCount());
+    }
+    @Test 
+    public void copy_relationshipList_isEqual()
+    {
+        // Arrange
+        UMLDocument umldocument = new UMLDocument("Foobar");
+        umldocument.addClass("a");
+        umldocument.addClass("b");
+        umldocument.addClass("c");
+        umldocument.addRelationship("a", "b", "MyRelationshipType");
+        umldocument.addRelationship("b", "c", "Someting");
+        // Act
+        UMLDocument clone = umldocument.clone();
+        // Assert
+        assertEquals(clone.getRelationshipList().size(), umldocument.getRelationshipList().size());
+        assertEquals(clone.getRelationshipList(), umldocument.getRelationshipList());
+    }
+    @Test 
+    public void copy_removeRelationship_isDeepCopy()
+    {
+        // Arrange
+        UMLDocument umldocument = new UMLDocument("Foobar");
+        umldocument.addClass("a");
+        umldocument.addClass("b");
+        umldocument.addClass("c");
+        umldocument.addRelationship("a", "b", "MyRelationshipType");
+        umldocument.addRelationship("b", "c", "Someting");
+        // Act
+        UMLDocument clone = umldocument.clone();
+        boolean isRemoved = clone.removeRelationship("a", "b");
+        // Assert
+        assertTrue(isRemoved);
+        assertNotEquals(clone.getRelationshipList(), umldocument.getRelationshipList());
+    }
+    @Test 
+    public void copy_modifyRelationship_isDeepCopy()
+    {
+        // Arrange
+        UMLDocument umldocument = new UMLDocument("Foobar");
+        umldocument.addClass("a");
+        umldocument.addClass("b");
+        umldocument.addRelationship("a", "b", "COMPOSITION");
+        // Act
+        UMLDocument clone = umldocument.clone();
+        UMLRelationship relationship = clone.getRelationship("a", "b");
+        relationship.setRelationshipType(RelationshipType.GENERALIZATION);
+        // Assert
+        assertNotEquals(RelationshipType.GENERALIZATION, umldocument.getRelationship("a", "b").getRelationshipType());
+        assertNotEquals(umldocument.getRelationship("a", "b").getRelationshipType(), relationship.getRelationshipType());
+    }
+    @Test 
+    public void singletonReset_isProperReset_Success()
+    {
+        // Arrange
+        UMLDocument.resetInstance(true);
+        UMLDocument.getInstance().addClass("A");
+        UMLDocument.saveMementoState();
+        UMLDocument.getInstance().addClass("B");
+        UMLDocument.saveMementoState();
+        UMLDocument.getInstance().addClass("C");
+        UMLDocument.saveMementoState();
+        UMLDocument.undoMementoState();
+        // Act
+        assertEquals(3, UMLDocument.getMemento().getHistoryLength());
+        UMLDocument.resetInstance(true);
+        // Assert
+        assertEquals(1, UMLDocument.getMemento().getHistoryLength());
+        assertEquals(0, UMLDocument.getMemento().getRedoHistoryLength());
+    }
+    @Test 
+    public void undoMementoState_savesHistory_Success()
+    {
+        // Arrange
+        UMLDocument.resetInstance(true);
+        UMLDocument.getInstance().addClass("A");
+        UMLDocument.saveMementoState();
+        UMLDocument.getInstance().addClass("B");
+        UMLDocument.saveMementoState();
+        UMLDocument.getInstance().addClass("C");
+        UMLDocument.saveMementoState();
+        // UNDO 1...
+        UMLDocument.undoMementoState();
+        assertEquals(3, UMLDocument.getMemento().getHistoryLength());
+        assertEquals(1, UMLDocument.getMemento().getRedoHistoryLength());
+        assertNull(UMLDocument.getInstance().getClass("C"));
+        assertNotNull(UMLDocument.getInstance().getClass("B"));
+        assertNotNull(UMLDocument.getInstance().getClass("A"));
+        // UNDO 2...
+        UMLDocument.undoMementoState();
+        assertEquals(2, UMLDocument.getMemento().getHistoryLength());
+        assertEquals(2, UMLDocument.getMemento().getRedoHistoryLength());
+        assertNull(UMLDocument.getInstance().getClass("C"));
+        assertNull(UMLDocument.getInstance().getClass("B"));
+        assertNotNull(UMLDocument.getInstance().getClass("A"));
+        // UNDO 3...
+        UMLDocument.undoMementoState();
+        assertEquals(1, UMLDocument.getMemento().getHistoryLength());
+        assertEquals(3, UMLDocument.getMemento().getRedoHistoryLength());
+        assertNull(UMLDocument.getInstance().getClass("C"));
+        assertNull(UMLDocument.getInstance().getClass("B"));
+        assertNull(UMLDocument.getInstance().getClass("A"));
+        // UNDO 4 (overflow case)
+        UMLDocument.undoMementoState();
+        assertEquals(1, UMLDocument.getMemento().getHistoryLength());
+        assertEquals(3, UMLDocument.getMemento().getRedoHistoryLength());
+        assertNull(UMLDocument.getInstance().getClass("C"));
+        assertNull(UMLDocument.getInstance().getClass("B"));
+        assertNull(UMLDocument.getInstance().getClass("A"));
+    }
+    @Test 
+    public void redoMementoState_savesHistory_Success()
+    {
+        // Arrange
+        UMLDocument.resetInstance(true);
+        UMLDocument.getInstance().addClass("A");
+        UMLDocument.saveMementoState();
+        UMLDocument.getInstance().addClass("B");
+        UMLDocument.saveMementoState();
+        UMLDocument.getInstance().addClass("C");
+        UMLDocument.saveMementoState();
+        
+        //Undo all states...
+        UMLDocument.undoMementoState();
+        UMLDocument.undoMementoState();
+        UMLDocument.undoMementoState();
+        
+        //Redo 1
+        UMLDocument.redoMementoState();
+        assertEquals(2, UMLDocument.getMemento().getHistoryLength());
+        assertEquals(2, UMLDocument.getMemento().getRedoHistoryLength());
+        assertNull(UMLDocument.getInstance().getClass("C"));
+        assertNull(UMLDocument.getInstance().getClass("B"));
+        assertNotNull(UMLDocument.getInstance().getClass("A"));
+        //Redo 2
+        UMLDocument.redoMementoState();
+        assertEquals(3, UMLDocument.getMemento().getHistoryLength());
+        assertEquals(1, UMLDocument.getMemento().getRedoHistoryLength());
+        assertNull(UMLDocument.getInstance().getClass("C"));
+        assertNotNull(UMLDocument.getInstance().getClass("B"));
+        assertNotNull(UMLDocument.getInstance().getClass("A"));
+        //Redo 3
+        UMLDocument.redoMementoState();
+        assertEquals(4, UMLDocument.getMemento().getHistoryLength());
+        assertEquals(0, UMLDocument.getMemento().getRedoHistoryLength());
+        assertNotNull(UMLDocument.getInstance().getClass("C"));
+        assertNotNull(UMLDocument.getInstance().getClass("B"));
+        assertNotNull(UMLDocument.getInstance().getClass("A"));
+        //Redo 4 (Overflow)
+        UMLDocument.redoMementoState();
+        assertEquals(4, UMLDocument.getMemento().getHistoryLength());
+        assertEquals(0, UMLDocument.getMemento().getRedoHistoryLength());
+        assertNotNull(UMLDocument.getInstance().getClass("C"));
+        assertNotNull(UMLDocument.getInstance().getClass("B"));
+        assertNotNull(UMLDocument.getInstance().getClass("A"));
+    }
     @AfterEach
     public void killAnnoyingFiles() {
+        
+        
+        
         //God i hate these files. Die.
         Path file1 = Paths.get("ello.json");
         Path file2 = Paths.get("test.json");
