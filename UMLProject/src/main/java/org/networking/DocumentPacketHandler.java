@@ -122,8 +122,8 @@ public class DocumentPacketHandler {
             {
                 if(serverUMLClass.lastNetworkEditTime + 1 !=  clientUMLClass.lastNetworkEditTime)
                 {
-                    if(client != null) client.sendEntireDocument();
-                    return;//A more up-to-date version exists
+                    if(client != null) sendValidClass(client, UMLDocument.getInstance().getClass(clientUMLClass.getClassName()));
+                    return;//A more up-to-date version exists... Send that one.
                 }
                 //In this case, the incoming NETWORKID is equal but with a different name. We are now required to execute a rename before processing the packet...
                 if(serverUMLClass.getClassName() != clientUMLClass.getClassName())//Names are not equal! Requires rename!
