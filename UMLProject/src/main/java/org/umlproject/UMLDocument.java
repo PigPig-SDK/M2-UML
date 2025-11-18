@@ -220,11 +220,13 @@ public class UMLDocument implements Copyable<UMLDocument>
             classSet.put(newName, removedClass);
             relationshipList.put(newName, tempRelationships);
             return true;
-            
         });
+        
+        //Update the globals about our new name outside of mass operation.
         if(hasUpdated)
         {
-            UMLDocument.saveMementoState();
+            UMLClass updatedClass = UMLDocument.getInstance().getClass(newName);
+            updatedClass.updateListener(true);
         }
         return hasUpdated;
     }

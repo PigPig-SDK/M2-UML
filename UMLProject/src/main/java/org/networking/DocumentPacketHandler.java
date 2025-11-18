@@ -125,9 +125,8 @@ public class DocumentPacketHandler {
                     if(client != null) client.sendEntireDocument();
                     return;//A more up-to-date version exists
                 }
-                
                 //In this case, the incoming NETWORKID is equal but with a different name. We are now required to execute a rename before processing the packet...
-                if(!serverUMLClass.getClassName().equals(clientUMLClass.getClassName()))//Names are not equal! Requires rename!
+                if(serverUMLClass.getClassName() != clientUMLClass.getClassName())//Names are not equal! Requires rename!
                     UMLDocument.executeActionUnderState(DocumentState.NETWORK_OPERATION, 
                             () -> UMLDocument.getInstance().renameClass(serverUMLClass.getClassName(), clientUMLClass.getClassName()));//Rename old ins to new ins.
             }
