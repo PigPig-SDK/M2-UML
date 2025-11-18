@@ -117,7 +117,7 @@ public class DocumentPacketHandler {
             }
             
             //Check for rename...
-            UMLDiagramElement serverUMLDiagramElement = UMLDocument.getInstance().getAllDiagramElements().get(clientUMLClass.networkId);//Server view
+            UMLDiagramElement serverUMLDiagramElement = UMLDocument.getInstance().getAllNetIdElements().get(clientUMLClass.networkId);//Server view
             if(serverUMLDiagramElement instanceof UMLClass serverUMLClass)
             {
                 if(serverUMLClass.lastNetworkEditTime + 1 !=  clientUMLClass.lastNetworkEditTime)

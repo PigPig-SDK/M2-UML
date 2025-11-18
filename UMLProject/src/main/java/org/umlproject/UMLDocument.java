@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonIOException;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -35,28 +36,47 @@ public class UMLDocument implements Copyable<UMLDocument>
     public static List<DocumentListner> documentListners = new ArrayList<>();
     private static DocumentState documentState = DocumentState.NORMAL;
     
+    
     /**
      * Returns all UMLDiagramElements from the document
      * If no elements exist, than an empty list is provided.
      * 
      * @return A list of all UMLDiagramElements
      */
-    public Map<UUID,UMLDiagramElement> getAllDiagramElements()
+    public List<UMLDiagramElement> getAllDiagramElements()
     {
-        Map<UUID,UMLDiagramElement> allElements = new HashMap<>();
+        List<UMLDiagramElement> allElements = new ArrayList<>();
         for(UMLClass umlclass : classSet.values())
         {
             if(umlclass == null) continue;
-            allElements.put(umlclass.networkId, umlclass);
+            
+            allElements.add(umlclass);
         }
         for(ArrayList<UMLRelationship> allRealtionshipLists : relationshipList.values())
         {
             if(allRealtionshipLists == null) continue;
+            
             for(UMLRelationship relationship : allRealtionshipLists)
             {
                 if(relationship == null) continue;
-                allElements.put(relationship.networkId ,relationship);
+                
+                allElements.add(relationship);
             }
+        }
+        return allElements;
+    }
+    /**
+     * Returns all UMLDiagramElements in a map of their netid->object
+     * 
+     * @return A map of < ID , OBJECT >
+     */
+    public Map<UUID,UMLDiagramElement> getAllNetIdElements()
+    {
+        Map<UUID,UMLDiagramElement> allElements = new HashMap<>();
+        for(UMLDiagramElement element : getAllDiagramElements())
+        {
+            if(element == null) continue;
+            allElements.put(element.networkId, element);
         }
         return allElements;
     }
@@ -68,7 +88,7 @@ public class UMLDocument implements Copyable<UMLDocument>
     public List<DiagramElementListener> getUIListeners()
     {
         List<DiagramElementListener> allListeners = new ArrayList();
-        for(UMLDiagramElement element : getAllDiagramElements().values())
+        for(UMLDiagramElement element : getAllDiagramElements())
         {
             if(element.listener != null)
                 allListeners.add(element.listener);
@@ -476,13 +496,22 @@ public class UMLDocument implements Copyable<UMLDocument>
                 UMLDocument data = gson.fromJson(reader, UMLDocument.class);
                 load(data);
                 //Clear all network times.
-                for(UMLDiagramElement element : getAllDiagramElements().values())
+                //Randomize all netIDS again...
+                for(UMLDiagramElement element : getAllDiagramElements())
                 {
+                    element.networkId = UUID.randomUUID();
                     element.lastNetworkEditTime = 0;
                 }
+                
                 this.fileLocation=filename;
-            } 
+            }
+            catch (JsonIOException e)
+            {
+                System.out.println("Error parsing file! : " + e.getMessage());
+            }
             catch (IOException e) {
+                System.err.println("CRITICAL LOADING ERROR! : " + e.getMessage());
+                e.printStackTrace();
                 return false;
             }
             return true;
