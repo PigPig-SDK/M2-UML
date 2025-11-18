@@ -42,18 +42,18 @@ public class Client extends SocketManager
     @Override protected void managePacket(final NetworkPacket netPacket) {
         switch(netPacket.packetType())
         {
-            case PacketType.DISCONNECT ->
+            case DISCONNECT ->
             {
                 System.out.println("Server suggested shutdown.");
                 this.disconnect();
             }
-            case PacketType.IDENTIFICATION ->{
+            case IDENTIFICATION ->{
                 System.out.println("Got information... Ignoring it...");
             }
-            case PacketType.MOUSE_UPDATE->{
+            case MOUSE_UPDATE->{
                 NetworkMouseHandler.handleMousePacket(netPacket);
             }
-            case PacketType.HEARTBEAT ->{
+            case HEARTBEAT ->{
                 
                 long delta = netPacket.sendTick() - lastHeartbeatTick;
                 tick = netPacket.sendTick();
@@ -63,25 +63,25 @@ public class Client extends SocketManager
                     lastHeartbeatTick = tick;//Success. Update our last heartbeat time.
                 }
             }
-            case PacketType.CLASS_EDIT ->
+            case CLASS_EDIT ->
             {
                 if(isHosting)
                     return;
                 DocumentPacketHandler.handleElementModified(null, netPacket);
             }
-            case PacketType.FULL_DOCUMENT ->
+            case FULL_DOCUMENT ->
             {
                 if(isHosting)
                     return;
                 //Go for it bud...
                 DocumentPacketHandler.handleDocumentPacket(netPacket);
             }
-            case PacketType.ELEMENT_MOVED ->
+            case ELEMENT_MOVED ->
             {
                 //Server has suggested we move something...
                 DocumentPacketHandler.handleElementMovementPacket(netPacket);
             }
-            case PacketType.OBJECT_DELETED ->
+            case OBJECT_DELETED ->
             {
                 //Null implies there is nobody to send errors back to. We accept the packet whole-heartedly.
                 MainThreadDispatcher.dispatcher.dispatch(()-> DocumentPacketHandler.handleRemovePacket(null, netPacket));
