@@ -597,6 +597,8 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
                    }
                }
            }
+           umlc.lastNetworkEditTime = this.lastNetworkEditTime;
+           umlc.networkId = this.networkId;//Network id should remain the same while cloning.
            umlc.listener = this.listener;//NOTE THIS IS THE ONLY THING THAT SHOULDNT BE A DEEP COPY!
            return umlc;
        });

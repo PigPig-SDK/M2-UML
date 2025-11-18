@@ -8,7 +8,7 @@ public class UndoRedoManager implements DiagramElementListener, DocumentListner
 {
     
     private static final Set<DocumentState> invalidDocumentStates = Set.of(DocumentState.FILE_LOADING,
-            DocumentState.CLONING, DocumentState.MEMENTO_STATE_RESET, DocumentState.MASS_OPERATION, DocumentState.NETWORK_OPERATION);
+            DocumentState.CLONING, DocumentState.MEMENTO_STATE_RESET, DocumentState.MASS_OPERATION, DocumentState.NETWORK_OPERATION, DocumentState.MASS_OPERATION_RENAME);
     
     private static UndoRedoManager instance;
     /**

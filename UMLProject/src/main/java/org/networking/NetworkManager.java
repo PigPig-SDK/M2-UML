@@ -16,9 +16,7 @@ public class NetworkManager {
     public static final int MAX_PACKET_LENGTH = 60000;
     public static final int CONNECTION_TIMEOUT = 3;//in seconds
     public static final int unstuckTimeout = 10;//in seconds
-    
-    public static boolean isHosting;
-    
+
     private static Server serverManager = null;
     private static Client clientManager = null;
     
@@ -165,5 +163,9 @@ public class NetworkManager {
             return clientManager.getTick();
         }
         return -1;
+    }
+    public static boolean isHosting()
+    {
+        return getServerInstance() != null;
     }
 }

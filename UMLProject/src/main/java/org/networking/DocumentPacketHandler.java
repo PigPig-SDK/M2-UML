@@ -11,7 +11,9 @@ import javafx.geometry.Point2D;
 import org.umlproject.DocumentState;
 import org.umlproject.MainThreadDispatcher;
 import org.umlproject.UMLClass;
+import org.umlproject.UMLDiagramElement;
 import org.umlproject.UMLDocument;
+import org.umlproject.UMLRelationship;
 
 /**
  * This class handles incoming packets VIA 'client' or 'clienthandler'
@@ -87,23 +89,6 @@ public class DocumentPacketHandler {
                 System.out.println("Unsupported type... Please implement me if you are going to allow the flow control.");
             }
         }
-        
-        
-        MainThreadDispatcher.dispatcher.dispatch(() ->
-        {
-            try 
-            {
-                //Get the packets payload
-                PayloadMoveElement payloadMoveElement = networkPacket.payloadToObject(PayloadMoveElement.class);
-                //Find the class if its valid
-                UMLClass umlc = UMLDocument.getInstance().getClass(payloadMoveElement.objectName());
-                if(umlc == null) return;
-                //We got a class, try to move it.
-                UMLDocument.executeActionUnderState(DocumentState.NETWORK_OPERATION,
-                                                    () -> umlc.setLocation(new Point2D(payloadMoveElement.x(),payloadMoveElement.y()), true));
-            } 
-            catch (JsonSyntaxException e){}
-        });
     }
     /**
      * This handles the network packet for modifying UMLClasses...
@@ -120,43 +105,65 @@ public class DocumentPacketHandler {
         ///
         if(networkPacket == null) return;
         //Run on main thread.
-        try {
-            UMLClass umlclass = networkPacket.payloadToObject(UMLClass.class);
-            if(umlclass == null || umlclass.getClassName() == null)
-                return;//Nothing we can do with null...
-
-            UMLClass docVersion = UMLDocument.getInstance().getClass(umlclass.getClassName());
-            if(docVersion == null || docVersion.lastNetworkEditTime < networkPacket.sendTick() || client == null)//Null or older than clients suggestion...
+        try
+        {
+            //Validate...
+            UMLClass clientUMLClass = networkPacket.payloadToObject(UMLClass.class);//Packet view
+            if(clientUMLClass == null || clientUMLClass.getClassName() == null)
             {
-                UMLDocument.executeActionUnderState(DocumentState.NETWORK_OPERATION, () -> {
-                    boolean switchWorked = UMLDocument.getInstance().addClass(umlclass);
-                    
-                    //Server handles reportbacks...
-                    if(client != null)
+                //Ok, something is wrong with their view... refresh it...
+                if(client != null) client.sendEntireDocument();
+                return;
+            }
+            
+            //Check for rename...
+            UMLDiagramElement serverUMLDiagramElement = UMLDocument.getInstance().getAllNetIdElements().get(clientUMLClass.networkId);//Server view
+            if(serverUMLDiagramElement instanceof UMLClass serverUMLClass)
+            {
+                if(serverUMLClass.lastNetworkEditTime + 1 !=  clientUMLClass.lastNetworkEditTime)
+                {
+                    if(client != null) client.sendEntireDocument();
+                    return;//A more up-to-date version exists
+                }
+                //In this case, the incoming NETWORKID is equal but with a different name. We are now required to execute a rename before processing the packet...
+                if(serverUMLClass.getClassName() != clientUMLClass.getClassName())//Names are not equal! Requires rename!
+                    UMLDocument.executeActionUnderState(DocumentState.NETWORK_OPERATION, 
+                            () -> UMLDocument.getInstance().renameClass(serverUMLClass.getClassName(), clientUMLClass.getClassName()));//Rename old ins to new ins.
+            }
+            else if(serverUMLDiagramElement != null)//Got an illegal item from list.
+            {
+                System.out.println("Got class packet for non UMLCLASS! \n > Sending entire document back to user");
+                client.sendEntireDocument();
+                return;
+            }
+
+            //May or not be renamed past this point.
+            //Should not matter, we insert the packet in its rightful place.
+            UMLDocument.executeActionUnderState(DocumentState.NETWORK_OPERATION, () -> {
+                
+                boolean switchWorked = UMLDocument.getInstance().addClass(clientUMLClass);//On client+server
+
+                if(client != null)//Server reports back to users.
+                {
+                    if(!switchWorked)//Switch failed... Send the client back the latest version...
+                        sendValidClass(client, UMLDocument.getInstance().getClass(clientUMLClass.getClassName()));//Never happens... TODO REMOVE!
+                    else//Send update back to everyone...
                     {
-                        if(!switchWorked)//Switch failed... Send the client back the latest version...
-                            sendValidClass(client, UMLDocument.getInstance().getClass(umlclass.getClassName()));
-                        else//Send update back to everyone...
-                        {
-                            Server server = NetworkManager.getServerInstance();
-                            if(server == null) return;//Safety first...
+                        Server server = NetworkManager.getServerInstance();
+                        if(server == null) return;//Safety first...
 
-                            //Avoid sending back to server AND the client who sent it.
-                            Set<ClientHandler> clients =  new HashSet<>();
-                            clients.add(NetworkManager.getServerInstance().getServerClient());
-                            clients.add(client);
-                            server.sendMessageToAllClients(networkPacket, clients);//Update. Send back to all.
-                        }
+                        //Avoid sending back to server AND the client who sent it.
+                        Set<ClientHandler> clients =  new HashSet<>();
+                        clients.add(NetworkManager.getServerInstance().getServerClient());
+                        clients.add(client);
+                        server.sendMessageToAllClients(networkPacket, clients);//Update. Send back to all.
                     }
-                });
-            }
-            else//Not null AND older than latest version
-            {
-                sendValidClass(client, docVersion);
-            }
-        } 
+                }
+            });
+        }
         catch (JsonSyntaxException e) {
-            //Ok they are just screwing with us...
+            
+            if(client != null) client.sendEntireDocument();
             return;
         }
     }

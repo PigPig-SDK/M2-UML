@@ -263,7 +263,9 @@ public class Server extends Thread {
         return NetworkPacket.objectToNetworkPacket(NetworkManager.getTick(), PacketType.FULL_DOCUMENT, UMLDocument.getInstance());
     }
     /**
-     * Gets the server
+     * Gets the server's local client handler.
+     * Good for avoiding your local machine from running network code.
+     * 
      * @return NULL if no local client exists.
      */
     public ClientHandler getServerClient()
