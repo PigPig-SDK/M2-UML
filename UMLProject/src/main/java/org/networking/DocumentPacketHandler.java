@@ -179,4 +179,75 @@ public class DocumentPacketHandler {
         NetworkPacket netPacket = NetworkPacket.objectToNetworkPacket(NetworkManager.getTick(), PacketType.CLASS_EDIT, umlClass);
         server.sendMessageToClient(netPacket, client);
     }
+    /**
+     * Removes a network object from the document
+     * @param client The client the packet came from. If null, than server sent the packet and we are the client.
+     * @param netPacket The packet to be processed
+     */
+    public static void handleRemovePacket(ClientHandler client, NetworkPacket netPacket)
+    {
+        ///
+        ///
+        //////////////////////////
+        //  On main thread!!!!  //
+        //////////////////////////
+        ///
+        ///
+        ///
+        try
+        {
+            if(netPacket == null)
+                return;
+            RemoveObjectPayload ropl = netPacket.payloadToObject(RemoveObjectPayload.class);
+            if(ropl == null) return;
+            if(ropl.idToRemove == null) return;
+            
+            //Get object to be removed...
+            UMLDiagramElement element = UMLDocument.getInstance().getAllNetIdElements().get(ropl.idToRemove);
+            if(element instanceof UMLClass classobj)
+            {
+                boolean removeSuccess = UMLDocument.executeActionUnderState(DocumentState.NETWORK_OPERATION, () ->{
+                    return UMLDocument.getInstance().removeClass(classobj.getClassName(), true) != null;//Something was removed.
+                });
+                
+                if(removeSuccess)
+                {
+                    Server server = NetworkManager.getServerInstance();
+                    if(server == null) return;
+                    Set<ClientHandler> blacklist = new HashSet<>();
+                    blacklist.add(client);//Don't send back to owner.
+                    blacklist.add(NetworkManager.getServerInstance().getServerClient());
+                    server.sendMessageToAllClients(netPacket, blacklist);
+                }
+            }
+            else if(element instanceof UMLRelationship rObject)
+            {
+                boolean removeSuccess = UMLDocument.executeActionUnderState(DocumentState.NETWORK_OPERATION, () ->{
+                    return UMLDocument.getInstance().removeRelationship(rObject.getSourceName(), rObject.getDestinationName());
+                });
+                if(removeSuccess)
+                {
+                    Server server = NetworkManager.getServerInstance();
+                    if(server == null) return;
+                    Set<ClientHandler> blacklist = new HashSet<>();
+                    blacklist.add(client);//Don't send back to owner.
+                    blacklist.add(NetworkManager.getServerInstance().getServerClient());
+                    server.sendMessageToAllClients(netPacket, blacklist);
+                }
+                else
+                    if(client != null) client.sendEntireDocument();
+                
+            }
+            else
+            {
+                if(client != null) client.sendEntireDocument();
+                return;
+            }
+        }
+        catch(JsonSyntaxException e)
+        {
+            if(client != null) client.sendEntireDocument();
+            return;
+        }
+    }
 }

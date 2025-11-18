@@ -11,6 +11,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.umlproject.MainThreadDispatcher;
 import org.umlproject.UMLDocument;
 
 
@@ -57,7 +58,7 @@ public class ClientHandler extends SocketManager
      * Incoming packet management for the CLIENTHANDLER
      */
     @Override
-    protected void managePacket(NetworkPacket netPacket) {
+    protected void managePacket(final NetworkPacket netPacket) {
         //Packets are time bound...
         if(netPacket.sendTick() > NetworkManager.getTick())
             return;
@@ -95,11 +96,11 @@ public class ClientHandler extends SocketManager
                     //Populate packet with useful stuff..
                     payload.setUsername(userID.userName);
                     payload.setUserId(clientID);
-                    netPacket = NetworkPacket.objectToNetworkPacket(NetworkManager.getTick(), PacketType.MOUSE_UPDATE, payload);//Modified payload loaded!
+                    NetworkPacket tempNetPacket = NetworkPacket.objectToNetworkPacket(NetworkManager.getTick(), PacketType.MOUSE_UPDATE, payload);//Modified payload loaded!
                     //Sending...
                     Set<ClientHandler> blacklist = server.getAllTerminalUsers();
                     blacklist.add(this);//Do not send back to our client.
-                    server.sendMessageToAllClients(netPacket, blacklist);
+                    server.sendMessageToAllClients(tempNetPacket, blacklist);
                 } 
                 catch (JsonSyntaxException e) {
                     
@@ -127,7 +128,11 @@ public class ClientHandler extends SocketManager
             }
             case PacketType.CLASS_EDIT ->
             {
-                DocumentPacketHandler.handleElementModified(this,netPacket);
+                DocumentPacketHandler.handleElementModified(this, netPacket);
+            }
+            case PacketType.OBJECT_DELETED ->
+            {
+                MainThreadDispatcher.dispatcher.dispatch(()-> DocumentPacketHandler.handleRemovePacket(this, netPacket));
             }
             case PacketType.ELEMENT_MOVED ->
             {

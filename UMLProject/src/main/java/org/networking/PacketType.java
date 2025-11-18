@@ -16,5 +16,6 @@ public enum PacketType {
     ELEMENT_MOVED,
     CLASS_EDIT,
     RELATIONSHIP_EDIT,
-    MOUSE_UPDATE
+    MOUSE_UPDATE,
+    OBJECT_DELETED
 }

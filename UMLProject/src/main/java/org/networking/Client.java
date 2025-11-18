@@ -4,6 +4,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import org.umlproject.MainThreadDispatcher;
 
 /**
  * This class is the 'client' logic for handling server packets
@@ -38,7 +39,7 @@ public class Client extends SocketManager
     /**
      * Incoming packet management for the CLIENT
      */
-    @Override protected void managePacket(NetworkPacket netPacket) {
+    @Override protected void managePacket(final NetworkPacket netPacket) {
         switch(netPacket.packetType())
         {
             case PacketType.DISCONNECT ->
@@ -79,6 +80,11 @@ public class Client extends SocketManager
             {
                 //Server has suggested we move something...
                 DocumentPacketHandler.handleElementMovementPacket(netPacket);
+            }
+            case PacketType.OBJECT_DELETED ->
+            {
+                //Null implies there is nobody to send errors back to. We accept the packet whole-heartedly.
+                MainThreadDispatcher.dispatcher.dispatch(()-> DocumentPacketHandler.handleRemovePacket(null, netPacket));
             }
             default ->
             {
