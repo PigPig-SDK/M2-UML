@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.UUID;
 
 
 public class UMLDocument implements Copyable<UMLDocument>
@@ -35,6 +36,31 @@ public class UMLDocument implements Copyable<UMLDocument>
     private static DocumentState documentState = DocumentState.NORMAL;
     
     /**
+     * Returns all UMLDiagramElements from the document
+     * If no elements exist, than an empty list is provided.
+     * 
+     * @return A list of all UMLDiagramElements
+     */
+    public Map<UUID,UMLDiagramElement> getAllDiagramElements()
+    {
+        Map<UUID,UMLDiagramElement> allElements = new HashMap<>();
+        for(UMLClass umlclass : classSet.values())
+        {
+            if(umlclass == null) continue;
+            allElements.put(umlclass.networkId, umlclass);
+        }
+        for(ArrayList<UMLRelationship> allRealtionshipLists : relationshipList.values())
+        {
+            if(allRealtionshipLists == null) continue;
+            for(UMLRelationship relationship : allRealtionshipLists)
+            {
+                if(relationship == null) continue;
+                allElements.put(relationship.networkId ,relationship);
+            }
+        }
+        return allElements;
+    }
+    /**
      * Used to return all selectable objects
      * To be used by a 'UMLGuiController' when requested
      * @return all UMLSelectables from both the classSet and relationshipList
@@ -42,19 +68,10 @@ public class UMLDocument implements Copyable<UMLDocument>
     public List<DiagramElementListener> getUIListeners()
     {
         List<DiagramElementListener> allListeners = new ArrayList();
-        for(UMLClass umlclass : classSet.values())
+        for(UMLDiagramElement element : getAllDiagramElements().values())
         {
-            if(umlclass == null || umlclass.listener == null) continue;
-            allListeners.add(umlclass.listener);
-        }
-        for(ArrayList<UMLRelationship> allRealtionshipLists : relationshipList.values())
-        {
-            if(allRealtionshipLists == null) continue;
-            for(UMLRelationship relationship : allRealtionshipLists)
-            {
-                if(relationship == null || relationship.listener == null) continue;
-                allListeners.add(relationship.listener);
-            }
+            if(element.listener != null)
+                allListeners.add(element.listener);
         }
         return allListeners;
     }
@@ -167,7 +184,7 @@ public class UMLDocument implements Copyable<UMLDocument>
         //Ensure the newname location isnt taken.
         if(classSet.containsKey(newName) || relationshipList.containsKey(newName)) return false;
         
-        boolean hasUpdated = UMLDocument.executeActionUnderState(DocumentState.MASS_OPERATION,
+        boolean hasUpdated = UMLDocument.executeActionUnderState(DocumentState.MASS_OPERATION_RENAME,
         ()->{
         
             //Validation
@@ -456,6 +473,11 @@ public class UMLDocument implements Copyable<UMLDocument>
                 // Deserialize the JSON into your Java object
                 UMLDocument data = gson.fromJson(reader, UMLDocument.class);
                 load(data);
+                //Clear all network times.
+                for(UMLDiagramElement element : getAllDiagramElements().values())
+                {
+                    element.lastNetworkEditTime = 0;
+                }
                 this.fileLocation=filename;
             } 
             catch (IOException e) {

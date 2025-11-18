@@ -9,6 +9,7 @@ public enum DocumentState
 {
     NORMAL,
     MASS_OPERATION,
+    MASS_OPERATION_RENAME,
     FILE_LOADING,
     MEMENTO_STATE_RESET,
     SILENT_MOVEMENT,

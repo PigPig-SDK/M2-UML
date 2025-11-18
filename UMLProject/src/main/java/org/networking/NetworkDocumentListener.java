@@ -1,6 +1,7 @@
 package org.networking;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.umlproject.DiagramElementListener;
@@ -23,7 +24,8 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
             Set.of( DocumentState.FILE_LOADING, 
                     DocumentState.CLONING, 
                     DocumentState.MEMENTO_STATE_RESET,
-                    DocumentState.NETWORK_OPERATION);
+                    DocumentState.NETWORK_OPERATION,
+                    DocumentState.MASS_OPERATION_RENAME);
     
     private static NetworkDocumentListener instance;
     
@@ -69,15 +71,25 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
     private void sendClassUpdate(UMLClass objectClass)
     {
         if(invalidDocumentStates.contains(UMLDocument.getDocumentState())) return;
-        NetworkPacket networkPacket = NetworkPacket.objectToNetworkPacket(objectClass.lastNetworkEditTime + 1, PacketType.CLASS_EDIT, objectClass);//Try for a new edit time
-        
-        try {
-            NetworkManager.getClientInstance().sendNetworkPacket(networkPacket);    
-        } 
-        catch (Exception e) {}
-        
-        
-        
+
+        if(NetworkManager.isHosting())
+        {
+            objectClass.lastNetworkEditTime++;
+            NetworkPacket networkPacket = NetworkPacket.objectToNetworkPacket(NetworkManager.getTick(), PacketType.CLASS_EDIT, objectClass);
+            Set serverAvoidance = new HashSet<ClientHandler>();
+            serverAvoidance.add(NetworkManager.getServerInstance().getServerClient());
+            NetworkManager.getServerInstance().sendMessageToAllClients(networkPacket, serverAvoidance);
+        }
+        else
+        {
+            System.out.println("Sent as a client: The class.");
+            objectClass.lastNetworkEditTime++;//Increment last edit time...
+            NetworkPacket networkPacket = NetworkPacket.objectToNetworkPacket(NetworkManager.getTick(), PacketType.CLASS_EDIT, objectClass);
+            try {
+                NetworkManager.getClientInstance().sendNetworkPacket(networkPacket);    
+            } 
+            catch (Exception e) {}
+        }
     }
     /**
      * Sends the new location for a UMLClass.
