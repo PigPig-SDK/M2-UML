@@ -139,7 +139,10 @@ public abstract class SocketManager extends Thread
         catch(IOException e)
         {
             System.err.println("Failure sending message! : " + e.getMessage());
-            if("Socket closed".equalsIgnoreCase(e.getMessage()))//Don't send messages to deadweight... Killem.
+            
+            //Don't send messages to deadweight... Killem.
+            if("Socket closed".equalsIgnoreCase(e.getMessage()) ||
+                    "Connection reset by peer".equalsIgnoreCase(e.getMessage()))
             {
                 this.disconnect();//Stop talking to them...
             }
