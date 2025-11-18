@@ -200,10 +200,10 @@ public class DocumentPacketHandler {
                 return;
             RemoveObjectPayload ropl = netPacket.payloadToObject(RemoveObjectPayload.class);
             if(ropl == null) return;
-            if(ropl.idToRemove == null) return;
+            if(ropl.idToRemove() == null) return;
             
             //Get object to be removed...
-            UMLDiagramElement element = UMLDocument.getInstance().getAllNetIdElements().get(ropl.idToRemove);
+            UMLDiagramElement element = UMLDocument.getInstance().getAllNetIdElements().get(ropl.idToRemove());
             if(element instanceof UMLClass classobj)
             {
                 boolean removeSuccess = UMLDocument.executeActionUnderState(DocumentState.NETWORK_OPERATION, () ->{

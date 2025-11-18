@@ -171,11 +171,30 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
     @Override public void onRelationshipAdded(UMLRelationship umlRelationship) { sendRelationshipUpdate(umlRelationship); }
     
     @Override public void onClassRemove(UMLClass umlClass) {
-        System.out.println("TODO: IMPLEMENT onClassRemove!");
+        netRemoveDiagramElement(umlClass);
     }
     @Override public void onRelationshipRemove(UMLRelationship umlClass) {
-        System.out.println("TODO: IMPLEMENT onRelationshipRemove!");
+        netRemoveDiagramElement(umlClass);
     }
+    private void netRemoveDiagramElement(UMLDiagramElement element)
+    {
+        if(invalidDocumentStates.contains(UMLDocument.getDocumentState())) return;
+        
+        NetworkPacket networkPacket = NetworkPacket.objectToNetworkPacket(NetworkManager.getTick(), PacketType.OBJECT_DELETED, new RemoveObjectPayload(element.networkId));
+        
+        if(NetworkManager.isHosting())//Bypass communication. Enforce everyone to use this packet.
+        {
+            Set serverAvoidance = new HashSet<ClientHandler>();
+            serverAvoidance.add(NetworkManager.getServerInstance().getServerClient());
+            NetworkManager.getServerInstance().sendMessageToAllClients(networkPacket, serverAvoidance);
+        }
+        else //I am a client, send through my connection...
+        {
+            NetworkManager.getClientInstance().sendNetworkPacket(networkPacket);
+        }
+    }
+    
+    
     /* Those no good do nothings */
     @Override public void cleanUp() {}//Do nothing!
     @Override public void loadFile(UMLDocument umlDocument) {

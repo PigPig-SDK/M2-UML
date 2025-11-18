@@ -2,6 +2,4 @@ package org.networking;
 
 import java.util.UUID;
 
-public class RemoveObjectPayload  {
-    public UUID idToRemove;
-}
+public record RemoveObjectPayload (UUID idToRemove)  {}
