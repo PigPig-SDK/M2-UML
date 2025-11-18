@@ -18,7 +18,7 @@ public class CommandPaste extends BaseCommand{
 
     @Override
     public String description() {
-        return "Pastes everything in the UML Document";
+        return "Pastes the current 'clipboard'";
     }
 
 }
