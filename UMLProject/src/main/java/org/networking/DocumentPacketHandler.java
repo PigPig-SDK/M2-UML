@@ -78,10 +78,10 @@ public class DocumentPacketHandler {
             return;//Cannot execute, send client back packet
         
         switch (networkPacket.packetType()) {
-            case PacketType.RELATIONSHIP_EDIT -> {
+            case RELATIONSHIP_EDIT -> {
                 System.out.println("Erm... aschually bazinga bazinga.");
             }
-            case PacketType.CLASS_EDIT -> {
+            case CLASS_EDIT -> {
                 MainThreadDispatcher.dispatcher.dispatch(() -> handleClassPacket(client, networkPacket));
             }
             default ->

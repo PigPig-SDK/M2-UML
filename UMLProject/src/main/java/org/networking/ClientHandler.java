@@ -65,23 +65,23 @@ public class ClientHandler extends SocketManager
         
         switch(netPacket.packetType())
         {
-            case PacketType.DISCONNECT ->
+            case DISCONNECT ->
             {
                 this.disconnect();
             }
-            case PacketType.MESSAGE ->
+            case MESSAGE ->
             {
                 //Send message back to all clients...
                 String message = userID.userName + " : " + netPacket.payload();
                 NetworkPacket overrideNetPacket = new NetworkPacket(0, PacketType.MESSAGE, message);
                 NetworkManager.getServerInstance().sendMessageToAllClients(overrideNetPacket);
             }
-            case PacketType.HEARTBEAT ->
+            case HEARTBEAT ->
             {
                 //Got client heartbeat... Update their time.
                 lastHeartbeatTime = System.nanoTime();
             }
-            case PacketType.MOUSE_UPDATE->{
+            case MOUSE_UPDATE->{
                 try {
                     Server server = NetworkManager.getServerInstance();
                     if(server == null)
@@ -106,7 +106,7 @@ public class ClientHandler extends SocketManager
                     
                 }
             }
-            case PacketType.IDENTIFICATION ->
+            case IDENTIFICATION ->
             {
                 //If the user has no ID, we are accepting one.
                 try
@@ -126,15 +126,15 @@ public class ClientHandler extends SocketManager
                     System.out.println("User gave us bogus...");
                 }
             }
-            case PacketType.CLASS_EDIT ->
+            case CLASS_EDIT ->
             {
                 DocumentPacketHandler.handleElementModified(this, netPacket);
             }
-            case PacketType.OBJECT_DELETED ->
+            case OBJECT_DELETED ->
             {
                 MainThreadDispatcher.dispatcher.dispatch(()-> DocumentPacketHandler.handleRemovePacket(this, netPacket));
             }
-            case PacketType.ELEMENT_MOVED ->
+            case ELEMENT_MOVED ->
             {
                 //Server has suggested we move something...
                 Server server = NetworkManager.getServerInstance();
