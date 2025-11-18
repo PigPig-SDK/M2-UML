@@ -85,14 +85,7 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
                 new PayloadMoveElement( objectClass.getClassName(),
                                         (int)objectClass.getLocation().getX(), 
                                         (int)objectClass.getLocation().getY()));
-        try
-        {
-            client.sendNetworkPacket(networkPacket);
-        }
-        catch(IOException ex)
-        {
-            System.err.println("Failed to send class location packet!" + ex.getMessage());
-        }
+        client.sendNetworkPacket(networkPacket);
     }
     /**
      * Sends the updated class to the server for validation
@@ -112,9 +105,7 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
         }
         else //I am a client, send through my connection...
         {
-            try {
-                NetworkManager.getClientInstance().sendNetworkPacket(networkPacket);    
-            } catch (IOException e) {}
+            NetworkManager.getClientInstance().sendNetworkPacket(networkPacket);  
         }
     }
     /**
@@ -135,9 +126,7 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
         }
         else //I am a client, send through my connection...
         {
-            try {
-                NetworkManager.getClientInstance().sendNetworkPacket(networkPacket);    
-            } catch (IOException e) {}
+            NetworkManager.getClientInstance().sendNetworkPacket(networkPacket);
         }
     }
     

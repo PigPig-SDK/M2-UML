@@ -58,14 +58,8 @@ public class Client extends SocketManager
                 tick = netPacket.sendTick();
                 if(delta >= heartbeatDelta)
                 {
-                    try{
-                        sendNetworkPacket(new NetworkPacket(tick, PacketType.HEARTBEAT, null));
-                        lastHeartbeatTick = tick;//Success. Update our last heartbeat time.
-                    }
-                    catch(IOException ex)
-                    {
-                        System.out.println("heartbeat sending exception..." + ex.getMessage());
-                    }
+                    sendNetworkPacket(new NetworkPacket(tick, PacketType.HEARTBEAT, null));
+                    lastHeartbeatTick = tick;//Success. Update our last heartbeat time.
                 }
             }
             case PacketType.CLASS_EDIT ->
@@ -106,15 +100,8 @@ public class Client extends SocketManager
     @Override
     protected void onConnectionStarted() {
         UserIdentification myId = UserIdentification.generateAnonymousUserInfo();
-        try
-        {
-            NetworkPacket netPacket = NetworkPacket.objectToNetworkPacket(0, PacketType.IDENTIFICATION, myId);
-            this.sendNetworkPacket(netPacket);
-        }
-        catch(IOException ex)
-        {
-            System.out.println("Error initializing, could not send identification : " + ex);
-        }
+        NetworkPacket netPacket = NetworkPacket.objectToNetworkPacket(0, PacketType.IDENTIFICATION, myId);
+        this.sendNetworkPacket(netPacket);
     }
     /**
      * Called on connection shutdown.

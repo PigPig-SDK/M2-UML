@@ -110,6 +110,7 @@ public abstract class SocketManager extends Thread
      */
     public void disconnect()
     {
+        System.out.println("Closing socket");
         try
         {
             this.running = false;
@@ -126,12 +127,24 @@ public abstract class SocketManager extends Thread
      * Sends a network packet to the client.
      * @param netpacket The network packet we decide to send to the client...
      */
-    public synchronized void sendNetworkPacket(NetworkPacket netpacket) throws IOException 
+    public synchronized void sendNetworkPacket(NetworkPacket netpacket) 
     {
-        byte[] jsonBytes = netpacket.packetToJson().getBytes(StandardCharsets.UTF_8);
-        out.writeInt(jsonBytes.length);//Start by informing the client of our packet size.
-        out.write(jsonBytes);//Now send the packet to our client.
-        out.flush();
+        try
+        {
+            byte[] jsonBytes = netpacket.packetToJson().getBytes(StandardCharsets.UTF_8);
+            out.writeInt(jsonBytes.length);//Start by informing the client of our packet size.
+            out.write(jsonBytes);//Now send the packet to our client.
+            out.flush();
+        }
+        catch(IOException e)
+        {
+            System.err.println("Failure sending message! : " + e.getMessage());
+            if("Socket closed".equalsIgnoreCase(e.getMessage()))//Don't send messages to deadweight... Killem.
+            {
+                this.disconnect();//Stop talking to them...
+            }
+            e.printStackTrace();
+        }
     }
     
     /**

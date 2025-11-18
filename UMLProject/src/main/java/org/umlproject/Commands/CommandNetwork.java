@@ -97,18 +97,11 @@ public class CommandNetwork extends BaseCommand {
             }
             case "say" ->
             {
-                try
-                {
-                    String message = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
-                    if(NetworkManager.getClientInstance() == null)
-                        return;
-                    
-                    NetworkManager.getClientInstance().sendNetworkPacket(new NetworkPacket(0, PacketType.MESSAGE, message));
-                }
-                catch(IOException ex)
-                {
-                    System.out.println("Send message failure:  " + ex.getMessage());
-                }
+                String message = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
+                if(NetworkManager.getClientInstance() == null)
+                    return;
+
+                NetworkManager.getClientInstance().sendNetworkPacket(new NetworkPacket(NetworkManager.getTick(), PacketType.MESSAGE, message));
             }
         }
         

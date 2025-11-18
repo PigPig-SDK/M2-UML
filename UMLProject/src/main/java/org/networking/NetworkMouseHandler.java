@@ -53,13 +53,7 @@ public class NetworkMouseHandler
        
         NetworkMousePayload nmp = new NetworkMousePayload(null, null, screenLocation.getX(), screenLocation.getY(), GuiCamera.isDragging());
         NetworkPacket networkPacket = NetworkPacket.objectToNetworkPacket(NetworkManager.getTick(), PacketType.MOUSE_UPDATE, nmp);
-        try {
-            NetworkManager.getClientInstance().sendNetworkPacket(networkPacket);
-        } 
-        catch (IOException e) {
-            System.out.println("Failed to send mouse input!");
-            return;
-        }
+        NetworkManager.getClientInstance().sendNetworkPacket(networkPacket);
     }
     
     /**

@@ -167,12 +167,7 @@ public class ClientHandler extends SocketManager
      */
     protected void sendEntireDocument()
     {
-        try {
-            sendNetworkPacket(Server.generateDocumentPacket());
-        }
-        catch(IOException ex) {
-            System.err.println("Failed to send document" + ex.getMessage()); 
-        }
+        sendNetworkPacket(Server.generateDocumentPacket());
     }
     /**
      * Called on connection shutdown.
