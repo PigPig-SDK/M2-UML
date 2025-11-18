@@ -180,6 +180,16 @@ public class Server extends Thread {
         }
     }
     /**
+     * Returns a list of only terminal users...
+     */
+    public Set<ClientHandler> getAllTerminalUsers()
+    {
+        Set<ClientHandler> clientHandlers = getClients();
+        clientHandlers.removeIf(client -> !client.getUserID().isTerminalUser);
+        return clientHandlers;
+    }
+    
+    /**
      * Shutsdown the current server.
      */
     public void shutdown()

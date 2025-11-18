@@ -49,6 +49,9 @@ public class Client extends SocketManager
             case PacketType.IDENTIFICATION ->{
                 System.out.println("Got information... Ignoring it...");
             }
+            case PacketType.MOUSE_UPDATE->{
+                NetworkMouseHandler.handleMousePacket(netPacket);
+            }
             case PacketType.HEARTBEAT ->{
                 
                 long delta = netPacket.sendTick() - lastHeartbeatTick;

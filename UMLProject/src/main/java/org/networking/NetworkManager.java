@@ -5,6 +5,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import org.umlproject.Main;
 
 /**
  * This class manages startup and shutdown of network connections.
@@ -87,7 +88,9 @@ public class NetworkManager {
             clientManager = new Client(socket, dataInputStream, dataOutputStream, serverManager != null);
             clientManager.setDaemon(true);
             clientManager.start();
+            
             NetworkDocumentListener.setupListener();
+            NetworkMouseHandler.initialize();
         }
         catch(IOException ex)
         {
@@ -109,7 +112,7 @@ public class NetworkManager {
         setClientNull();
         setServerNull();
         NetworkDocumentListener.shutdownListener();
-        
+        NetworkMouseHandler.shutdown();
     }
     /**
      * ONLY DO THIS IF YOU KNOW WHAT YOU ARE DOING!

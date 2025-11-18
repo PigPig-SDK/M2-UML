@@ -26,6 +26,9 @@ public class App extends Application {
     
     public static void main(String[] args){ launch();}
     
+    private static boolean mouseInWindow = true;
+    
+    private static boolean isFocused = true;
     
     /**
      * Important to note: Both buttons have the onButtonPressed event in side StartupScreen.XML
@@ -44,6 +47,12 @@ public class App extends Application {
                 mainStage.setResizable(true);
                 mainStage.setTitle("UML editor");
                 GuiController.getInstance().lateInitialization();
+                
+                //Setup blah blahs.
+                mainStage.focusedProperty().addListener((obs, oldV, newV) -> isFocused = newV);
+                //...Get mouse inside scene...
+                scene.setOnMouseEntered(e -> mouseInWindow = true);
+                scene.setOnMouseExited(e -> mouseInWindow = false);
             }
             catch(Exception e){
                 System.out.println(e);//Stop crash, print error to user.
@@ -93,6 +102,16 @@ public class App extends Application {
         stage.show();
     }
 
+    public static boolean isMouseInsideWindow()
+    {
+        return mouseInWindow && isWindowFocused();
+    }
+    
+    public static boolean isWindowFocused()
+    {
+        return isFocused;
+    }
+    
     @Override
     public void stop(){
         System.out.println("Stopping Application");

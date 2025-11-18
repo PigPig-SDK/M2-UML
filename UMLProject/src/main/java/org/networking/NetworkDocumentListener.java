@@ -64,33 +64,6 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
         UMLDocument.documentListners.remove(instance);
         instance = null;
     }
-    
-    /**
-     * Sends the updated class to the server for validation
-     */
-    private void sendClassUpdate(UMLClass objectClass)
-    {
-        if(invalidDocumentStates.contains(UMLDocument.getDocumentState())) return;
-
-        if(NetworkManager.isHosting())
-        {
-            objectClass.lastNetworkEditTime++;
-            NetworkPacket networkPacket = NetworkPacket.objectToNetworkPacket(NetworkManager.getTick(), PacketType.CLASS_EDIT, objectClass);
-            Set serverAvoidance = new HashSet<ClientHandler>();
-            serverAvoidance.add(NetworkManager.getServerInstance().getServerClient());
-            NetworkManager.getServerInstance().sendMessageToAllClients(networkPacket, serverAvoidance);
-        }
-        else
-        {
-            System.out.println("Sent as a client: The class.");
-            objectClass.lastNetworkEditTime++;//Increment last edit time...
-            NetworkPacket networkPacket = NetworkPacket.objectToNetworkPacket(NetworkManager.getTick(), PacketType.CLASS_EDIT, objectClass);
-            try {
-                NetworkManager.getClientInstance().sendNetworkPacket(networkPacket);    
-            } 
-            catch (Exception e) {}
-        }
-    }
     /**
      * Sends the new location for a UMLClass.
      */
@@ -122,13 +95,50 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
         }
     }
     /**
+     * Sends the updated class to the server for validation
+     */
+    private void sendClassUpdate(UMLClass objectClass)
+    {
+        if(invalidDocumentStates.contains(UMLDocument.getDocumentState())) return;
+        
+        objectClass.lastNetworkEditTime++;//Increment last edit time...
+        NetworkPacket networkPacket = NetworkPacket.objectToNetworkPacket(NetworkManager.getTick(), PacketType.CLASS_EDIT, objectClass);
+        
+        if(NetworkManager.isHosting())//Bypass communication. Enforce everyone to use this packet.
+        {
+            Set serverAvoidance = new HashSet<ClientHandler>();
+            serverAvoidance.add(NetworkManager.getServerInstance().getServerClient());
+            NetworkManager.getServerInstance().sendMessageToAllClients(networkPacket, serverAvoidance);
+        }
+        else //I am a client, send through my connection...
+        {
+            try {
+                NetworkManager.getClientInstance().sendNetworkPacket(networkPacket);    
+            } catch (IOException e) {}
+        }
+    }
+    /**
      * Sends the updated relationship to the server for validation
      */
     private void sendRelationshipUpdate(UMLRelationship objectLRelationship)
     {
         if(invalidDocumentStates.contains(UMLDocument.getDocumentState())) return;
         
-        System.out.println("Update relationship : " + objectLRelationship.getSourceName());
+        objectLRelationship.lastNetworkEditTime++;//Increment last edit time...
+        NetworkPacket networkPacket = NetworkPacket.objectToNetworkPacket(NetworkManager.getTick(), PacketType.RELATIONSHIP_EDIT, objectLRelationship);
+        
+        if(NetworkManager.isHosting())//Bypass communication. Enforce everyone to use this packet.
+        {
+            Set serverAvoidance = new HashSet<ClientHandler>();
+            serverAvoidance.add(NetworkManager.getServerInstance().getServerClient());
+            NetworkManager.getServerInstance().sendMessageToAllClients(networkPacket, serverAvoidance);
+        }
+        else //I am a client, send through my connection...
+        {
+            try {
+                NetworkManager.getClientInstance().sendNetworkPacket(networkPacket);    
+            } catch (IOException e) {}
+        }
     }
     
     /*---------------------------[ Listeners ]---------------------------*/

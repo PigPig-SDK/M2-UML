@@ -88,17 +88,20 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     private void makeDraggable(StackPane nodeBackground) {
         
         nodeBackground.setOnMousePressed(e -> {
+            GuiCamera.setDragging(true);
             Point2D mouseWorldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
             Point2D paneWorldSpace = new Point2D(nodeBackground.getLayoutX(), nodeBackground.getLayoutY());     
             this.mouseAnchorX = mouseWorldSpace.getX() - paneWorldSpace.getX();
             this.mouseAnchorY = mouseWorldSpace.getY() - paneWorldSpace.getY();
             dragStartLocation = this.parentClass.getLocation();
+            
             nodeBackground.requestFocus();
             e.consume(); // Prevent event from propagating to other nodes
         });
         //Used for selection
         //Mouse up...
         nodeBackground.setOnMouseClicked(e -> {
+            GuiCamera.setDragging(false);
             Point2D worldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
             Point2D selectionOffset = new Point2D(worldSpace.getX() - this.mouseAnchorX, worldSpace.getY() - this.mouseAnchorY);
             
