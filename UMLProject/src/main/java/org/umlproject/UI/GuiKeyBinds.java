@@ -35,6 +35,8 @@ public class GuiKeyBinds {
         addAccelerator(new KeyCodeCombination(KeyCode.F1), "Help");
         addAccelerator(new KeyCodeCombination(KeyCode.F2), "About UML Editor");
         addAccelerator(new KeyCodeCombination(KeyCode.F12), GuiController.getInstance().viewTerminalMenuItem);
+        addAccelerator(new KeyCodeCombination(KeyCode.UP, KeyCombination.CONTROL_DOWN), "Get Previous Command");
+        addAccelerator(new KeyCodeCombination(KeyCode.DOWN, KeyCombination.CONTROL_DOWN), "Get Next Command");
         
         
         App.currentScene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
@@ -110,6 +112,14 @@ public class GuiKeyBinds {
                 case V ->{
                     GuiCopyPaste.getInstance().paste();
                     event.consume();
+                }
+                case UP->
+                {
+                    GuiController.getInstance().console.setText(GuiConsole.getPrevCommand());
+                }
+                case DOWN->
+                {
+                    GuiController.getInstance().console.setText(GuiConsole.getNextCommand());
                 }
             }
         });

@@ -5,17 +5,20 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.AnchorPane;
 import org.umlproject.App;
-import org.umlproject.AutoComplete;
-import org.umlproject.Main;
 
 public class GuiConsole extends OutputStream {
     private static TextArea console;
+    public static List<String> history = new ArrayList<>();
+    public static ListIterator<String> historyIterator;
+    
+    
     
     //Commands that cannot be used while in GUI mode
     public static List<String> restrictedCommands = List.of(
@@ -145,6 +148,31 @@ public class GuiConsole extends OutputStream {
         consoleOut.setPrefHeight(App.mainStage.getHeight() - 80);//Allow space for console at bottom...
         consoleOut.setPrefWidth(App.mainStage.getWidth());
     }
-
+    
+    public static void addToHistory(String command) {
+        history.add(command);
+        historyIterator = null;
+    }
+    
+    public static String getPrevCommand() {
+        if (historyIterator == null) {
+            historyIterator = history.listIterator(history.size());
+        }
+        if (historyIterator.hasPrevious()) {
+            return historyIterator.previous();
+        }
+        return null;
+    }
+    
+    public static String getNextCommand() {
+        if (historyIterator != null && historyIterator.hasNext()) {
+            return historyIterator.next();
+        }
+        return null;
+    }
+    
+    public static String printList() {
+        return String.join("\n", history);
+    }
 }
 
