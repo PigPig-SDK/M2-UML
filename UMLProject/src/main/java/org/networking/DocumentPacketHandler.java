@@ -204,50 +204,37 @@ public class DocumentPacketHandler {
             
             //Get object to be removed...
             UMLDiagramElement element = UMLDocument.getInstance().getAllNetIdElements().get(ropl.idToRemove());
+            boolean successfulRemoval = false;
             if(element instanceof UMLClass classobj)
             {
-                boolean removeSuccess = UMLDocument.executeActionUnderState(DocumentState.NETWORK_OPERATION, () ->{
+                successfulRemoval = UMLDocument.executeActionUnderState(DocumentState.NETWORK_OPERATION, () ->{
                     return UMLDocument.getInstance().removeClass(classobj.getClassName(), true) != null;//Something was removed.
                 });
-                
-                if(removeSuccess)
-                {
-                    Server server = NetworkManager.getServerInstance();
-                    if(server == null) return;
-                    Set<ClientHandler> blacklist = new HashSet<>();
-                    blacklist.add(client);//Don't send back to owner.
-                    blacklist.add(NetworkManager.getServerInstance().getServerClient());
-                    server.sendMessageToAllClients(netPacket, blacklist);
-                }
+
             }
             else if(element instanceof UMLRelationship rObject)
             {
-                boolean removeSuccess = UMLDocument.executeActionUnderState(DocumentState.NETWORK_OPERATION, () ->{
+                successfulRemoval = UMLDocument.executeActionUnderState(DocumentState.NETWORK_OPERATION, () ->{
                     return UMLDocument.getInstance().removeRelationship(rObject.getSourceName(), rObject.getDestinationName());
                 });
-                if(removeSuccess)
-                {
-                    Server server = NetworkManager.getServerInstance();
-                    if(server == null) return;
-                    Set<ClientHandler> blacklist = new HashSet<>();
-                    blacklist.add(client);//Don't send back to owner.
-                    blacklist.add(NetworkManager.getServerInstance().getServerClient());
-                    server.sendMessageToAllClients(netPacket, blacklist);
-                }
-                else
-                    if(client != null) client.sendEntireDocument();
-                
             }
-            else
+            
+            if(successfulRemoval)
             {
-                if(client != null) client.sendEntireDocument();
+                Server server = NetworkManager.getServerInstance();
+                if(server == null) return;
+                Set<ClientHandler> blacklist = new HashSet<>();
+                blacklist.add(client);//Don't send back to owner.
+                blacklist.add(NetworkManager.getServerInstance().getServerClient());
+                server.sendMessageToAllClients(netPacket, blacklist);
                 return;
             }
         }
         catch(JsonSyntaxException e)
         {
-            if(client != null) client.sendEntireDocument();
-            return;
+            System.out.println("Delete object : Json malformed! " + e.getMessage());
         }
+        //Fallback! Send whole document back to client...
+        if(client != null) client.sendEntireDocument();
     }
 }
