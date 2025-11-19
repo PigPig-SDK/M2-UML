@@ -246,7 +246,8 @@ public class UMLDocument implements Copyable<UMLDocument>
         if(hasUpdated)
         {
             UMLClass updatedClass = UMLDocument.getInstance().getClass(newName);
-            updatedClass.updateListener(true);
+            if(updatedClass != null)
+                updatedClass.updateListener(true);
         }
         return hasUpdated;
     }
