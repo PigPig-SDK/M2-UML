@@ -65,18 +65,26 @@
         </Menu>
         <Menu mnemonicParsing="false" text="Edit">
           <items>
-            <MenuItem mnemonicParsing="false" onAction="#deleteEditMenuAction" text="Delete" />
-            <SeparatorMenuItem mnemonicParsing="false" />
+                  <MenuItem mnemonicParsing="false" onAction="#selectAllEditMenuAction" text="Copy" />
+                  <MenuItem mnemonicParsing="false" onAction="#selectAllEditMenuAction" text="Paste" />
+                  <SeparatorMenuItem mnemonicParsing="false" />
             <MenuItem mnemonicParsing="false" onAction="#selectAllEditMenuAction" text="Select All" />
             <MenuItem mnemonicParsing="false" onAction="#unSelectAllEditMenuAction" text="Unselect All" />
                   <SeparatorMenuItem mnemonicParsing="false" />
                   <MenuItem mnemonicParsing="false" onAction="#editUndo" text="Undo" />
                   <MenuItem mnemonicParsing="false" onAction="#editRedo" text="Redo" />
+            <SeparatorMenuItem mnemonicParsing="false" />
+                  <CheckMenuItem fx:id="viewTerminalMenuItem" mnemonicParsing="false" text="Terminal" />
+                  <SeparatorMenuItem mnemonicParsing="false" />
+            <MenuItem mnemonicParsing="false" onAction="#deleteEditMenuAction" text="Delete" />
           </items>
         </Menu>
-            <Menu mnemonicParsing="false" text="View">
+            <Menu mnemonicParsing="false" text="Network">
                <items>
-                  <CheckMenuItem fx:id="viewTerminalMenuItem" mnemonicParsing="false" text="Terminal" />
+                  <MenuItem mnemonicParsing="false" text="Host" />
+                  <MenuItem mnemonicParsing="false" text="Connect" />
+                  <SeparatorMenuItem mnemonicParsing="false" />
+                  <MenuItem mnemonicParsing="false" text="Disconnect" />
                </items>
             </Menu>
           <Menu mnemonicParsing="false" text="Help">
