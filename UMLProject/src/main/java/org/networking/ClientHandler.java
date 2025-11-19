@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -25,6 +26,8 @@ public class ClientHandler extends SocketManager
     private boolean firstID = true;
     private long lastHeartbeatTime = 0;
     private static final long TIMEOUT = 5; // In seconds
+    
+    private UUID clientID = UUID.randomUUID();
     
     public ClientHandler(Socket socket, DataInputStream dataInputStream, DataOutputStream dataOutputStream) throws IOException {
         super(socket, dataInputStream, dataOutputStream);
@@ -76,6 +79,31 @@ public class ClientHandler extends SocketManager
             {
                 //Got client heartbeat... Update their time.
                 lastHeartbeatTime = System.nanoTime();
+            }
+            case PacketType.MOUSE_UPDATE->{
+                try {
+                    Server server = NetworkManager.getServerInstance();
+                    if(server == null)
+                        return;
+                    
+                    NetworkMousePayload payload = netPacket.payloadToObject(NetworkMousePayload.class);
+                    if(payload.getUsername() != null && payload.getUserId() != null)
+                    {
+                        System.err.println("CLIENT GAVE INVALID MOUSE PACKET. THROWING AWAY!");
+                        return;
+                    }
+                    //Populate packet with useful stuff..
+                    payload.setUsername(userID.userName);
+                    payload.setUserId(clientID);
+                    netPacket = NetworkPacket.objectToNetworkPacket(NetworkManager.getTick(), PacketType.MOUSE_UPDATE, payload);//Modified payload loaded!
+                    //Sending...
+                    Set<ClientHandler> blacklist = server.getAllTerminalUsers();
+                    blacklist.add(this);//Do not send back to our client.
+                    server.sendMessageToAllClients(netPacket, blacklist);
+                } 
+                catch (JsonSyntaxException e) {
+                    
+                }
             }
             case PacketType.IDENTIFICATION ->
             {
@@ -139,12 +167,7 @@ public class ClientHandler extends SocketManager
      */
     protected void sendEntireDocument()
     {
-        try {
-            sendNetworkPacket(Server.generateDocumentPacket());
-        }
-        catch(IOException ex) {
-            System.err.println("Failed to send document" + ex.getMessage()); 
-        }
+        sendNetworkPacket(Server.generateDocumentPacket());
     }
     /**
      * Called on connection shutdown.

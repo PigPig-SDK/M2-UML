@@ -167,18 +167,18 @@ public class Server extends Thread {
     public synchronized void sendMessageToClient(NetworkPacket netPacket, ClientHandler client)
     {
         //Ensure we are not causing race conditions...
-        try
-        {
-            client.sendNetworkPacket(netPacket);
-        }
-        catch(IOException ex)
-        {
-            if("Socket closed".equalsIgnoreCase(ex.getMessage()))//Don't send messages to deadweight... Killem.
-            {
-                client.disconnect();//Stop talking to them...
-            }
-        }
+        client.sendNetworkPacket(netPacket);
     }
+    /**
+     * Returns a list of only terminal users...
+     */
+    public Set<ClientHandler> getAllTerminalUsers()
+    {
+        Set<ClientHandler> clientHandlers = getClients();
+        clientHandlers.removeIf(client -> !client.getUserID().isTerminalUser);
+        return clientHandlers;
+    }
+    
     /**
      * Shutsdown the current server.
      */
