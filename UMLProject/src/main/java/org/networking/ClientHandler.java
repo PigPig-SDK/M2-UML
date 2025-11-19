@@ -11,6 +11,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.umlproject.MainThreadDispatcher;
 import org.umlproject.UMLDocument;
 
 
@@ -57,30 +58,30 @@ public class ClientHandler extends SocketManager
      * Incoming packet management for the CLIENTHANDLER
      */
     @Override
-    protected void managePacket(NetworkPacket netPacket) {
+    protected void managePacket(final NetworkPacket netPacket) {
         //Packets are time bound...
         if(netPacket.sendTick() > NetworkManager.getTick())
             return;
         
         switch(netPacket.packetType())
         {
-            case PacketType.DISCONNECT ->
+            case DISCONNECT ->
             {
                 this.disconnect();
             }
-            case PacketType.MESSAGE ->
+            case MESSAGE ->
             {
                 //Send message back to all clients...
                 String message = userID.userName + " : " + netPacket.payload();
                 NetworkPacket overrideNetPacket = new NetworkPacket(0, PacketType.MESSAGE, message);
                 NetworkManager.getServerInstance().sendMessageToAllClients(overrideNetPacket);
             }
-            case PacketType.HEARTBEAT ->
+            case HEARTBEAT ->
             {
                 //Got client heartbeat... Update their time.
                 lastHeartbeatTime = System.nanoTime();
             }
-            case PacketType.MOUSE_UPDATE->{
+            case MOUSE_UPDATE->{
                 try {
                     Server server = NetworkManager.getServerInstance();
                     if(server == null)
@@ -95,17 +96,17 @@ public class ClientHandler extends SocketManager
                     //Populate packet with useful stuff..
                     payload.setUsername(userID.userName);
                     payload.setUserId(clientID);
-                    netPacket = NetworkPacket.objectToNetworkPacket(NetworkManager.getTick(), PacketType.MOUSE_UPDATE, payload);//Modified payload loaded!
+                    NetworkPacket tempNetPacket = NetworkPacket.objectToNetworkPacket(NetworkManager.getTick(), PacketType.MOUSE_UPDATE, payload);//Modified payload loaded!
                     //Sending...
                     Set<ClientHandler> blacklist = server.getAllTerminalUsers();
                     blacklist.add(this);//Do not send back to our client.
-                    server.sendMessageToAllClients(netPacket, blacklist);
+                    server.sendMessageToAllClients(tempNetPacket, blacklist);
                 } 
                 catch (JsonSyntaxException e) {
                     
                 }
             }
-            case PacketType.IDENTIFICATION ->
+            case IDENTIFICATION ->
             {
                 //If the user has no ID, we are accepting one.
                 try
@@ -125,11 +126,15 @@ public class ClientHandler extends SocketManager
                     System.out.println("User gave us bogus...");
                 }
             }
-            case PacketType.CLASS_EDIT ->
+            case CLASS_EDIT ->
             {
-                DocumentPacketHandler.handleElementModified(this,netPacket);
+                DocumentPacketHandler.handleElementModified(this, netPacket);
             }
-            case PacketType.ELEMENT_MOVED ->
+            case OBJECT_DELETED ->
+            {
+                MainThreadDispatcher.dispatcher.dispatch(()-> DocumentPacketHandler.handleRemovePacket(this, netPacket));
+            }
+            case ELEMENT_MOVED ->
             {
                 //Server has suggested we move something...
                 Server server = NetworkManager.getServerInstance();

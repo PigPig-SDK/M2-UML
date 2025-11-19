@@ -78,10 +78,10 @@ public class DocumentPacketHandler {
             return;//Cannot execute, send client back packet
         
         switch (networkPacket.packetType()) {
-            case PacketType.RELATIONSHIP_EDIT -> {
+            case RELATIONSHIP_EDIT -> {
                 System.out.println("Erm... aschually bazinga bazinga.");
             }
-            case PacketType.CLASS_EDIT -> {
+            case CLASS_EDIT -> {
                 MainThreadDispatcher.dispatcher.dispatch(() -> handleClassPacket(client, networkPacket));
             }
             default ->
@@ -178,5 +178,63 @@ public class DocumentPacketHandler {
         
         NetworkPacket netPacket = NetworkPacket.objectToNetworkPacket(NetworkManager.getTick(), PacketType.CLASS_EDIT, umlClass);
         server.sendMessageToClient(netPacket, client);
+    }
+    /**
+     * Removes a network object from the document
+     * @param client The client the packet came from. If null, than server sent the packet and we are the client.
+     * @param netPacket The packet to be processed
+     */
+    public static void handleRemovePacket(ClientHandler client, NetworkPacket netPacket)
+    {
+        ///
+        ///
+        //////////////////////////
+        //  On main thread!!!!  //
+        //////////////////////////
+        ///
+        ///
+        ///
+        try
+        {
+            if(netPacket == null)
+                return;
+            RemoveObjectPayload ropl = netPacket.payloadToObject(RemoveObjectPayload.class);
+            if(ropl == null) return;
+            if(ropl.idToRemove() == null) return;
+            
+            //Get object to be removed...
+            UMLDiagramElement element = UMLDocument.getInstance().getAllNetIdElements().get(ropl.idToRemove());
+            boolean successfulRemoval = false;
+            if(element instanceof UMLClass classobj)
+            {
+                successfulRemoval = UMLDocument.executeActionUnderState(DocumentState.NETWORK_OPERATION, () ->{
+                    return UMLDocument.getInstance().removeClass(classobj.getClassName(), true) != null;//Something was removed.
+                });
+
+            }
+            else if(element instanceof UMLRelationship rObject)
+            {
+                successfulRemoval = UMLDocument.executeActionUnderState(DocumentState.NETWORK_OPERATION, () ->{
+                    return UMLDocument.getInstance().removeRelationship(rObject.getSourceName(), rObject.getDestinationName());
+                });
+            }
+            
+            if(successfulRemoval)
+            {
+                Server server = NetworkManager.getServerInstance();
+                if(server == null) return;
+                Set<ClientHandler> blacklist = new HashSet<>();
+                blacklist.add(client);//Don't send back to owner.
+                blacklist.add(NetworkManager.getServerInstance().getServerClient());
+                server.sendMessageToAllClients(netPacket, blacklist);
+                return;
+            }
+        }
+        catch(JsonSyntaxException e)
+        {
+            System.out.println("Delete object : Json malformed! " + e.getMessage());
+        }
+        //Fallback! Send whole document back to client...
+        if(client != null) client.sendEntireDocument();
     }
 }
