@@ -114,15 +114,15 @@ public class UMLDocumentTests
     public void renameClass_successfulRename_success()
     {
         // Arrange
-        UMLDocument umldocument = new UMLDocument("test");
+        UMLDocument.resetInstance(true);
         // Act
-        umldocument.addClass("testclass1");
-        umldocument.renameClass("testclass1", "testclass2");
+        UMLDocument.getInstance().addClass("testclass1");
+        UMLDocument.getInstance().renameClass("testclass1", "testclass2");
         // Assert
 
         //Currently non-functioning until addClass has functionality to add class to relationshipList
-        assertNull(umldocument.getClass("testclass1"));
-        assertNotNull(umldocument.getClass("testclass2"));
+        assertNull(UMLDocument.getInstance().getClass("testclass1"));
+        assertNotNull(UMLDocument.getInstance().getClass("testclass2"));
     }
     
 
