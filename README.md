@@ -5,7 +5,7 @@
 1. **Install Java Development Kit (JDK) (Specifically Java 25)**  
    Download and install the latest JDK from [Oracle Java Downloads](https://www.oracle.com/java/technologies/downloads/).
 2. **Download the executable**  
-   [Gui 1.0 Release](https://github.com/jprichard1ewu/microsoft-2/releases/tag/Sprint2)
+   [Gui 2.0 Release](https://github.com/jprichard1ewu/microsoft-2/releases/tag/Sprint3)
 
    Enjoy!
 
@@ -32,5 +32,9 @@ Execute `compilenrun.sh`
 | `list <'classname'/class/relationships>` | Lists information about a class or all relationships. |
 | `load <'file directory',_>` | Loads a previously saved UML document. |
 | `save <'file directory',_>` | Saves the current UML document to disk. |
+| `undo` | Revert the last change you made |
+| `redo` | Reapply a change you previously undid |
 | `quit` | Exits the UML editor application. |
+| **EXPERIMENTAL** |  |
+| `net <host <port>, connect <ip:port>, say, list, disconnect>` | Network commands for connecting to a server, disconnecting, hosting, talking, ect... |
 

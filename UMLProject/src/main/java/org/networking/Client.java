@@ -4,6 +4,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import org.umlproject.MainThreadDispatcher;
 
 /**
  * This class is the 'client' logic for handling server packets
@@ -38,45 +39,52 @@ public class Client extends SocketManager
     /**
      * Incoming packet management for the CLIENT
      */
-    @Override protected void managePacket(NetworkPacket netPacket) {
+    @Override protected void managePacket(final NetworkPacket netPacket) {
         switch(netPacket.packetType())
         {
-            case PacketType.DISCONNECT ->
+            case DISCONNECT ->
             {
                 System.out.println("Server suggested shutdown.");
                 this.disconnect();
             }
-            case PacketType.IDENTIFICATION ->{
+            case IDENTIFICATION ->{
                 System.out.println("Got information... Ignoring it...");
             }
-            case PacketType.HEARTBEAT ->{
+            case MOUSE_UPDATE->{
+                NetworkMouseHandler.handleMousePacket(netPacket);
+            }
+            case HEARTBEAT ->{
                 
                 long delta = netPacket.sendTick() - lastHeartbeatTick;
                 tick = netPacket.sendTick();
                 if(delta >= heartbeatDelta)
                 {
-                    try{
-                        sendNetworkPacket(new NetworkPacket(tick, PacketType.HEARTBEAT, null));
-                        lastHeartbeatTick = tick;//Success. Update our last heartbeat time.
-                    }
-                    catch(IOException ex)
-                    {
-                        System.out.println("heartbeat sending exception..." + ex.getMessage());
-                    }
+                    sendNetworkPacket(new NetworkPacket(tick, PacketType.HEARTBEAT, null));
+                    lastHeartbeatTick = tick;//Success. Update our last heartbeat time.
                 }
             }
-            case PacketType.FULL_DOCUMENT ->
+            case CLASS_EDIT ->
             {
+                if(isHosting)
+                    return;
+                DocumentPacketHandler.handleElementModified(null, netPacket);
+            }
+            case FULL_DOCUMENT ->
+            {
+                if(isHosting)
+                    return;
                 //Go for it bud...
                 DocumentPacketHandler.handleDocumentPacket(netPacket);
             }
-            case PacketType.ELEMENT_MOVED ->
+            case ELEMENT_MOVED ->
             {
-                
-                if(isHosting) return;//Host dosn't care, serverlogic handles this.
-                
                 //Server has suggested we move something...
                 DocumentPacketHandler.handleElementMovementPacket(netPacket);
+            }
+            case OBJECT_DELETED ->
+            {
+                //Null implies there is nobody to send errors back to. We accept the packet whole-heartedly.
+                MainThreadDispatcher.dispatcher.dispatch(()-> DocumentPacketHandler.handleRemovePacket(null, netPacket));
             }
             default ->
             {
@@ -98,15 +106,8 @@ public class Client extends SocketManager
     @Override
     protected void onConnectionStarted() {
         UserIdentification myId = UserIdentification.generateAnonymousUserInfo();
-        try
-        {
-            NetworkPacket netPacket = NetworkPacket.objectToNetworkPacket(0, PacketType.IDENTIFICATION, myId);
-            this.sendNetworkPacket(netPacket);
-        }
-        catch(IOException ex)
-        {
-            System.out.println("Error initializing, could not send identification : " + ex);
-        }
+        NetworkPacket netPacket = NetworkPacket.objectToNetworkPacket(0, PacketType.IDENTIFICATION, myId);
+        this.sendNetworkPacket(netPacket);
     }
     /**
      * Called on connection shutdown.

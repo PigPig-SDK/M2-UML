@@ -1,13 +1,19 @@
 package org.umlproject.UI;
 
+import java.awt.MouseInfo;
+import java.awt.Point;
 import javafx.animation.AnimationTimer;
 import javafx.geometry.Point2D;
 import javafx.scene.Group;
+import javafx.scene.Scene;
 import javafx.scene.control.TextInputControl;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseButton;
 import static javafx.scene.input.MouseButton.MIDDLE;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Pane;
+import javafx.stage.Stage;
+import org.umlproject.App;
 import org.umlproject.Main;
 
 public class GuiCamera {
@@ -16,13 +22,15 @@ public class GuiCamera {
     private static final int ARROWKEY_SPEED = 4500;
     private static boolean up, down, left, right;
     private static final double ZOOM_SCALE_AMMOUNT = 0.005f;
-    private static final double ZOOM_SCALE_MIN = 0.5f;
+    private static final double ZOOM_SCALE_MIN = 0.25f;
     private static final double ZOOM_SCALE_MAX = 3f;
 
     private static long lastTime = 0;
     
     private static double startDragX = 0;
     private static double startDragY = 0;
+    
+    private static boolean isDragging = false;
     
     public static void setCameraLocation(Point2D location)
     {
@@ -62,10 +70,10 @@ public class GuiCamera {
     }
     private static void manageCameraInput()
     {
-        if(Main.currentScene == null)
+        if(App.currentScene == null)
             return;
         //Key down
-        Main.currentScene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+        App.currentScene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
             if (event.isControlDown())
                 return;
             
@@ -77,7 +85,7 @@ public class GuiCamera {
             }
         });
         //Key up
-        Main.currentScene.addEventHandler(KeyEvent.KEY_RELEASED, event -> {
+        App.currentScene.addEventHandler(KeyEvent.KEY_RELEASED, event -> {
             switch (event.getCode()) {
                 case UP, W -> {up = false;event.consume();}
                 case DOWN, S -> {down = false;event.consume();}
@@ -86,7 +94,7 @@ public class GuiCamera {
             }
         });
         //Mouse zoom
-        Main.currentScene.setOnScroll(event ->{
+        App.currentScene.setOnScroll(event ->{
             double zoomAmmount = event.getDeltaY();
             
             if(zoomAmmount == 0)
@@ -95,7 +103,7 @@ public class GuiCamera {
         });
         
         //Logic to drag the camera around
-        Main.currentScene.setOnMouseDragged(event -> {
+        App.currentScene.setOnMouseDragged(event -> {
             double currentX = event.getScreenX();
             double currentY = event.getScreenY();
             switch (event.getButton()) {
@@ -111,12 +119,19 @@ public class GuiCamera {
             startDragY = currentY; 
         });
         //Clicking into the void deselects any textbox...
-        Main.currentScene.setOnMousePressed(event -> {
+        App.currentScene.setOnMousePressed(event -> {
+            isDragging = true;
             //Reset our current drag distance.
             startDragX = event.getScreenX();
             startDragY = event.getScreenY(); 
             //We click onto a type of textbox, do not remove selection.
             if (!(event.getTarget() instanceof TextInputControl)) GuiController.getInstance().getViewPane().requestFocus();
+        });
+        //Stop drag...
+        App.currentScene.setOnMouseReleased(e -> {
+            if (e.getButton() == MouseButton.PRIMARY) {
+                isDragging = false;
+            }
         });
     }
     /**
@@ -173,5 +188,24 @@ public class GuiCamera {
     public static double getCameraZoom()
     {
         return cameraZoom;
+    }
+    public static void setDragging(boolean _isDragging)
+    {
+        isDragging = _isDragging;
+    }
+    public static boolean isDragging()
+    {
+        return isDragging;
+    }
+    public static Point2D getMouseInScene() {
+        
+        Point p = MouseInfo.getPointerInfo().getLocation();
+        double screenX = p.getX();
+        double screenY = p.getY() - (5/GuiCamera.getCameraZoom());//Java jank..
+
+        double sceneX = screenX - App.mainStage.getX() - App.currentScene.getX();
+        double sceneY = screenY - App.mainStage.getY() - App.currentScene.getY();
+
+        return new Point2D(sceneX, sceneY);
     }
 }

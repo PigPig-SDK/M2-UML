@@ -5,6 +5,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import org.umlproject.Main;
 
 /**
  * This class manages startup and shutdown of network connections.
@@ -16,9 +17,7 @@ public class NetworkManager {
     public static final int MAX_PACKET_LENGTH = 60000;
     public static final int CONNECTION_TIMEOUT = 3;//in seconds
     public static final int unstuckTimeout = 10;//in seconds
-    
-    public static boolean isHosting;
-    
+
     private static Server serverManager = null;
     private static Client clientManager = null;
     
@@ -44,7 +43,7 @@ public class NetworkManager {
         try
         {
             System.out.println("Starting host on : " + port);
-            serverManager = new Server(port);
+            serverManager = new Server(port, summonLocalClient);
             serverManager.setDaemon(true);
             serverManager.start();
         }
@@ -89,7 +88,9 @@ public class NetworkManager {
             clientManager = new Client(socket, dataInputStream, dataOutputStream, serverManager != null);
             clientManager.setDaemon(true);
             clientManager.start();
+            
             NetworkDocumentListener.setupListener();
+            NetworkMouseHandler.initialize();
         }
         catch(IOException ex)
         {
@@ -111,6 +112,7 @@ public class NetworkManager {
         setClientNull();
         setServerNull();
         NetworkDocumentListener.shutdownListener();
+        NetworkMouseHandler.shutdown();
     }
     /**
      * ONLY DO THIS IF YOU KNOW WHAT YOU ARE DOING!
@@ -164,5 +166,9 @@ public class NetworkManager {
             return clientManager.getTick();
         }
         return -1;
+    }
+    public static boolean isHosting()
+    {
+        return getServerInstance() != null;
     }
 }

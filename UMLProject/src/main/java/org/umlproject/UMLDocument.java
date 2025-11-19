@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonIOException;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -16,7 +17,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Supplier;
+import java.util.UUID;
 
 
 public class UMLDocument implements Copyable<UMLDocument>
@@ -33,6 +36,50 @@ public class UMLDocument implements Copyable<UMLDocument>
     public static List<DocumentListner> documentListners = new ArrayList<>();
     private static DocumentState documentState = DocumentState.NORMAL;
     
+    
+    /**
+     * Returns all UMLDiagramElements from the document
+     * If no elements exist, than an empty list is provided.
+     * 
+     * @return A list of all UMLDiagramElements
+     */
+    public List<UMLDiagramElement> getAllDiagramElements()
+    {
+        List<UMLDiagramElement> allElements = new ArrayList<>();
+        for(UMLClass umlclass : classSet.values())
+        {
+            if(umlclass == null) continue;
+            
+            allElements.add(umlclass);
+        }
+        for(ArrayList<UMLRelationship> allRealtionshipLists : relationshipList.values())
+        {
+            if(allRealtionshipLists == null) continue;
+            
+            for(UMLRelationship relationship : allRealtionshipLists)
+            {
+                if(relationship == null) continue;
+                
+                allElements.add(relationship);
+            }
+        }
+        return allElements;
+    }
+    /**
+     * Returns all UMLDiagramElements in a map of their netid->object
+     * 
+     * @return A map of < ID , OBJECT >
+     */
+    public Map<UUID,UMLDiagramElement> getAllNetIdElements()
+    {
+        Map<UUID,UMLDiagramElement> allElements = new HashMap<>();
+        for(UMLDiagramElement element : getAllDiagramElements())
+        {
+            if(element == null) continue;
+            allElements.put(element.networkId, element);
+        }
+        return allElements;
+    }
     /**
      * Used to return all selectable objects
      * To be used by a 'UMLGuiController' when requested
@@ -41,19 +88,10 @@ public class UMLDocument implements Copyable<UMLDocument>
     public List<DiagramElementListener> getUIListeners()
     {
         List<DiagramElementListener> allListeners = new ArrayList();
-        for(UMLClass umlclass : classSet.values())
+        for(UMLDiagramElement element : getAllDiagramElements())
         {
-            if(umlclass == null || umlclass.listener == null) continue;
-            allListeners.add(umlclass.listener);
-        }
-        for(ArrayList<UMLRelationship> allRealtionshipLists : relationshipList.values())
-        {
-            if(allRealtionshipLists == null) continue;
-            for(UMLRelationship relationship : allRealtionshipLists)
-            {
-                if(relationship == null || relationship.listener == null) continue;
-                allListeners.add(relationship.listener);
-            }
+            if(element.listener != null)
+                allListeners.add(element.listener);
         }
         return allListeners;
     }
@@ -64,16 +102,21 @@ public class UMLDocument implements Copyable<UMLDocument>
      */
     public static synchronized UMLDocument getInstance()
     {
-        if(instance == null)
+        if(instance == null)//Setup...
         {
-            resetInstance();
+            resetInstance(true);
         }
         return instance.getInstance();
     }
-    public static synchronized UMLDocument resetInstance()
+    public static synchronized UMLDocument resetInstance(boolean clearListeners)
     {
         UMLDocument doc = new UMLDocument(DEFAULT_FILEDIRECTORY);
-        instance = new Memento<UMLDocument>(doc);
+        if(clearListeners || instance == null)
+            instance = new Memento<UMLDocument>(doc);
+        else
+        {
+            instance.resetHistory(doc);
+        }
         return doc;
     }
     /**
@@ -161,7 +204,7 @@ public class UMLDocument implements Copyable<UMLDocument>
         //Ensure the newname location isnt taken.
         if(classSet.containsKey(newName) || relationshipList.containsKey(newName)) return false;
         
-        boolean hasUpdated = UMLDocument.executeActionUnderState(DocumentState.MASS_OPERATION,
+        boolean hasUpdated = UMLDocument.executeActionUnderState(DocumentState.MASS_OPERATION_RENAME,
         ()->{
         
             //Validation
@@ -172,6 +215,7 @@ public class UMLDocument implements Copyable<UMLDocument>
             UMLClass removedClass = removeClass(originClassName, false);
             //Full send. Cannot retract at any point past here.
             if(removedClass == null) return false;//Check incase something weird has happened.
+            
             relationshipList.remove(originClassName);//Kill duplicate.
 
             //Rename outgoing relationships
@@ -196,11 +240,13 @@ public class UMLDocument implements Copyable<UMLDocument>
             classSet.put(newName, removedClass);
             relationshipList.put(newName, tempRelationships);
             return true;
-            
         });
+        
+        //Update the globals about our new name outside of mass operation.
         if(hasUpdated)
         {
-            UMLDocument.saveMementoState();
+            UMLClass updatedClass = UMLDocument.getInstance().getClass(newName);
+            updatedClass.updateListener(true);
         }
         return hasUpdated;
     }
@@ -449,9 +495,23 @@ public class UMLDocument implements Copyable<UMLDocument>
                 // Deserialize the JSON into your Java object
                 UMLDocument data = gson.fromJson(reader, UMLDocument.class);
                 load(data);
+                //Clear all network times.
+                //Randomize all netIDS again...
+                for(UMLDiagramElement element : getAllDiagramElements())
+                {
+                    element.networkId = UUID.randomUUID();
+                    element.lastNetworkEditTime = 0;
+                }
+                
                 this.fileLocation=filename;
-            } 
+            }
+            catch (JsonIOException e)
+            {
+                System.out.println("Error parsing file! : " + e.getMessage());
+            }
             catch (IOException e) {
+                System.err.println("CRITICAL LOADING ERROR! : " + e.getMessage());
+                e.printStackTrace();
                 return false;
             }
             return true;
@@ -461,13 +521,15 @@ public class UMLDocument implements Copyable<UMLDocument>
     {
         if(document == null)
             return;
-        
-        cleanUpAllGuiListeners();
-        this.classSet = document.classSet;
-        this.fileLocation = document.fileLocation;
-        this.relationshipList = document.relationshipList;
-        instance.resetHistory(this);
-        suggestGuiControllerRedraw();
+        executeActionUnderState(DocumentState.FILE_LOADING,()->
+        {
+            cleanUpAllGuiListeners();
+            this.classSet = document.classSet;
+            this.fileLocation = document.fileLocation;
+            this.relationshipList = document.relationshipList;
+            instance.resetHistory(this);
+            suggestGuiControllerRedraw();
+        });
     }
     /**
      * Rebinds every UMLClass,UMLRelationship... so on ... with the guiController.
@@ -494,8 +556,7 @@ public class UMLDocument implements Copyable<UMLDocument>
     public void clearFile()
     {
         cleanUpAllGuiListeners();
-        classSet.clear();
-        relationshipList.clear();
+        UMLDocument.resetInstance(false);
     }
     /**
      * Calls Cleanup on all listener instances
@@ -530,7 +591,33 @@ public class UMLDocument implements Copyable<UMLDocument>
         documentListners.forEach(o -> o.onClassAdded(umlclass));
         return umlclass;
     }
-
+    /**
+     * Adds/Replaces a class with a given UMLClass instance...
+     *
+     * @param umlClass A given class to insert or replace...
+     *
+     * @return True if the class replacement operation worked.
+     */
+    public boolean addClass(UMLClass umlClass){
+        
+        Objects.requireNonNull(umlClass.getClassName(), "newName cannot be null");
+        umlClass.setClassName(umlClass.getClassName().replaceAll("\\s+", ""));
+        
+        //Remove for replacement!
+        UMLClass removedClass = UMLDocument.getInstance().removeClass(umlClass.getClassName(), false);
+        if(removedClass != null)
+            removedClass.disposeOfListener();
+        //Add relationships if they DNE
+        if(!relationshipList.containsKey(umlClass.getClassName()))
+        {
+            ArrayList<UMLRelationship> newList = new ArrayList<>();
+            relationshipList.put(umlClass.getClassName(), newList);
+        }
+        
+        classSet.put(umlClass.getClassName(), umlClass);
+        documentListners.forEach(o -> o.onClassAdded(umlClass));
+        return true;//uhh...
+    }
     /**
      * @return number of classes added
      */
@@ -614,6 +701,7 @@ public class UMLDocument implements Copyable<UMLDocument>
         catch (Exception e) 
         {
             System.err.println("Error: " + e.getMessage());
+            e.printStackTrace();
         }
         finally
         {
@@ -638,6 +726,7 @@ public class UMLDocument implements Copyable<UMLDocument>
         catch (Exception e) 
         {
             System.err.println("Error: " + e.getMessage());
+            e.printStackTrace();
         }
         documentState = previousState;
         return temp;
@@ -654,11 +743,12 @@ public class UMLDocument implements Copyable<UMLDocument>
             for (String classString : classSet.keySet()) {
                 umldoc.getClassSet().put(classString, classSet.get(classString).clone());
             }
+            
             for (String relatString : relationshipList.keySet()) {
                 Map<String, ArrayList<UMLRelationship>> copyRelatList = umldoc.getRelationshipList();
                 copyRelatList.put(relatString, new ArrayList<UMLRelationship>());
                 for (UMLRelationship relationship : relationshipList.get(relatString)) {
-                    copyRelatList.get(relatString).add(relationship);
+                    copyRelatList.get(relatString).add(relationship.clone());
                 }
             }
             return umldoc;

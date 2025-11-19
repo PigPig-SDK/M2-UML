@@ -46,6 +46,8 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     //VBox that holds className TextField and VBoxes for data fields and methods.
     VBox parentVBox;
     
+    Point2D dragStartLocation = Point2D.ZERO;
+    
     private boolean isSelected = false;
     /**
      * Constructor for GuiClass responsible for building the initial class box and setting all the proper
@@ -84,20 +86,27 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
       * @param nodeBackground, a StackPane representing the container for the class box contents.
       */
     private void makeDraggable(StackPane nodeBackground) {
+        
         nodeBackground.setOnMousePressed(e -> {
+            GuiCamera.setDragging(true);
             Point2D mouseWorldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
             Point2D paneWorldSpace = new Point2D(nodeBackground.getLayoutX(), nodeBackground.getLayoutY());     
             this.mouseAnchorX = mouseWorldSpace.getX() - paneWorldSpace.getX();
             this.mouseAnchorY = mouseWorldSpace.getY() - paneWorldSpace.getY();
+            dragStartLocation = this.parentClass.getLocation();
+            
             nodeBackground.requestFocus();
             e.consume(); // Prevent event from propagating to other nodes
         });
         //Used for selection
         //Mouse up...
         nodeBackground.setOnMouseClicked(e -> {
+            GuiCamera.setDragging(false);
             Point2D worldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
             Point2D selectionOffset = new Point2D(worldSpace.getX() - this.mouseAnchorX, worldSpace.getY() - this.mouseAnchorY);
-            this.parentClass.setLocation(selectionOffset, true);
+            
+            if(!selectionOffset.equals(dragStartLocation))
+                this.parentClass.setLocation(selectionOffset, true);
             
             GuiSelect.getInstance().clickUiElement(e, this);
             e.consume(); // Prevent event from propagating to other nodes

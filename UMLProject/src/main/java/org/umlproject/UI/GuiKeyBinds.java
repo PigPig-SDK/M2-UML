@@ -10,6 +10,7 @@ import static javafx.scene.input.KeyCode.Z;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
+import org.umlproject.App;
 import org.umlproject.Main;
 import org.umlproject.UMLDocument;
 
@@ -29,12 +30,14 @@ public class GuiKeyBinds {
         addAccelerator(new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN), "New");
         addAccelerator(new KeyCodeCombination(KeyCode.A, KeyCombination.CONTROL_DOWN), "Select All");
         addAccelerator(new KeyCodeCombination(KeyCode.DELETE, KeyCombination.CONTROL_DOWN), "Delete");
+        addAccelerator(new KeyCodeCombination(KeyCode.C, KeyCombination.CONTROL_DOWN), "Copy");
+        addAccelerator(new KeyCodeCombination(KeyCode.V, KeyCombination.CONTROL_DOWN), "Paste");
         addAccelerator(new KeyCodeCombination(KeyCode.F1), "Help");
         addAccelerator(new KeyCodeCombination(KeyCode.F2), "About UML Editor");
         addAccelerator(new KeyCodeCombination(KeyCode.F12), GuiController.getInstance().viewTerminalMenuItem);
         
         
-        Main.currentScene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+        App.currentScene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
             if(GuiController.getInstance() == null)//Cannot execute quickbind. The menu dosn't exist.
                 return;
           
@@ -96,6 +99,16 @@ public class GuiKeyBinds {
                 //Redo
                 case Y ->{
                     GuiController.getInstance().editRedo();
+                    event.consume();
+                }
+                //Copy all (CTRL+C)
+                case C ->{
+                    GuiCopyPaste.getInstance().copy();
+                    event.consume();
+                }
+                //Copy all (CTRL+V)
+                case V ->{
+                    GuiCopyPaste.getInstance().paste();
                     event.consume();
                 }
             }

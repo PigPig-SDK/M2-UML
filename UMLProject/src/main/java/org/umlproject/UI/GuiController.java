@@ -161,6 +161,7 @@ public class GuiController implements DocumentListner {
             saveLocationSet = false;
             GuiCamera.setCameraLocation(Point2D.ZERO);//Reset camera...
             UMLDocument.getInstance().clearFile();
+            
         }
     }
     /**
@@ -392,7 +393,8 @@ public class GuiController implements DocumentListner {
         umlClass.setListener(guiClass);
         
         if(UMLDocument.getDocumentState() != DocumentState.FILE_LOADING &&
-           UMLDocument.getDocumentState() != DocumentState.MEMENTO_STATE_RESET)//select newly added items.
+           UMLDocument.getDocumentState() != DocumentState.MEMENTO_STATE_RESET &&
+           UMLDocument.getDocumentState() != DocumentState.NETWORK_OPERATION)//select newly added items on our client.
         {
             GuiSelect.getInstance().resetSelect();//Clear our selection...
             GuiSelect.getInstance().selectUiElement(guiClass);
@@ -515,6 +517,7 @@ public class GuiController implements DocumentListner {
     }
     @Override
     public void onClassRemove(UMLClass umlClass) {
+        System.out.println("CLeaned up. " + umlClass.getListener());
         umlClass.disposeOfListener();
     }
     @Override

@@ -11,6 +11,7 @@ import org.umlproject.UMLRelationship;
 import java.util.ArrayList;
 import java.util.Optional;
 import javafx.animation.AnimationTimer;
+import org.umlproject.App;
 import org.umlproject.DiagramElementListener;
 import org.umlproject.DocumentState;
 
@@ -25,7 +26,7 @@ public class GuiSelect {
      */
     private GuiSelect(){
         selectedObjects = new ArrayList<>();
-        Main.currentScene.setOnMouseClicked(e -> {
+        App.currentScene.setOnMouseClicked(e -> {
             GuiSelect.getInstance().checkResetSelect(e);
             e.consume();
         });
@@ -160,5 +161,9 @@ public class GuiSelect {
                 selectedObjects.add(selectable);
             }
         }
+    }
+
+    public ArrayList<UISelectable> getSelectedObjects(){
+        return selectedObjects;
     }
 }

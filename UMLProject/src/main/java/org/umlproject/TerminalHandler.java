@@ -19,6 +19,8 @@ public class TerminalHandler
         TerminalHandler.registerCommand(new CommandQuit());
         TerminalHandler.registerCommand(new CommandRemove());
         TerminalHandler.registerCommand(new CommandRename());
+        TerminalHandler.registerCommand(new CommandCopy());
+        TerminalHandler.registerCommand(new CommandPaste());
         TerminalHandler.registerCommand(new CommandLoad());
         TerminalHandler.registerCommand(new CommandList());
         TerminalHandler.registerCommand(new CommandSave());

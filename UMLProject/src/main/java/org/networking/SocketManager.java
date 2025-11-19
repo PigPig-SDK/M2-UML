@@ -1,5 +1,6 @@
 package org.networking;
 
+import com.google.gson.stream.MalformedJsonException;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -64,6 +65,11 @@ public abstract class SocketManager extends Thread
                 
                 managePacket(netPacket);
             }
+            catch(MalformedJsonException e)
+            {
+                System.out.println("Malformed JSON!" + e.getMessage());
+                continue;
+            }
             catch(SocketTimeoutException e)//Timeout
             {
                 System.out.println("Timeout hit");
@@ -104,6 +110,7 @@ public abstract class SocketManager extends Thread
      */
     public void disconnect()
     {
+        System.out.println("Closing socket");
         try
         {
             this.running = false;
@@ -120,12 +127,27 @@ public abstract class SocketManager extends Thread
      * Sends a network packet to the client.
      * @param netpacket The network packet we decide to send to the client...
      */
-    public void sendNetworkPacket(NetworkPacket netpacket) throws IOException 
+    public synchronized void sendNetworkPacket(NetworkPacket netpacket) 
     {
-        byte[] jsonBytes = netpacket.packetToJson().getBytes(StandardCharsets.UTF_8);
-        out.writeInt(jsonBytes.length);//Start by informing the client of our packet size.
-        out.write(jsonBytes);//Now send the packet to our client.
-        out.flush();
+        try
+        {
+            byte[] jsonBytes = netpacket.packetToJson().getBytes(StandardCharsets.UTF_8);
+            out.writeInt(jsonBytes.length);//Start by informing the client of our packet size.
+            out.write(jsonBytes);//Now send the packet to our client.
+            out.flush();
+        }
+        catch(IOException e)
+        {
+            System.err.println("Failure sending message! : " + e.getMessage());
+            
+            //Don't send messages to deadweight... Killem.
+            if("Socket closed".equalsIgnoreCase(e.getMessage()) ||
+                    "Connection reset by peer".equalsIgnoreCase(e.getMessage()))
+            {
+                this.disconnect();//Stop talking to them...
+            }
+            e.printStackTrace();
+        }
     }
     
     /**
