@@ -219,6 +219,22 @@ public class GuiController implements DocumentListner {
         if(UMLDocument.getInstance().save())
             saveLocationSet = true;
     }
+    
+    @FXML 
+    private void copyEditMenuAction() { System.out.println("Copy"); }
+    
+    @FXML 
+    private void pasteEditMenuAction() { System.out.println("Paste"); }
+    
+    @FXML 
+    private void hostNetworkMenuAction() { System.out.println("Hoste"); }
+    
+    @FXML 
+    private void connectNetworkMenuAction() { System.out.println("connect"); }
+    
+    @FXML 
+    private void disconnectNetworkMenuAction() { System.out.println("disconnect"); }
+    
     @FXML
     private void quitFileMenuAction()
     {

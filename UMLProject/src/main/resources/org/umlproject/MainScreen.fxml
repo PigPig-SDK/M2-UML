@@ -65,8 +65,8 @@
         </Menu>
         <Menu mnemonicParsing="false" text="Edit">
           <items>
-                  <MenuItem mnemonicParsing="false" onAction="#selectAllEditMenuAction" text="Copy" />
-                  <MenuItem mnemonicParsing="false" onAction="#selectAllEditMenuAction" text="Paste" />
+                  <MenuItem mnemonicParsing="false" onAction="#copyEditMenuAction" text="Copy" />
+                  <MenuItem mnemonicParsing="false" onAction="#pasteEditMenuAction" text="Paste" />
                   <SeparatorMenuItem mnemonicParsing="false" />
             <MenuItem mnemonicParsing="false" onAction="#selectAllEditMenuAction" text="Select All" />
             <MenuItem mnemonicParsing="false" onAction="#unSelectAllEditMenuAction" text="Unselect All" />
@@ -81,10 +81,10 @@
         </Menu>
             <Menu mnemonicParsing="false" text="Network">
                <items>
-                  <MenuItem mnemonicParsing="false" text="Host" />
-                  <MenuItem mnemonicParsing="false" text="Connect" />
+                  <MenuItem mnemonicParsing="false" onAction="#hostNetworkMenuAction" text="Host" />
+                  <MenuItem mnemonicParsing="false" onAction="#connectNetworkMenuAction" text="Connect" />
                   <SeparatorMenuItem mnemonicParsing="false" />
-                  <MenuItem mnemonicParsing="false" text="Disconnect" />
+                  <MenuItem mnemonicParsing="false" onAction="#disconnectNetworkMenuAction" text="Disconnect" />
                </items>
             </Menu>
           <Menu mnemonicParsing="false" text="Help">
