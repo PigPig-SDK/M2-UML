@@ -118,7 +118,9 @@ public abstract class SocketManager extends Thread
             this.in.close();
             this.out.close();
         }
-        catch(IOException ignoreMe){}
+        catch(IOException ex){
+            System.err.println("Error closing socket! : " + ex.getMessage());
+        }
     }
     /**
      * Sends a network packet to the client.
@@ -129,6 +131,9 @@ public abstract class SocketManager extends Thread
      */
     public synchronized void sendNetworkPacket(NetworkPacket netpacket) 
     {
+        if(!running)
+            return;
+        
         try
         {
             byte[] jsonBytes = netpacket.packetToJson().getBytes(StandardCharsets.UTF_8);
@@ -138,14 +143,14 @@ public abstract class SocketManager extends Thread
         }
         catch(IOException e)
         {
-            System.err.println("Failure sending message! : " + e.getMessage());
-            
             //Don't send messages to deadweight... Killem.
-            if("Socket closed".equalsIgnoreCase(e.getMessage()) ||
-                    "Connection reset by peer".equalsIgnoreCase(e.getMessage()))
+            if("Socket closed".strip().equalsIgnoreCase(e.getMessage()) ||
+                    "Connection reset by peer".strip().equalsIgnoreCase(e.getMessage()))
             {
                 this.disconnect();//Stop talking to them...
+                return;
             }
+            System.err.println("Failure sending message! : " + e.getMessage());
             e.printStackTrace();
         }
     }
