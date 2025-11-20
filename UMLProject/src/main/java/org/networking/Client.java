@@ -4,6 +4,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import static org.networking.PacketType.CLASS_EDIT;
+import static org.networking.PacketType.RELATIONSHIP_EDIT;
 import org.umlproject.MainThreadDispatcher;
 
 /**
@@ -67,7 +69,13 @@ public class Client extends SocketManager
             {
                 if(isHosting)
                     return;
-                DocumentPacketHandler.handleElementModified(null, netPacket);
+                MainThreadDispatcher.dispatcher.dispatch(() -> DocumentPacketHandler.handleClassPacket(null, netPacket));
+            }
+            case RELATIONSHIP_EDIT ->
+            {
+                if(isHosting)
+                    return;
+                MainThreadDispatcher.dispatcher.dispatch(() -> DocumentPacketHandler.handleClassPacket(null, netPacket));
             }
             case FULL_DOCUMENT ->
             {
