@@ -9,8 +9,12 @@ import javafx.geometry.Point2D;
 import java.awt.MouseInfo;
 import java.awt.Point;
 import java.io.IOException;
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import org.umlproject.App;
 import org.umlproject.Main;
 import org.umlproject.UI.GuiCamera;
@@ -23,18 +27,26 @@ public class NetworkMouseHandler
     
     private static AnimationTimer mouseUpdateTimer;
     
-    
+    private static Timeline timeline;
     
     public static void initialize()
     {        
         if(Main.isInTerminalMode()) return;
         
+        //Handle clientside mouse location
+        //We want to only send our mouse location 30 times a second...
+        timeline = new Timeline(
+            new KeyFrame(Duration.millis(33.333), e -> handleMouseInput())
+        );
+        
+        //Handle serverside updates
         mouseUpdateTimer = new AnimationTimer() {
             @Override public void handle(long now) {
-                handleMouseInput();//Handle clientside mouse location
                 updateConnectedMice();
             }
         };
+        timeline.setCycleCount(Animation.INDEFINITE);
+        timeline.play();
         mouseUpdateTimer.start();
     }
     /**
@@ -51,7 +63,7 @@ public class NetworkMouseHandler
         
         Point2D screenLocation = GuiCamera.screenToWorld(GuiCamera.getMouseInScene());
        
-        NetworkMousePayload nmp = new NetworkMousePayload(null, null, screenLocation.getX(), screenLocation.getY(), GuiCamera.isDragging());
+        PayloadNetworkMouse nmp = new PayloadNetworkMouse(null, null, screenLocation.getX(), screenLocation.getY(), GuiCamera.isDragging());
         NetworkPacket networkPacket = NetworkPacket.objectToNetworkPacket(NetworkManager.getTick(), PacketType.MOUSE_UPDATE, nmp);
         NetworkManager.getClientInstance().sendNetworkPacket(networkPacket);
     }
@@ -72,7 +84,7 @@ public class NetworkMouseHandler
         if(networkPacket == null || networkPacket.payload() == null)
             return;
         try {
-            NetworkMousePayload nmp = networkPacket.payloadToObject(NetworkMousePayload.class);
+            PayloadNetworkMouse nmp = networkPacket.payloadToObject(PayloadNetworkMouse.class);
             if(nmp == null || nmp.getUserId() == null || nmp.getUsername() == null)
                 return;
             UUID userid = nmp.getUserId();
@@ -98,5 +110,6 @@ public class NetworkMouseHandler
         
         userMice.clear();
         mouseUpdateTimer.stop();
+        timeline.stop();
     }
 }
