@@ -3,14 +3,14 @@ package org.networking;
 import java.util.UUID;
 import javafx.geometry.Point2D;
 
-public class NetworkMousePayload {
+public class PayloadNetworkMouse {
 
     private String username;
     private UUID userId;
     double x,y;
     private boolean isDragging;
 
-    public NetworkMousePayload(String username, UUID userId, double x, double y, boolean isDragging) {
+    public PayloadNetworkMouse(String username, UUID userId, double x, double y, boolean isDragging) {
         this.username = username;
         this.userId = userId;
         this.x = x;
