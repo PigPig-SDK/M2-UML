@@ -3,7 +3,9 @@ package org.networking;
 import com.google.gson.JsonSyntaxException;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import javafx.application.Platform;
@@ -68,33 +70,19 @@ public class DocumentPacketHandler {
         });
     }
     /**
-     * Handles a UML Element movement edit packet
-     * @param networkPacket with PacketType.CLASS_MODIFY or PacketType.RELATIONSHIP_MODIFY
-     */
-    public synchronized static void handleElementModified(ClientHandler client, NetworkPacket networkPacket)
-    {
-        //Not a valid packet type...
-        if(!(networkPacket.packetType() == PacketType.RELATIONSHIP_EDIT || networkPacket.packetType() == PacketType.CLASS_EDIT))
-            return;//Cannot execute, send client back packet
-        
-        switch (networkPacket.packetType()) {
-            case RELATIONSHIP_EDIT -> {
-                System.out.println("Erm... aschually bazinga bazinga.");
-            }
-            case CLASS_EDIT -> {
-                MainThreadDispatcher.dispatcher.dispatch(() -> handleClassPacket(client, networkPacket));
-            }
-            default ->
-            {
-                System.out.println("Unsupported type... Please implement me if you are going to allow the flow control.");
-            }
-        }
-    }
-    /**
-     * This handles the network packet for modifying UMLClasses...
+     * This handles the network packet for modifying UMLRelationships...
+     * 
+     * Given a PayloadRelationship wrapped in a Netpacket we will replace/add the element.
+     * 
+     * This function matches the network id's to their associated objects.
+     * It then solves/matches the relationship to our local representation.
+     * These steps are taken to solve 'race conditions' of class name changes.
+     * Realistically someone oughta refactor the UMLRelationships to only store netID's, 
+     * but this technical debt will fall on nobody anytime soon....
+     * 
      * @param client If null, than no reporting packet will be sent back.
      */
-    private static void handleClassPacket(ClientHandler client, NetworkPacket networkPacket)
+    public static void handleRelationshipPacket(ClientHandler client, NetworkPacket networkPacket)
     {
         ///
         ///
@@ -104,7 +92,85 @@ public class DocumentPacketHandler {
         ///
         ///
         if(networkPacket == null) return;
-        //Run on main thread.
+        try
+        {
+            //Validate...
+            PayloadRelationship payload = networkPacket.payloadToObject(PayloadRelationship.class);//Packet view
+            if(payload == null)
+            {
+                if(client != null) client.sendEntireDocument();//I've no idea where the client is wrong.
+                return;
+            }
+            final Map<UUID,UMLDiagramElement> netElements = UMLDocument.getInstance().getAllNetIdElements();
+            UMLRelationship clientRelationship = payload.relationship();
+            if(clientRelationship == null) //Client has sent nonsense, Send back entire document!
+            {
+                if(client != null) client.sendEntireDocument();
+                return;
+            }
+            
+            //No source or destination found!
+            UMLDiagramElement sourceElement = netElements.get(payload.source());
+            UMLDiagramElement destinationElement = netElements.get(payload.destination());
+            UMLDiagramElement relationshipElement = netElements.get(clientRelationship.networkId);
+            NetworkPacket removeRelationshipPacket = NetworkPacket.objectToNetworkPacket(NetworkManager.getTick(), PacketType.OBJECT_DELETED, new PayloadRemoveObject(clientRelationship.networkId));
+            
+            //Something is seriously wrong with what they are telling us.
+            if(sourceElement == null || destinationElement == null || !(sourceElement instanceof UMLClass) || !(destinationElement instanceof UMLClass))
+            {
+                //Suggest that the user delete the relationship on their end...
+                if(client != null) 
+                {
+                    if(!(relationshipElement instanceof UMLRelationship))//Client suggests we replace something else! Find refuge in a new document client!
+                    {
+                        client.sendEntireDocument();
+                    }
+                    else //Suggest the client remove the object.
+                    {
+                        client.sendNetworkPacket(removeRelationshipPacket);
+                    }
+                }
+                return;
+            }
+            ///
+            //Payload is valid! Replace!
+            ///
+            UMLRelationship serverRelationship = (UMLRelationship)relationshipElement;
+            UMLDocument.executeActionUnderState(DocumentState.NETWORK_OPERATION, ()->{
+                if(serverRelationship.lastNetworkEditTime + 1 !=  clientRelationship.lastNetworkEditTime)
+                {
+                    if(client != null) client.sendNetworkPacket(removeRelationshipPacket);
+                    return;//A more up-to-date version exists... Send that one.
+                }
+                
+                UMLDocument.getInstance().insertRelationship(clientRelationship);
+                if(client != null)//Success... inform all clients of this new update.
+                {
+                    handleSuccessfulPacket(client, networkPacket);
+                }
+            });
+        }
+        catch (JsonSyntaxException e) {
+            
+            if(client != null) client.sendEntireDocument();
+            return;
+        }
+    }
+    /**
+     * This handles the network packet for modifying UMLClasses...
+     * @param client If null, than no reporting packet will be sent back.
+     */
+    public static void handleClassPacket(ClientHandler client, NetworkPacket networkPacket)
+    {
+        ///
+        ///
+        //////////////////////////
+        //  On main thread!!!!  //
+        //////////////////////////
+        ///
+        ///
+        if(networkPacket == null) return;
+        
         try
         {
             //Validate...
@@ -141,23 +207,11 @@ public class DocumentPacketHandler {
             //Should not matter, we insert the packet in its rightful place.
             UMLDocument.executeActionUnderState(DocumentState.NETWORK_OPERATION, () -> {
                 
-                boolean switchWorked = UMLDocument.getInstance().addClass(clientUMLClass);//On client+server
+                UMLDocument.getInstance().insertClass(clientUMLClass);//On client+server
 
                 if(client != null)//Server reports back to users.
                 {
-                    if(!switchWorked)//Switch failed... Send the client back the latest version...
-                        sendValidClass(client, UMLDocument.getInstance().getClass(clientUMLClass.getClassName()));//Never happens... TODO REMOVE!
-                    else//Send update back to everyone...
-                    {
-                        Server server = NetworkManager.getServerInstance();
-                        if(server == null) return;//Safety first...
-
-                        //Avoid sending back to server AND the client who sent it.
-                        Set<ClientHandler> clients =  new HashSet<>();
-                        clients.add(NetworkManager.getServerInstance().getServerClient());
-                        clients.add(client);
-                        server.sendMessageToAllClients(networkPacket, clients);//Update. Send back to all.
-                    }
+                    handleSuccessfulPacket(client, networkPacket);
                 }
             });
         }
@@ -198,7 +252,7 @@ public class DocumentPacketHandler {
         {
             if(netPacket == null)
                 return;
-            RemoveObjectPayload ropl = netPacket.payloadToObject(RemoveObjectPayload.class);
+            PayloadRemoveObject ropl = netPacket.payloadToObject(PayloadRemoveObject.class);
             if(ropl == null) return;
             if(ropl.idToRemove() == null) return;
             
@@ -221,12 +275,7 @@ public class DocumentPacketHandler {
             
             if(successfulRemoval)
             {
-                Server server = NetworkManager.getServerInstance();
-                if(server == null) return;
-                Set<ClientHandler> blacklist = new HashSet<>();
-                blacklist.add(client);//Don't send back to owner.
-                blacklist.add(NetworkManager.getServerInstance().getServerClient());
-                server.sendMessageToAllClients(netPacket, blacklist);
+                handleSuccessfulPacket(client, netPacket);
                 return;
             }
         }
@@ -236,5 +285,20 @@ public class DocumentPacketHandler {
         }
         //Fallback! Send whole document back to client...
         if(client != null) client.sendEntireDocument();
+    }
+    /**
+     * * Purpouse: Resending packets to everyone except the server and the person who suggested the change.
+     * 
+     * For when the client has already made the change on their machine and the server happened to do the same thing.
+     * This should be called if you want everyone outside of the standard client-server communication to see the update.
+     */
+    private static void handleSuccessfulPacket(ClientHandler client, NetworkPacket netPacket)
+    {
+        Server server = NetworkManager.getServerInstance();
+        if(server == null) return;
+        Set<ClientHandler> blacklist = new HashSet<>();
+        blacklist.add(client);//Don't send back to owner.
+        blacklist.add(NetworkManager.getServerInstance().getServerClient());
+        server.sendMessageToAllClients(netPacket, blacklist);
     }
 }
