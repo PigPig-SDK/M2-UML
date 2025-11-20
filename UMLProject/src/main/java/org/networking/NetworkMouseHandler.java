@@ -23,8 +23,6 @@ public class NetworkMouseHandler
 {
     private static Map<UUID, NetworkMouse> userMice = new HashMap<>();
     
-    private static final double timeBetweenUpdates = 0.05f;//seconds
-    
     private static AnimationTimer mouseUpdateTimer;
     
     private static Timeline timeline;
