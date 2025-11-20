@@ -1,11 +1,15 @@
 package org.umlproject.UI;
 
+import javafx.geometry.Point2D;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.input.KeyCode;
+import static javafx.scene.input.KeyCode.DOWN;
+import static javafx.scene.input.KeyCode.MINUS;
 import static javafx.scene.input.KeyCode.N;
+import static javafx.scene.input.KeyCode.UP;
 import static javafx.scene.input.KeyCode.Z;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
@@ -35,9 +39,13 @@ public class GuiKeyBinds {
         addAccelerator(new KeyCodeCombination(KeyCode.F1), "Help");
         addAccelerator(new KeyCodeCombination(KeyCode.F2), "About UML Editor");
         addAccelerator(new KeyCodeCombination(KeyCode.F12), GuiController.getInstance().viewTerminalMenuItem);
-        addAccelerator(new KeyCodeCombination(KeyCode.UP, KeyCombination.CONTROL_DOWN), "Get Previous Command");
-        addAccelerator(new KeyCodeCombination(KeyCode.DOWN, KeyCombination.CONTROL_DOWN), "Get Next Command");
-        
+        addAccelerator(new KeyCodeCombination(KeyCode.UP), "Get Previous Command");
+        addAccelerator(new KeyCodeCombination(KeyCode.DOWN), "Get Next Command");
+        addAccelerator(new KeyCodeCombination(KeyCode.MINUS, KeyCombination.CONTROL_DOWN), "Zoom Out");
+        addAccelerator(new KeyCodeCombination(KeyCode.PLUS, KeyCombination.CONTROL_DOWN), "Zoom In");
+        addAccelerator(new KeyCodeCombination(KeyCode.F), "Reset Camera");
+        addAccelerator(new KeyCodeCombination(KeyCode.R), "Add Relationship");
+        addAccelerator(new KeyCodeCombination(KeyCode.C), "Add Class");
         
         App.currentScene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
             if(GuiController.getInstance() == null)//Cannot execute quickbind. The menu dosn't exist.
@@ -58,6 +66,18 @@ public class GuiKeyBinds {
                     CheckMenuItem terminalButton = GuiController.getInstance().viewTerminalMenuItem;
                     GuiConsole.terminalOverrideOut(!terminalButton.isSelected());//Override output, this is required due to a javafx bug...
                     terminalButton.setSelected(!terminalButton.isSelected());
+                }
+                case F->
+                {
+                    System.out.println("im gay");
+                }
+                case UP->
+                {
+                    GuiController.getInstance().console.setText(GuiConsole.getPrevCommand());
+                }
+                case DOWN->
+                {
+                    GuiController.getInstance().console.setText(GuiConsole.getNextCommand());
                 }
             }
             
@@ -113,14 +133,15 @@ public class GuiKeyBinds {
                     GuiCopyPaste.getInstance().paste();
                     event.consume();
                 }
-                case UP->
+                case MINUS->
                 {
-                    GuiController.getInstance().console.setText(GuiConsole.getPrevCommand());
+                    GuiCamera.setZoom(GuiCamera.getCameraZoom()-0.1, GuiCamera.getScreenCenter());
                 }
-                case DOWN->
+                case EQUALS->
                 {
-                    GuiController.getInstance().console.setText(GuiConsole.getNextCommand());
+                    GuiCamera.setZoom(GuiCamera.getCameraZoom()+0.1, GuiCamera.getScreenCenter());
                 }
+
             }
         });
         
