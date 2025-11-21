@@ -84,7 +84,7 @@
                   <MenuItem mnemonicParsing="false" onAction="#hostNetworkMenuAction" text="Host" />
                   <MenuItem mnemonicParsing="false" onAction="#connectNetworkMenuAction" text="Connect" />
                   <SeparatorMenuItem mnemonicParsing="false" />
-                  <MenuItem mnemonicParsing="false" onAction="#disconnectNetworkMenuAction" text="Disconnect" />
+                  <MenuItem disable="true" mnemonicParsing="false" onAction="#disconnectNetworkMenuAction" text="Disconnect" />
                </items>
             </Menu>
           <Menu mnemonicParsing="false" text="Help">

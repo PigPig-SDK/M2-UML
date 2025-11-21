@@ -113,7 +113,7 @@ public class Client extends SocketManager
      */
     @Override
     protected void onConnectionStarted() {
-        UserIdentification myId = UserIdentification.generateAnonymousUserInfo();
+        UserIdentification myId = UserIdentification.generateUserInfo();
         NetworkPacket netPacket = NetworkPacket.objectToNetworkPacket(0, PacketType.IDENTIFICATION, myId);
         this.sendNetworkPacket(netPacket);
     }
