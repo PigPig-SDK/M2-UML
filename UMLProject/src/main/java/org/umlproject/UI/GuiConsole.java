@@ -10,13 +10,16 @@ import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import org.umlproject.App;
 
 public class GuiConsole extends OutputStream {
-    private static TextArea console;
-    public static List<String> history = new ArrayList<>();
-    public static ListIterator<String> historyIterator;
+    private static TextArea consoleOutput;
+    //First command entered is emptystring. This makes looping around 0 more obvious.
+    //Also clears space for user to type if they want to return to a clean slate.
+    public static List<String> history = new ArrayList<>(List.of(""));
+    private static int historyIndex = 0;
     
     
     
@@ -29,8 +32,8 @@ public class GuiConsole extends OutputStream {
     );
     
     
-    public GuiConsole(TextArea console) {
-        this.console = console;
+    public GuiConsole(TextArea consoleOutput) {
+        this.consoleOutput = consoleOutput;
     }
 
     private static StringBuilder buffer = new StringBuilder();
@@ -54,7 +57,7 @@ public class GuiConsole extends OutputStream {
         if (c == '\n') {
             String line = buffer.toString();
             buffer.setLength(0); // clear buffer
-            Platform.runLater(() -> console.setText(console.getText() + "\n" + line));
+            Platform.runLater(() -> consoleOutput.setText(consoleOutput.getText() + "\n" + line));
         } else {
             buffer.append(c);
         }
@@ -130,7 +133,7 @@ public class GuiConsole extends OutputStream {
                     if(transparency < 0)
                     {
                         buffer.setLength(0);
-                        console.setText("");
+                        consoleOutput.setText("");
                         transparency = 0;
                     }
                 }
@@ -151,24 +154,38 @@ public class GuiConsole extends OutputStream {
     
     public static void addToHistory(String command) {
         history.add(command);
-        historyIterator = null;
+        historyIndex = 0;
     }
-    
-    public static String getPrevCommand() {
-        if (historyIterator == null) {
-            historyIterator = history.listIterator(history.size());
-        }
-        if (historyIterator.hasPrevious()) {
-            return historyIterator.previous();
-        }
-        return null;
+    /**
+     * Use this to traverse in the GUITerminal history
+     * @param direction Which direction you desire stepping in the history. (POSITIVE = BACKWARDS, NEGATIVE = FORWARDS)
+     */
+    public static void traverseHistory(int direction)
+    {
+        String historyString = GuiConsole.getCommandFromHistory(direction);
+        TextField console = GuiController.getInstance().console;
+        console.requestFocus();
+        console.setText(historyString);
+        console.positionCaret(historyString.length());
     }
-    
-    public static String getNextCommand() {
-        if (historyIterator != null && historyIterator.hasNext()) {
-            return historyIterator.next();
-        }
-        return null;
+    /**
+     * Focuses the textarea for console input, puts carrot to end of text.
+     */
+    public static void smartFocus()
+    {
+        TextField console = GuiController.getInstance().console;
+        console.requestFocus();
+        console.positionCaret(console.getText().length()); 
+    }
+    /**
+     * @param direction Which direction you desire stepping in the history. (POSITIVE = BACKWARDS, NEGATIVE = FORWARDS)
+     * @return A previous command from the command history
+     */
+    private static String getCommandFromHistory(int direction) {
+        historyIndex += direction;
+        //We only get positive remainder
+        historyIndex = (historyIndex % history.size() + history.size()) % history.size();
+        return history.get(historyIndex);
     }
     
     public static String printList() {

@@ -58,6 +58,7 @@ public class GuiKeyBinds {
                     CheckMenuItem terminalButton = GuiController.getInstance().viewTerminalMenuItem;
                     GuiConsole.terminalOverrideOut(!terminalButton.isSelected());//Override output, this is required due to a javafx bug...
                     terminalButton.setSelected(!terminalButton.isSelected());
+                    GuiConsole.smartFocus();
                 }
             }
             
@@ -115,11 +116,12 @@ public class GuiKeyBinds {
                 }
                 case UP->
                 {
-                    GuiController.getInstance().console.setText(GuiConsole.getPrevCommand());
+                    GuiConsole.traverseHistory(-1);
                 }
                 case DOWN->
                 {
-                    GuiController.getInstance().console.setText(GuiConsole.getNextCommand());
+                    GuiConsole.traverseHistory(1);
+                    
                 }
             }
         });
