@@ -266,6 +266,7 @@ public class GuiController implements DocumentListner {
     {
         GuiConsole.terminalOverrideOut(true);
         String cmd = console.getText();
+        GuiConsole.addToHistory(cmd);
         List<String> restrictedCommands = GuiConsole.restrictedCommands;
         
         for (String SearchValue : restrictedCommands) {

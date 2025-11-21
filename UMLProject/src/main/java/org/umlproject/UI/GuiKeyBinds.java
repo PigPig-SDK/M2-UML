@@ -35,6 +35,8 @@ public class GuiKeyBinds {
         addAccelerator(new KeyCodeCombination(KeyCode.F1), "Help");
         addAccelerator(new KeyCodeCombination(KeyCode.F2), "About UML Editor");
         addAccelerator(new KeyCodeCombination(KeyCode.F12), GuiController.getInstance().viewTerminalMenuItem);
+        addAccelerator(new KeyCodeCombination(KeyCode.UP, KeyCombination.CONTROL_DOWN), "Get Previous Command");
+        addAccelerator(new KeyCodeCombination(KeyCode.DOWN, KeyCombination.CONTROL_DOWN), "Get Next Command");
         
         
         App.currentScene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
@@ -56,6 +58,7 @@ public class GuiKeyBinds {
                     CheckMenuItem terminalButton = GuiController.getInstance().viewTerminalMenuItem;
                     GuiConsole.terminalOverrideOut(!terminalButton.isSelected());//Override output, this is required due to a javafx bug...
                     terminalButton.setSelected(!terminalButton.isSelected());
+                    GuiConsole.smartFocus();
                 }
             }
             
@@ -110,6 +113,15 @@ public class GuiKeyBinds {
                 case V ->{
                     GuiCopyPaste.getInstance().paste();
                     event.consume();
+                }
+                case UP->
+                {
+                    GuiConsole.traverseHistory(-1);
+                }
+                case DOWN->
+                {
+                    GuiConsole.traverseHistory(1);
+                    
                 }
             }
         });
