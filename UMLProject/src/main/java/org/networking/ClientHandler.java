@@ -11,6 +11,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import static org.networking.DocumentPacketHandler.handleClassPacket;
 import org.umlproject.MainThreadDispatcher;
 import org.umlproject.UMLDocument;
 
@@ -87,7 +88,7 @@ public class ClientHandler extends SocketManager
                     if(server == null)
                         return;
                     
-                    NetworkMousePayload payload = netPacket.payloadToObject(NetworkMousePayload.class);
+                    PayloadNetworkMouse payload = netPacket.payloadToObject(PayloadNetworkMouse.class);
                     if(payload.getUsername() != null && payload.getUserId() != null)
                     {
                         System.err.println("CLIENT GAVE INVALID MOUSE PACKET. THROWING AWAY!");
@@ -128,7 +129,11 @@ public class ClientHandler extends SocketManager
             }
             case CLASS_EDIT ->
             {
-                DocumentPacketHandler.handleElementModified(this, netPacket);
+                MainThreadDispatcher.dispatcher.dispatch(() -> DocumentPacketHandler.handleClassPacket(this, netPacket));
+            }
+            case RELATIONSHIP_EDIT ->
+            {
+                MainThreadDispatcher.dispatcher.dispatch(() -> DocumentPacketHandler.handleRelationshipPacket(this, netPacket));
             }
             case OBJECT_DELETED ->
             {

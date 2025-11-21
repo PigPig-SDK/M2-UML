@@ -115,7 +115,7 @@ public class GuiCopyPaste {
                                 GuiCamera.getScreenCenter().subtract(oldCameraLocation)), false);
                     }
 
-                    errorClass = doc.addClass(classCopy);
+                    errorClass = doc.insertClass(classCopy);
                     if(!errorClass){
                         System.out.println("An error occurred printing a class");
                     }

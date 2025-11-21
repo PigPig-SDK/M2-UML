@@ -5,17 +5,23 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import org.umlproject.App;
-import org.umlproject.AutoComplete;
-import org.umlproject.Main;
 
 public class GuiConsole extends OutputStream {
-    private static TextArea console;
+    private static TextArea consoleOutput;
+    //First command entered is emptystring. This makes looping around 0 more obvious.
+    //Also clears space for user to type if they want to return to a clean slate.
+    public static List<String> history = new ArrayList<>(List.of(""));
+    private static int historyIndex = 0;
+    
+    
     
     //Commands that cannot be used while in GUI mode
     public static List<String> restrictedCommands = List.of(
@@ -26,8 +32,8 @@ public class GuiConsole extends OutputStream {
     );
     
     
-    public GuiConsole(TextArea console) {
-        this.console = console;
+    public GuiConsole(TextArea consoleOutput) {
+        this.consoleOutput = consoleOutput;
     }
 
     private static StringBuilder buffer = new StringBuilder();
@@ -51,7 +57,7 @@ public class GuiConsole extends OutputStream {
         if (c == '\n') {
             String line = buffer.toString();
             buffer.setLength(0); // clear buffer
-            Platform.runLater(() -> console.setText(console.getText() + "\n" + line));
+            Platform.runLater(() -> consoleOutput.setText(consoleOutput.getText() + "\n" + line));
         } else {
             buffer.append(c);
         }
@@ -127,7 +133,7 @@ public class GuiConsole extends OutputStream {
                     if(transparency < 0)
                     {
                         buffer.setLength(0);
-                        console.setText("");
+                        consoleOutput.setText("");
                         transparency = 0;
                     }
                 }
@@ -145,6 +151,45 @@ public class GuiConsole extends OutputStream {
         consoleOut.setPrefHeight(App.mainStage.getHeight() - 80);//Allow space for console at bottom...
         consoleOut.setPrefWidth(App.mainStage.getWidth());
     }
-
+    
+    public static void addToHistory(String command) {
+        history.add(command);
+        historyIndex = 0;
+    }
+    /**
+     * Use this to traverse in the GUITerminal history
+     * @param direction Which direction you desire stepping in the history. (POSITIVE = BACKWARDS, NEGATIVE = FORWARDS)
+     */
+    public static void traverseHistory(int direction)
+    {
+        String historyString = GuiConsole.getCommandFromHistory(direction);
+        TextField console = GuiController.getInstance().console;
+        console.requestFocus();
+        console.setText(historyString);
+        console.positionCaret(historyString.length());
+    }
+    /**
+     * Focuses the textarea for console input, puts carrot to end of text.
+     */
+    public static void smartFocus()
+    {
+        TextField console = GuiController.getInstance().console;
+        console.requestFocus();
+        console.positionCaret(console.getText().length()); 
+    }
+    /**
+     * @param direction Which direction you desire stepping in the history. (POSITIVE = BACKWARDS, NEGATIVE = FORWARDS)
+     * @return A previous command from the command history
+     */
+    private static String getCommandFromHistory(int direction) {
+        historyIndex += direction;
+        //We only get positive remainder
+        historyIndex = (historyIndex % history.size() + history.size()) % history.size();
+        return history.get(historyIndex);
+    }
+    
+    public static String printList() {
+        return String.join("\n", history);
+    }
 }
 
