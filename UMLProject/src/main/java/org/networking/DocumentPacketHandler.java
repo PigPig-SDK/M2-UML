@@ -121,6 +121,7 @@ public class DocumentPacketHandler {
                 //Suggest that the user delete the relationship on their end...
                 if(client != null) 
                 {
+                    
                     if(!(relationshipElement instanceof UMLRelationship))//Client suggests we replace something else! Find refuge in a new document client!
                     {
                         client.sendEntireDocument();
@@ -137,12 +138,11 @@ public class DocumentPacketHandler {
             ///
             UMLRelationship serverRelationship = (UMLRelationship)relationshipElement;
             UMLDocument.executeActionUnderState(DocumentState.NETWORK_OPERATION, ()->{
-                if(serverRelationship.lastNetworkEditTime + 1 !=  clientRelationship.lastNetworkEditTime)
+                if(serverRelationship != null && (serverRelationship.lastNetworkEditTime + 1 !=  clientRelationship.lastNetworkEditTime))
                 {
                     if(client != null) client.sendNetworkPacket(removeRelationshipPacket);
                     return;//A more up-to-date version exists... Send that one.
                 }
-                
                 UMLDocument.getInstance().insertRelationship(clientRelationship);
                 if(client != null)//Success... inform all clients of this new update.
                 {

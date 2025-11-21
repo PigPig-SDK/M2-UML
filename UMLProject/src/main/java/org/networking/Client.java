@@ -75,7 +75,7 @@ public class Client extends SocketManager
             {
                 if(isHosting)
                     return;
-                MainThreadDispatcher.dispatcher.dispatch(() -> DocumentPacketHandler.handleClassPacket(null, netPacket));
+                MainThreadDispatcher.dispatcher.dispatch(() -> DocumentPacketHandler.handleRelationshipPacket(null, netPacket));
             }
             case FULL_DOCUMENT ->
             {

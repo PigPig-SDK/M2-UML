@@ -133,7 +133,7 @@ public class ClientHandler extends SocketManager
             }
             case RELATIONSHIP_EDIT ->
             {
-                MainThreadDispatcher.dispatcher.dispatch(() -> DocumentPacketHandler.handleClassPacket(this, netPacket));
+                MainThreadDispatcher.dispatcher.dispatch(() -> DocumentPacketHandler.handleRelationshipPacket(this, netPacket));
             }
             case OBJECT_DELETED ->
             {
