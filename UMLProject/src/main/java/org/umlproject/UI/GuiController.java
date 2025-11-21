@@ -227,7 +227,10 @@ public class GuiController implements DocumentListner {
     private void pasteEditMenuAction() { System.out.println("Paste"); }
     
     @FXML 
-    private void hostNetworkMenuAction() { System.out.println("Hoste"); }
+    private void hostNetworkMenuAction() 
+    { 
+        System.out.println("Hoste"); 
+    }
     
     @FXML 
     private void connectNetworkMenuAction() { System.out.println("connect"); }
@@ -259,7 +262,7 @@ public class GuiController implements DocumentListner {
     @FXML
     public void infoHelpMenuAction()
     {
-        GuiHelp.showHelp();
+        GuiHelpWindow.showHelp();
     }
     @FXML
     private void consoleSubmit()
@@ -299,7 +302,7 @@ public class GuiController implements DocumentListner {
         //Retrieve the location where the image should be exported.
         File exportLocation = GuiFileBrowser.promptForScreenshotExportDirectory();
         if(exportLocation == null){
-            alert.showAndWait();
+            alert.show();
             return;
         }
         //Create a ScreenshotCommand instance to call execute() on.
@@ -310,7 +313,7 @@ public class GuiController implements DocumentListner {
             invoker.invoke();
         }
         catch(IOException e){
-            alert.showAndWait();
+            alert.show();
             return;
         }
     }
@@ -330,7 +333,7 @@ public class GuiController implements DocumentListner {
         if(checkClass == null) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Class Creation Error");
-            alert.showAndWait();
+            alert.show();
         }
     }
     /**
@@ -350,9 +353,8 @@ public class GuiController implements DocumentListner {
             
             if(classSet.size() < 2)
             {
-                alert.setAlertType(Alert.AlertType.ERROR);
-                alert.setHeaderText("Your project requires at least 2 classes");
-                alert.showAndWait();
+                Alert error = FXDialogueFactory.createAlertWindow(Alert.AlertType.ERROR, "Create Relationship", "Your project requires at least 2 classes", "", null);
+                error.show();
                 return;
             }
             
