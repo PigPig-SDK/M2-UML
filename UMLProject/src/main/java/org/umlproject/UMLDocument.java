@@ -188,8 +188,8 @@ public class UMLDocument implements Copyable<UMLDocument>
      * Renames a class in classSet and relationshipList. First stores the relevant data of the old class name,
      * removes it, and adds a new class with corresponding data and updated name.
      *
-     * @param originClassName The name to be changed
-     * @param newName The replacement name
+     * @param className The name to be changed
+     * @param newClassName The replacement name
      *
      * @return boolean - True if the rename was successful, false if class does not exist in relationship list or
      * class set, or if the newName already exists in class set or relationship list
