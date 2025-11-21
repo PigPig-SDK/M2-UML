@@ -13,7 +13,6 @@ public class GuiHelpWindow {
     public static void showHelp()
     {
         InputStream in = Main.class.getResourceAsStream("help.txt");
-        Alert helpBox = FXDialogueFactory.createAlertWindow(Alert.AlertType.INFORMATION, "Help", null, null, FXDialogueFactory.parseTextToVBox(in));
-        helpBox.show();
+        FXDialogueFactory.createAlertWindow(Alert.AlertType.INFORMATION, "Help", null, null, FXDialogueFactory.parseTextToVBox(in)).show();
     }
 }
