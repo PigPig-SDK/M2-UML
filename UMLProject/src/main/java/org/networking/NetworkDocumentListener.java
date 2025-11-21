@@ -2,7 +2,9 @@ package org.networking;
 
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import org.umlproject.DiagramElementListener;
 import org.umlproject.DocumentListner;
@@ -116,7 +118,12 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
         if(invalidDocumentStates.contains(UMLDocument.getDocumentState())) return;
         
         objectLRelationship.lastNetworkEditTime++;//Increment last edit time...
-        NetworkPacket networkPacket = NetworkPacket.objectToNetworkPacket(NetworkManager.getTick(), PacketType.RELATIONSHIP_EDIT, objectLRelationship);
+        UMLClass source = UMLDocument.getInstance().getClass(objectLRelationship.getSourceName());
+        UMLClass destination = UMLDocument.getInstance().getClass(objectLRelationship.getDestinationName());
+        if(source == null || destination == null) return;
+        
+        PayloadRelationship payloadRelationship = new PayloadRelationship(source.networkId, destination.networkId, objectLRelationship);
+        NetworkPacket networkPacket = NetworkPacket.objectToNetworkPacket(NetworkManager.getTick(), PacketType.RELATIONSHIP_EDIT, payloadRelationship);
         
         if(NetworkManager.isHosting())//Bypass communication. Enforce everyone to use this packet.
         {
@@ -180,7 +187,7 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
     {
         if(invalidDocumentStates.contains(UMLDocument.getDocumentState())) return;
         
-        NetworkPacket networkPacket = NetworkPacket.objectToNetworkPacket(NetworkManager.getTick(), PacketType.OBJECT_DELETED, new RemoveObjectPayload(element.networkId));
+        NetworkPacket networkPacket = NetworkPacket.objectToNetworkPacket(NetworkManager.getTick(), PacketType.OBJECT_DELETED, new PayloadRemoveObject(element.networkId));
         
         if(NetworkManager.isHosting())//Bypass communication. Enforce everyone to use this packet.
         {

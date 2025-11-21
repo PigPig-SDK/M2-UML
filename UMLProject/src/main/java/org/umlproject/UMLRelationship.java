@@ -7,8 +7,8 @@ import static org.umlproject.RelationshipType.OTHER;
 
 public class UMLRelationship  extends UMLDiagramElement implements Cloneable
 {
-    private String sourceName;
-    private String destinationName;
+    private String sourceName;//TODO: REFACTOR TO USE UMLDiagramElement netID!!!!
+    private String destinationName;//TODO: REFACTOR TO USE UMLDiagramElement netID!!!!
     private RelationshipType relationshipType;
     private String customNameType;
     

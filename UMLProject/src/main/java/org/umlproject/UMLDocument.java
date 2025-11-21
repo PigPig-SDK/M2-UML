@@ -275,6 +275,16 @@ public class UMLDocument implements Copyable<UMLDocument>
         return true;
     }
     /**
+     * Adds a relationship, or replaces a relationship.
+     * @param relationship The relationship to add or replace.
+     */
+    public void insertRelationship(UMLRelationship relationship){
+
+        removeRelationship(relationship.getSourceName(), relationship.getDestinationName());
+        relationshipList.get(relationship.getSourceName()).add(relationship);
+        documentListners.forEach(o->o.onRelationshipAdded(relationship));
+    }
+    /**
      * Checks to see if a specified classname, destination exists
      *
      * @param className The classname to check against
@@ -598,7 +608,7 @@ public class UMLDocument implements Copyable<UMLDocument>
      *
      * @return True if the class replacement operation worked.
      */
-    public boolean addClass(UMLClass umlClass){
+    public boolean insertClass(UMLClass umlClass){
         
         Objects.requireNonNull(umlClass.getClassName(), "newName cannot be null");
         umlClass.setClassName(umlClass.getClassName().replaceAll("\\s+", ""));
