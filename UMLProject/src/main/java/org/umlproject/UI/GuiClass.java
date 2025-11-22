@@ -101,15 +101,14 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         //Used for selection
         //Mouse up...
         nodeBackground.setOnMouseClicked(e -> {
-            if(!GuiCamera.isDragging())
-                return;//If we were not dragging.. Than why would we move?
-            
             GuiCamera.setDragging(false);
-            Point2D worldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
-            Point2D selectionOffset = new Point2D(worldSpace.getX() - this.mouseAnchorX, worldSpace.getY() - this.mouseAnchorY);
-            
-            if(!selectionOffset.equals(dragStartLocation))
-                this.parentClass.setLocation(selectionOffset, true);
+            if(GuiCamera.isDragging())
+            {
+                Point2D worldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
+                Point2D selectionOffset = new Point2D(worldSpace.getX() - this.mouseAnchorX, worldSpace.getY() - this.mouseAnchorY);
+                if(!selectionOffset.equals(dragStartLocation))
+                    this.parentClass.setLocation(selectionOffset, true);
+            }
             
             GuiSelect.getInstance().clickUiElement(e, this);
             e.consume(); // Prevent event from propagating to other nodes
