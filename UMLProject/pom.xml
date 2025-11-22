@@ -11,8 +11,8 @@
     <version>1.0</version>
 
     <properties>
-        <maven.compiler.source>25</maven.compiler.source>
-        <maven.compiler.target>25</maven.compiler.target>
+        <maven.compiler.source>24</maven.compiler.source>
+        <maven.compiler.target>24</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <javafx.version>23</javafx.version>
     </properties>
@@ -60,6 +60,12 @@
             <artifactId>gson</artifactId>
             <version>2.10.1</version>
         </dependency>
+		<!-- https://github.com/sshahine/JFoenix -->
+		<dependency>
+			<groupId>com.jfoenix</groupId>
+			<artifactId>jfoenix</artifactId>
+			<version>9.0.10</version>
+		</dependency>
     </dependencies>
 	<build>
 		<plugins>

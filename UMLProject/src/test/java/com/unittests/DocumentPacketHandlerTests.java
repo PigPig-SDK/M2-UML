@@ -5,7 +5,7 @@ import java.io.IOException;
 import org.junit.jupiter.api.Assertions;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
-import org.networking.DocumentPacketHandler;
+import org.networking.PayloadDocument;
 import org.networking.NetworkPacket;
 import org.networking.PacketType;
 import org.umlproject.MainThreadDispatcher;
@@ -20,9 +20,9 @@ public class DocumentPacketHandlerTests {
         MainThreadDispatcher.dispatcher = new MainThreadDispatcher();
         UMLDocument doc = new UMLDocument("test");
         doc.addClass("a");
-        NetworkPacket packet = NetworkPacket.objectToNetworkPacket(0, PacketType.FULL_DOCUMENT, doc);
+        NetworkPacket packet = NetworkPacket.objectToNetworkPacket(PacketType.FULL_DOCUMENT, doc);
         //Act
-        DocumentPacketHandler.handleDocumentPacket(packet);
+        PayloadDocument.handleDocumentPacket(packet);
         MainThreadDispatcher.dispatcher.processQueuedActions();
         //Assert
         Assertions.assertNotNull(UMLDocument.getInstance().getClass("a"));
@@ -35,9 +35,9 @@ public class DocumentPacketHandlerTests {
         //Assign
         MainThreadDispatcher.dispatcher = new MainThreadDispatcher();
         UMLDocument.getInstance().addClass("a");
-        NetworkPacket packet = NetworkPacket.objectToNetworkPacket(0, PacketType.FULL_DOCUMENT, null);
+        NetworkPacket packet = NetworkPacket.objectToNetworkPacket(PacketType.FULL_DOCUMENT, null);
         //Act
-        DocumentPacketHandler.handleDocumentPacket(packet);
+        PayloadDocument.handleDocumentPacket(packet);
         MainThreadDispatcher.dispatcher.processQueuedActions();
         //Assert
         Assertions.assertNotNull(UMLDocument.getInstance().getClass("a"));
@@ -50,7 +50,7 @@ public class DocumentPacketHandlerTests {
         UMLDocument.getInstance().addClass("a");
         NetworkPacket packet = new NetworkPacket(0, PacketType.FULL_DOCUMENT, "Fake string! Woooowaaa!");
         //Act
-        DocumentPacketHandler.handleDocumentPacket(packet);
+        PayloadDocument.handleDocumentPacket(packet);
         //Assert
         Assertions.assertNotNull(UMLDocument.getInstance().getClass("a"));
         UMLDocument.resetInstance(true);
@@ -65,7 +65,7 @@ public class DocumentPacketHandlerTests {
         String jsonString = gson.toJson(doc);
         NetworkPacket packet = new NetworkPacket(0, PacketType.FULL_DOCUMENT, jsonString.substring(10));
         //Act
-        DocumentPacketHandler.handleDocumentPacket(packet);
+        PayloadDocument.handleDocumentPacket(packet);
         //Assert
         Assertions.assertNotNull(UMLDocument.getInstance().getClass("b"));
         UMLDocument.resetInstance(true);

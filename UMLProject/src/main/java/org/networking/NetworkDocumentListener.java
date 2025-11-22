@@ -81,8 +81,7 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
         }
         
         //Construct packet
-        NetworkPacket networkPacket = NetworkPacket.objectToNetworkPacket(
-                NetworkManager.getTick(), 
+        NetworkPacket networkPacket = NetworkPacket.objectToNetworkPacket( 
                 PacketType.ELEMENT_MOVED, 
                 new PayloadMoveElement( objectClass.getClassName(),
                                         (int)objectClass.getLocation().getX(), 
@@ -97,7 +96,7 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
         if(invalidDocumentStates.contains(UMLDocument.getDocumentState())) return;
         
         objectClass.lastNetworkEditTime++;//Increment last edit time...
-        NetworkPacket networkPacket = NetworkPacket.objectToNetworkPacket(NetworkManager.getTick(), PacketType.CLASS_EDIT, objectClass);
+        NetworkPacket networkPacket = NetworkPacket.objectToNetworkPacket(PacketType.CLASS_EDIT, objectClass);
         
         if(NetworkManager.isHosting())//Bypass communication. Enforce everyone to use this packet.
         {
@@ -123,7 +122,7 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
         if(source == null || destination == null) return;
         
         PayloadRelationship payloadRelationship = new PayloadRelationship(source.networkId, destination.networkId, objectLRelationship);
-        NetworkPacket networkPacket = NetworkPacket.objectToNetworkPacket(NetworkManager.getTick(), PacketType.RELATIONSHIP_EDIT, payloadRelationship);
+        NetworkPacket networkPacket = NetworkPacket.objectToNetworkPacket(PacketType.RELATIONSHIP_EDIT, payloadRelationship);
         
         if(NetworkManager.isHosting())//Bypass communication. Enforce everyone to use this packet.
         {
@@ -187,7 +186,7 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
     {
         if(invalidDocumentStates.contains(UMLDocument.getDocumentState())) return;
         
-        NetworkPacket networkPacket = NetworkPacket.objectToNetworkPacket(NetworkManager.getTick(), PacketType.OBJECT_DELETED, new PayloadRemoveObject(element.networkId));
+        NetworkPacket networkPacket = NetworkPacket.objectToNetworkPacket(PacketType.OBJECT_DELETED, new PayloadRemoveObject(element.networkId));
         
         if(NetworkManager.isHosting())//Bypass communication. Enforce everyone to use this packet.
         {
@@ -208,6 +207,6 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
         Server server = NetworkManager.getServerInstance();
         if(server == null)
             return;//Not hosting...
-        server.sendMessageToAllClients(Server.generateDocumentPacket());
+        server.sendMessageToAllClients(PayloadDocument.generateDocumentPacket());
     }//Do nothing!
 }
