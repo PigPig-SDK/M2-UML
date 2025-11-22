@@ -110,7 +110,6 @@ public abstract class SocketManager extends Thread
      */
     public void disconnect()
     {
-        System.out.println("Closing socket");
         try
         {
             this.running = false;
