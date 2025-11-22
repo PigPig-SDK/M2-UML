@@ -51,6 +51,11 @@ public class CommandNetwork extends BaseCommand {
                     System.out.println("Port was not valid.");
                     return;
                 }
+                if(portTry < 1)
+                {
+                    System.out.println("Port was not valid.");
+                    return;
+                }
                 
                 InetSocketAddress socketAddress = new InetSocketAddress(split[0], portTry);
                 NetworkManager.connect(socketAddress);
@@ -92,7 +97,11 @@ public class CommandNetwork extends BaseCommand {
                     System.out.println("Port was not valid.");
                     return;
                 }
-
+                if(portTry < 1)
+                {
+                    System.out.println("Port was not valid.");
+                    return;
+                }
                 NetworkManager.startHost(portTry, true);
             }
             case "say" ->

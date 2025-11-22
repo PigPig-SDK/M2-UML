@@ -26,6 +26,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
+import org.networking.NetworkManager;
 import org.umlproject.RelationshipType;
 import org.umlproject.TerminalHandler;
 import org.umlproject.UMLClass;
@@ -137,6 +138,7 @@ public class GuiController implements DocumentListner {
         GuiCamera.setupCamera();
         GuiKeyBinds.setupKeyBinds();
         GuiConsole.setupConsole();
+        GuiNetwork.initialize();
         //Setup button icons.
         applyIconsToButtons(addClassButton,"/org/umlproject/icons/new_class.png");
         applyIconsToButtons(addRelationshipButton,"/org/umlproject/icons/new_relationship.png");
@@ -227,16 +229,19 @@ public class GuiController implements DocumentListner {
     private void pasteEditMenuAction() { System.out.println("Paste"); }
     
     @FXML 
-    private void hostNetworkMenuAction() 
-    { 
-        System.out.println("Hoste"); 
+    private void hostNetworkMenuAction() { 
+        GuiNetwork.promptHostScreen();
     }
     
     @FXML 
-    private void connectNetworkMenuAction() { System.out.println("connect"); }
+    private void connectNetworkMenuAction() {
+        GuiNetwork.promptConnectScreen();
+    }
     
     @FXML 
-    private void disconnectNetworkMenuAction() { System.out.println("disconnect"); }
+    private void disconnectNetworkMenuAction() { 
+        NetworkManager.shutdown();
+    }
     
     @FXML
     private void quitFileMenuAction()
@@ -386,7 +391,7 @@ public class GuiController implements DocumentListner {
         grid.add(new Label("Type"), 0, 2);
         grid.add(typebox, 1, 2);
 
-        Alert alert = FXDialogueFactory.createAlertWindow(Alert.AlertType.ERROR, "Create Relationship", "Create a relationship between two classes", null, grid);
+        Alert alert = FXDialogueFactory.createAlertWindow(Alert.AlertType.INFORMATION, "Create Relationship", "Create a relationship between two classes", null, grid);
         
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) //User Acceptance
