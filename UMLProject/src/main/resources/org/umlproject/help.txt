@@ -4,21 +4,34 @@ To create a relationship, click the 'add relationship' icon in the top left of t
 · In order to edit relationship types, ensure both source and destination classes are far enough apart to display the textbox.
 
 To delete a class or relationship, select it using Ctrl+Click, then press Ctrl+Delete to remove it.
------------------------------------------------------------------------------------------------------------------------------
-//Modifying a class box
-- click "Add data field" to create a new data field.
+
+<LINEBREAK>
+
+MODIFYING CLASSES
+
+· Click "Add data field" to create a new data field.
   To modify the details of an existing data field, click in the TextField that represents the data field
   and enter: Visibility Type Name, where each argument is separated by a space. Then press enter or click elsewhere
   in the GUI to remove focus from the TextField and Accept the change.
 
-- Click "Add method" to create a new method.
+· Click "Add method" to create a new method.
   To modify the details of an existing method, click in the TextField that represents the method and
   enter: methodName Type Param1 Type Param2 ... Type ParamN, separating the arguments by a space. Param1 - ParamN
   are the names of the parameters of the method signature. Similarly, TYPE represents the data type of an
   associated parameter name. After modifying a method signature press enter or click elsewhere in the GUI
   to accept changes.
 
-- click delete (-) next to either an existing data field TextField or an existing method TextField to delete
+· Click delete (-) next to either an existing data field TextField or an existing method TextField to delete
   that field or method.
 
-- You can click and drag class Boxes.
+· You can click and drag class Boxes.
+
+<LINEBREAK>
+
+MODIFYING RELATIONSHIPS
+
+· Once the two classes in a relationship are far enough apart, click the label.
+  You can now modify the relationship type. To submit your change : press enter.
+  
+· If you are unhappy with your relationship lines, drag classes around to improve the visibility of your graph.
+  Though this software tries to help your diagrams look beautiful, some configurations are impossible to improve.
