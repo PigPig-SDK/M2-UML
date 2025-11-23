@@ -682,8 +682,8 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         );
 
         //debugging lines
-        GuiDebugging.showBounds(selectionRectangle, 5, 5, Color.RED);
-        GuiDebugging.showBounds(rect, 5, 5, Color.GREEN);
+        //GuiDebugging.showBounds(selectionRectangle, 5, 5, Color.RED);
+        //GuiDebugging.showBounds(rect, 5, 5, Color.GREEN);
         return selectionRectangle.intersects(rect);
     }
 
