@@ -48,6 +48,8 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     
     Point2D dragStartLocation = Point2D.ZERO;
     
+    List<Button> guiButtons = new LinkedList<>();//No random access is required. Using linked list.
+    
     private boolean isSelected = false;
     /**
      * Constructor for GuiClass responsible for building the initial class box and setting all the proper
@@ -491,7 +493,8 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         //create AddField Button, set action to make a new DataField
         Button addDataField = new Button("Add data field");
         addDataFieldButtonClickable(addDataField);
-
+        guiButtons.add(addDataField);
+        
         //convertDataFieldsToHBoxes filled the dataFIeldTexxtFields VBox with all the delete button
         //TextField combinations. Note that dataFieldTextFields VBox was reset upon calling update().
         this.parentVBox.getChildren().addAll(dataFieldsLabel, this.dataFieldTextFields, addDataField, new Separator());
@@ -504,6 +507,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         convertMethodsToHBoxes(umlMethods);
         Button addMethod = new Button("Add method");
         addMethodButtonClickable(addMethod);
+        guiButtons.add(addMethod);
         this.parentVBox.getChildren().addAll(methodsLabel, this.methodTextFields, addMethod);
         //-------------------------------------------------------------------------------------------------
 
@@ -581,8 +585,14 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
             )));
         }
     }
-
-
+    
+    public void formatForScreenshot()
+    {
+        for(Button b : guiButtons)
+        {
+            b.setVisible(false);
+        }
+    }
     /**This method will update the location of the gui element representing
      *the umlClass. That is, any calls to this function will visibly move
      *the class box on the screen.
@@ -639,6 +649,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
 
     @Override
     public void cleanUp() {
+        guiButtons.clear();
         if(this.nodeBackground == null)
             return;
         this.world.getChildren().remove(this.nodeBackground);

@@ -520,6 +520,23 @@ public class GuiController implements DocumentListner {
             }
         }
     }
+    public void redrawAllElements()
+    {
+        for(DiagramElementListener uIListener : UMLDocument.getInstance().getUIListeners())
+        {
+            if(uIListener instanceof GuiRelationship rgui)
+            {
+                UMLRelationship relationship = rgui.getRelationship();
+                if(relationship != null) rgui.update(relationship);
+            }
+            else if(uIListener instanceof GuiClass cgui)
+            {
+                UMLClass c = cgui.getParentClass();
+                if(c != null)
+                    cgui.update(c);
+            }
+        }
+    }
     @Override
     public void loadFile(UMLDocument umlDocument) {
         
