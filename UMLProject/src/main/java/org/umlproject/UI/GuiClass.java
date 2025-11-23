@@ -667,7 +667,24 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
 
     @Override
     public boolean intersects(Rectangle2D selectionRectangle) {
-        return false;
+
+        //Reused getRectBounds code with more accurate to visual bounds
+        if(this.parentVBox == null)
+            return false;
+        Bounds bounds = this.parentVBox.getBoundsInLocal();
+
+        Point2D offset = getLocation();
+        Rectangle2D rect = new Rectangle2D(
+                bounds.getMinX() + offset.getX() - bounds.getWidth()/2.2,
+                bounds.getMinY() + offset.getY() - bounds.getHeight()/2.2,
+                bounds.getWidth(),
+                bounds.getHeight()
+        );
+
+        //debugging lines
+        GuiDebugging.showBounds(selectionRectangle, 5, 5, Color.RED);
+        GuiDebugging.showBounds(rect, 5, 5, Color.GREEN);
+        return selectionRectangle.intersects(rect);
     }
 
     @Override
@@ -699,7 +716,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         Point2D offset = getLocation();
         Rectangle2D rect = new Rectangle2D(
                 bounds.getMinX() + offset.getX(),
-                bounds.getMinY() + offset.getY(), 
+                bounds.getMinY() + offset.getY(),
                 bounds.getWidth(), 
                 bounds.getHeight()
             );

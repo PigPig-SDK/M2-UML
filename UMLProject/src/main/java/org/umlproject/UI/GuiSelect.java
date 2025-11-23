@@ -26,10 +26,6 @@ public class GuiSelect {
      */
     private GuiSelect(){
         selectedObjects = new ArrayList<>();
-        App.currentScene.setOnMouseClicked(e -> {
-            GuiSelect.getInstance().checkResetSelect(e);
-            e.consume();
-        });
         AnimationTimer selectionAnimationTimer = new AnimationTimer() {
             @Override
             public void handle(long now){
