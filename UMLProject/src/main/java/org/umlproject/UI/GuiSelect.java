@@ -26,10 +26,6 @@ public class GuiSelect {
      */
     private GuiSelect(){
         selectedObjects = new ArrayList<>();
-        App.currentScene.setOnMouseClicked(e -> {
-            GuiSelect.getInstance().checkResetSelect(e);
-            e.consume();
-        });
         AnimationTimer selectionAnimationTimer = new AnimationTimer() {
             @Override
             public void handle(long now){
@@ -63,10 +59,7 @@ public class GuiSelect {
      * @param selectable - Class being selected/deselected
      */
     public void clickUiElement(MouseEvent e, UISelectable selectable) {
-        //Checks if control is being held. If not, returns.
-        if (!e.isControlDown()) {
-            return;
-        }
+
         //Checks if class is already selected. If so, deselects it.
         if(selectedObjects.contains(selectable)){
             deselectUiElement(selectable);

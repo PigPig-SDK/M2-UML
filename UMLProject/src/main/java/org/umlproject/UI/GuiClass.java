@@ -3,6 +3,7 @@ package org.umlproject.UI;
 import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
@@ -90,38 +91,44 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     private void makeDraggable(StackPane nodeBackground) {
         
         nodeBackground.setOnMousePressed(e -> {
-            GuiCamera.setDragging(true);
-            Point2D mouseWorldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
-            Point2D paneWorldSpace = new Point2D(nodeBackground.getLayoutX(), nodeBackground.getLayoutY());     
-            this.mouseAnchorX = mouseWorldSpace.getX() - paneWorldSpace.getX();
-            this.mouseAnchorY = mouseWorldSpace.getY() - paneWorldSpace.getY();
-            dragStartLocation = this.parentClass.getLocation();
-            
-            nodeBackground.requestFocus();
+            if(e.getButton() == MouseButton.PRIMARY) {
+                GuiCamera.setDragging(true);
+                Point2D mouseWorldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
+                Point2D paneWorldSpace = new Point2D(nodeBackground.getLayoutX(), nodeBackground.getLayoutY());
+                this.mouseAnchorX = mouseWorldSpace.getX() - paneWorldSpace.getX();
+                this.mouseAnchorY = mouseWorldSpace.getY() - paneWorldSpace.getY();
+                dragStartLocation = this.parentClass.getLocation();
+
+                nodeBackground.requestFocus();
+            }
             e.consume(); // Prevent event from propagating to other nodes
         });
         //Used for selection
         //Mouse up...
         nodeBackground.setOnMouseClicked(e -> {
-            GuiCamera.setDragging(false);
-            if(GuiCamera.isDragging())
-            {
-                Point2D worldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
-                Point2D selectionOffset = new Point2D(worldSpace.getX() - this.mouseAnchorX, worldSpace.getY() - this.mouseAnchorY);
-                if(!selectionOffset.equals(dragStartLocation))
-                    this.parentClass.setLocation(selectionOffset, true);
+            if(e.getButton() == MouseButton.PRIMARY) {
+                GuiCamera.setDragging(false);
+                if (GuiCamera.isDragging()) {
+                    Point2D worldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
+                    Point2D selectionOffset = new Point2D(worldSpace.getX() - this.mouseAnchorX, worldSpace.getY() - this.mouseAnchorY);
+                    if (!selectionOffset.equals(dragStartLocation))
+                        this.parentClass.setLocation(selectionOffset, true);
+                }
             }
-            
-            GuiSelect.getInstance().clickUiElement(e, this);
+            if(e.getButton() == MouseButton.SECONDARY){
+                GuiSelect.getInstance().clickUiElement(e, this);
+            }
             e.consume(); // Prevent event from propagating to other nodes
         });
 
         this.nodeBackground.setOnMouseDragged(e -> {
-            //I swear if i have to instantiate another immutable point2d im going to create a wrapper class.
-            Point2D worldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
-            Point2D selectionOffset = new Point2D(worldSpace.getX() - this.mouseAnchorX, worldSpace.getY() - this.mouseAnchorY);
-            UMLDocument.executeActionUnderState(DocumentState.SILENT_MOVEMENT, () -> this.parentClass.setLocation(selectionOffset, true));
-            this.nodeBackground.getParent().requestLayout(); // Force layout update
+            if(e.getButton() == MouseButton.PRIMARY) {
+                //I swear if i have to instantiate another immutable point2d im going to create a wrapper class.
+                Point2D worldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
+                Point2D selectionOffset = new Point2D(worldSpace.getX() - this.mouseAnchorX, worldSpace.getY() - this.mouseAnchorY);
+                UMLDocument.executeActionUnderState(DocumentState.SILENT_MOVEMENT, () -> this.parentClass.setLocation(selectionOffset, true));
+                this.nodeBackground.getParent().requestLayout(); // Force layout update
+            }
             e.consume(); // Prevent event from propagating to other nodes
         });
     }
@@ -678,7 +685,24 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
 
     @Override
     public boolean intersects(Rectangle2D selectionRectangle) {
-        return false;
+
+        //Reused getRectBounds code with more accurate to visual bounds
+        if(this.parentVBox == null)
+            return false;
+        Bounds bounds = this.parentVBox.getBoundsInLocal();
+
+        Point2D offset = getLocation();
+        Rectangle2D rect = new Rectangle2D(
+                bounds.getMinX() + offset.getX() - bounds.getWidth()/2.2,
+                bounds.getMinY() + offset.getY() - bounds.getHeight()/2.2,
+                bounds.getWidth(),
+                bounds.getHeight()
+        );
+
+        //debugging lines
+        //GuiDebugging.showBounds(selectionRectangle, 5, 5, Color.RED);
+        //GuiDebugging.showBounds(rect, 5, 5, Color.GREEN);
+        return selectionRectangle.intersects(rect);
     }
 
     @Override
@@ -710,7 +734,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         Point2D offset = getLocation();
         Rectangle2D rect = new Rectangle2D(
                 bounds.getMinX() + offset.getX(),
-                bounds.getMinY() + offset.getY(), 
+                bounds.getMinY() + offset.getY(),
                 bounds.getWidth(), 
                 bounds.getHeight()
             );

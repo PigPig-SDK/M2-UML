@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+
+import javafx.geometry.Rectangle2D;
 import org.umlproject.DiagramElementListener;
 import org.umlproject.DocumentListner;
 import org.umlproject.DocumentState;
@@ -203,6 +205,7 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
     
     /* Those no good do nothings */
     @Override public void cleanUp() {}//Do nothing!
+
     @Override public void loadFile(UMLDocument umlDocument) {
         Server server = NetworkManager.getServerInstance();
         if(server == null)

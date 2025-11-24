@@ -1,5 +1,6 @@
 package org.umlproject.UI;
 
+import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
@@ -303,7 +304,19 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
 
     @Override
     public boolean intersects(Rectangle2D selectionRectangle) {
-        return false; //TODO: Implement
+
+
+        //TODO: Re-Implement after A*
+
+        Point2D sourceLocation = UMLDocument.getInstance().getClass(relationship.getSourceName()).getLocation();
+        Point2D destinationLocation = UMLDocument.getInstance().getClass(relationship.getSourceName()).getLocation();
+
+        //debugging lines
+        //GuiDebugging.showBounds(selectionRectangle, 5, 5, Color.RED);
+        //GuiDebugging.showBounds(new Rectangle2D(sourceLocation.getX(), sourceLocation.getY(), 0, 0), 5, 5, Color.GREEN);
+
+        return selectionRectangle.intersects(sourceLocation.getX(), sourceLocation.getY(), 0, 0) ||
+                selectionRectangle.intersects(destinationLocation.getX(), destinationLocation.getY(), 0, 0);
     }
 
     @Override
@@ -314,5 +327,7 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
         this.selectionOutline.setStrokeDashOffset(10*Math.sin(time * 0.000000001));
         
     }
+
+
     
 }
