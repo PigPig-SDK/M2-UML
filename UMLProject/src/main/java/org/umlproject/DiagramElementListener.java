@@ -1,5 +1,7 @@
 package org.umlproject;
 
+import javafx.geometry.Rectangle2D;
+
 public interface DiagramElementListener<T> {  
     /** 
      * The GUI listener should catch the update and draw its required bullshit.
@@ -14,4 +16,6 @@ public interface DiagramElementListener<T> {
      * Called when the bound Object is no longer valid.
      */
     void cleanUp();
+
+    boolean intersects(Rectangle2D rectangle2D);
 }

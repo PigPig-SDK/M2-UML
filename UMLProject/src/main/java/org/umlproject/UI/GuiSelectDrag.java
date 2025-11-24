@@ -2,10 +2,15 @@ package org.umlproject.UI;
 
 import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import org.umlproject.DiagramElementListener;
+import org.umlproject.UMLDocument;
+
+import java.util.ArrayList;
 
 public class GuiSelectDrag {
 
@@ -41,15 +46,20 @@ public class GuiSelectDrag {
      * selectDragRelease method. Called when mouse is un-clicked after a drag. Clears all selected elements,
      * and re-selects those that intersect with the selection drag.
      */
-    public static void selectDragRelease(){
+    public static void selectDragRelease(MouseEvent event){
         //Determines intersection/selection
         if(selectRectangle != null){
-            GuiSelect.getInstance().resetSelect();
-            for(GuiClass guiClass : GuiController.extractGuiClasses()){
-                if(guiClass.intersects(new Rectangle2D(selectRectangle.getX(), selectRectangle.getY(),
-                        selectRectangle.getWidth(), selectRectangle.getHeight()))){
-                    GuiSelect.getInstance().selectUiElement(guiClass);
-                }
+            //If right click, add to selection instead of reset
+            if(!(event.getButton() == MouseButton.SECONDARY)){
+                GuiSelect.getInstance().resetSelect();
+            }
+            //Iterates generalized UML elements to determine selection behaviour
+            ArrayList<DiagramElementListener> guiElements = new ArrayList<>(UMLDocument.getInstance().getUIListeners());
+            for(DiagramElementListener element : guiElements){
+                    if(element.intersects(new Rectangle2D(selectRectangle.getX(), selectRectangle.getY(),
+                            selectRectangle.getWidth(), selectRectangle.getHeight()))){
+                        GuiSelect.getInstance().selectUiElement((UISelectable) element);
+                    }
             }
             //Clear select rectangle
             world.getChildren().remove(selectRectangle);

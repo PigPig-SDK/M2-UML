@@ -1,5 +1,7 @@
 package org.umlproject;
 
+import javafx.geometry.Rectangle2D;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -72,7 +74,12 @@ public class UndoRedoManager implements DiagramElementListener, DocumentListner
     @Override public void cleanUp() {
         //Do nothing...
     }
-    
+
+    @Override
+    public boolean intersects(Rectangle2D rectangle2D) {
+        return false;
+    }//Do nothing!
+
     @Override public void loadFile(UMLDocument umlDocument) {
         //Do nothing... Server handles it :^)
     }

@@ -99,7 +99,7 @@ public class GuiCamera {
         
         //Logic to drag the camera around
         App.currentScene.setOnMouseDragged(event -> {
-            if (event.isControlDown()){
+            if (event.isShiftDown()){
                 GuiSelectDrag.selectDrag(event);
                 return;
             }
@@ -131,7 +131,7 @@ public class GuiCamera {
             if (e.getButton() == MouseButton.PRIMARY) {
                 isDragging = false;
             }
-            GuiSelectDrag.selectDragRelease();
+            GuiSelectDrag.selectDragRelease(e);
         });
     }
     /**
