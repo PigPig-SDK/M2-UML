@@ -10,6 +10,7 @@ import static javafx.scene.input.KeyCode.Z;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
+import org.networking.NetworkManager;
 import org.umlproject.App;
 import org.umlproject.Main;
 import org.umlproject.UMLDocument;
@@ -81,12 +82,12 @@ public class GuiKeyBinds {
                 }
                 //New file (CTRL+N)
                 case N -> {
-                    GuiController.getInstance().newFileMenuAction();
+                    if(!NetworkManager.isConnected()) GuiController.getInstance().newFileMenuAction();
                     event.consume();
                 }
                 //Open file (CTRL+O)
                 case O -> {
-                    GuiController.getInstance().openFileMenuAction();
+                    if(!NetworkManager.isConnected()) GuiController.getInstance().openFileMenuAction();
                     event.consume();
                 }
                 //Delete all (CTRL+DELETE)
@@ -96,12 +97,12 @@ public class GuiKeyBinds {
                 }
                 //UNDO
                 case Z ->{
-                    GuiController.getInstance().editUndo();
+                    if(!NetworkManager.isConnected()) GuiController.getInstance().editUndo();
                     event.consume();
                 }
                 //Redo
                 case Y ->{
-                    GuiController.getInstance().editRedo();
+                    if(!NetworkManager.isConnected()) GuiController.getInstance().editRedo();
                     event.consume();
                 }
                 //Copy all (CTRL+C)
@@ -164,7 +165,7 @@ public class GuiKeyBinds {
      * 
      * Searches for menus in a menu bar to get a specific item
      */
-    private static MenuItem findMenuItemFromMenuBar(MenuBar menuBar, String objectName)
+    public static MenuItem findMenuItemFromMenuBar(MenuBar menuBar, String objectName)
     {
         for(Menu menu : menuBar.getMenus())
         {

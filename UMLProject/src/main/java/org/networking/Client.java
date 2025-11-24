@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.Socket;
 import static org.networking.PacketType.CLASS_EDIT;
 import static org.networking.PacketType.RELATIONSHIP_EDIT;
+import static org.networking.PacketType.REQUEST_DOCUMENT;
 import org.umlproject.MainThreadDispatcher;
 
 /**
@@ -69,34 +70,46 @@ public class Client extends SocketManager
             {
                 if(isHosting)
                     return;
-                MainThreadDispatcher.dispatcher.dispatch(() -> DocumentPacketHandler.handleClassPacket(null, netPacket));
+                MainThreadDispatcher.dispatcher.dispatch(() -> PayloadClass.handleClassPacket(null, netPacket));
             }
             case RELATIONSHIP_EDIT ->
             {
                 if(isHosting)
                     return;
-                MainThreadDispatcher.dispatcher.dispatch(() -> DocumentPacketHandler.handleRelationshipPacket(null, netPacket));
+                MainThreadDispatcher.dispatcher.dispatch(() -> PayloadRelationship.handleRelationshipPacket(null, netPacket));
             }
             case FULL_DOCUMENT ->
             {
                 if(isHosting)
                     return;
                 //Go for it bud...
-                DocumentPacketHandler.handleDocumentPacket(netPacket);
+                PayloadDocument.handleDocumentPacket(netPacket);
             }
             case ELEMENT_MOVED ->
             {
                 //Server has suggested we move something...
-                DocumentPacketHandler.handleElementMovementPacket(netPacket);
+                PayloadMoveElement.handleElementMovementPacket(netPacket);
             }
             case OBJECT_DELETED ->
             {
                 //Null implies there is nobody to send errors back to. We accept the packet whole-heartedly.
-                MainThreadDispatcher.dispatcher.dispatch(()-> DocumentPacketHandler.handleRemovePacket(null, netPacket));
+                MainThreadDispatcher.dispatcher.dispatch(()-> PayloadRemoveObject.handleRemovePacket(null, netPacket));
+            }
+            case REQUEST_DOCUMENT ->
+            {
+                System.out.println("SERVER ASKED FOR ILLEGAL PACKET! -> " +netPacket.payload());
+            }
+            case MESSAGE ->
+            {
+                System.out.println("> " +netPacket.payload());
+            }
+            case USER_DISCONNECT -> 
+            {
+                PayloadUserDisconnect.handlePacket(netPacket);
             }
             default ->
             {
-                System.out.println("-> " +netPacket.payload());
+                System.out.println("UNKNOWN PACKET -> " +netPacket.payload());
             }
 
         }
@@ -113,8 +126,8 @@ public class Client extends SocketManager
      */
     @Override
     protected void onConnectionStarted() {
-        UserIdentification myId = UserIdentification.generateAnonymousUserInfo();
-        NetworkPacket netPacket = NetworkPacket.objectToNetworkPacket(0, PacketType.IDENTIFICATION, myId);
+        UserIdentification myId = UserIdentification.generateUserInfo();
+        NetworkPacket netPacket = NetworkPacket.objectToNetworkPacket(PacketType.IDENTIFICATION, myId);
         this.sendNetworkPacket(netPacket);
     }
     /**

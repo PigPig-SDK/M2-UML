@@ -11,7 +11,6 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import static org.networking.DocumentPacketHandler.handleClassPacket;
 import org.umlproject.MainThreadDispatcher;
 import org.umlproject.UMLDocument;
 
@@ -28,6 +27,7 @@ public class ClientHandler extends SocketManager
     private boolean firstID = true;
     private long lastHeartbeatTime = 0;
     private static final long TIMEOUT = 5; // In seconds
+    private boolean shutdownShouted = false;
     
     private UUID clientID = UUID.randomUUID();
     
@@ -73,9 +73,7 @@ public class ClientHandler extends SocketManager
             case MESSAGE ->
             {
                 //Send message back to all clients...
-                String message = userID.userName + " : " + netPacket.payload();
-                NetworkPacket overrideNetPacket = new NetworkPacket(0, PacketType.MESSAGE, message);
-                NetworkManager.getServerInstance().sendMessageToAllClients(overrideNetPacket);
+                NetworkManager.getServerInstance().sendChatMessageToAll(userID.userName + " : " + netPacket.payload());
             }
             case HEARTBEAT ->
             {
@@ -97,7 +95,7 @@ public class ClientHandler extends SocketManager
                     //Populate packet with useful stuff..
                     payload.setUsername(userID.userName);
                     payload.setUserId(clientID);
-                    NetworkPacket tempNetPacket = NetworkPacket.objectToNetworkPacket(NetworkManager.getTick(), PacketType.MOUSE_UPDATE, payload);//Modified payload loaded!
+                    NetworkPacket tempNetPacket = NetworkPacket.objectToNetworkPacket(PacketType.MOUSE_UPDATE, payload);//Modified payload loaded!
                     //Sending...
                     Set<ClientHandler> blacklist = server.getAllTerminalUsers();
                     blacklist.add(this);//Do not send back to our client.
@@ -117,8 +115,7 @@ public class ClientHandler extends SocketManager
                     this.userID = testId;
                     if(firstID)
                     {
-                        NetworkPacket netpacket = new NetworkPacket(0,PacketType.MESSAGE, this.userID.userName + " has connected.");
-                        NetworkManager.getServerInstance().sendMessageToAllClients(netpacket);
+                        NetworkManager.getServerInstance().sendChatMessageToAll(this.userID.userName + " has connected.");
                         firstID = false;
                     }
                 }
@@ -129,15 +126,19 @@ public class ClientHandler extends SocketManager
             }
             case CLASS_EDIT ->
             {
-                MainThreadDispatcher.dispatcher.dispatch(() -> DocumentPacketHandler.handleClassPacket(this, netPacket));
+                MainThreadDispatcher.dispatcher.dispatch(() -> PayloadClass.handleClassPacket(this, netPacket));
             }
             case RELATIONSHIP_EDIT ->
             {
-                MainThreadDispatcher.dispatcher.dispatch(() -> DocumentPacketHandler.handleRelationshipPacket(this, netPacket));
+                MainThreadDispatcher.dispatcher.dispatch(() -> PayloadRelationship.handleRelationshipPacket(this, netPacket));
             }
             case OBJECT_DELETED ->
             {
-                MainThreadDispatcher.dispatcher.dispatch(()-> DocumentPacketHandler.handleRemovePacket(this, netPacket));
+                MainThreadDispatcher.dispatcher.dispatch(()-> PayloadRemoveObject.handleRemovePacket(this, netPacket));
+            }
+            case REQUEST_DOCUMENT ->
+            {
+                MainThreadDispatcher.dispatcher.dispatch(()-> PayloadRequestDocument.handlePacket(this, netPacket));
             }
             case ELEMENT_MOVED ->
             {
@@ -177,14 +178,22 @@ public class ClientHandler extends SocketManager
      */
     protected void sendEntireDocument()
     {
-        sendNetworkPacket(Server.generateDocumentPacket());
+        sendNetworkPacket(PayloadDocument.generateDocumentPacket());
     }
     /**
      * Called on connection shutdown.
      */
     @Override
     public void disconnect() {
+        //Before shutdown... Send our death note.
         super.disconnect();
+        if(!shutdownShouted)
+        {
+            Server server =  NetworkManager.getServerInstance();
+            if(server == null) return;
+            server.sendMessageToAllClients(NetworkPacket.objectToNetworkPacket(PacketType.USER_DISCONNECT, new PayloadUserDisconnect(clientID)));
+            shutdownShouted = true;
+        }
     }
     /**
      * Gets the heartbeat delta
@@ -199,5 +208,13 @@ public class ClientHandler extends SocketManager
     public UserIdentification getUserID()
     {
         return userID;
+    }
+    /**
+     * 
+     * @param message The message we are sending to all clients.
+     */
+    public void sendChatToClient(String message)
+    {
+        sendNetworkPacket(NetworkPacket.stringToNetworkPacket(PacketType.MESSAGE, message));
     }
 }

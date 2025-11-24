@@ -4,17 +4,12 @@ import java.awt.MouseInfo;
 import java.awt.Point;
 import javafx.animation.AnimationTimer;
 import javafx.geometry.Point2D;
-import javafx.scene.Group;
-import javafx.scene.Scene;
 import javafx.scene.control.TextInputControl;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
-import static javafx.scene.input.MouseButton.MIDDLE;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Pane;
-import javafx.stage.Stage;
 import org.umlproject.App;
-import org.umlproject.Main;
 
 public class GuiCamera {
     private static Point2D camLocation = new Point2D(0,0);
@@ -31,10 +26,11 @@ public class GuiCamera {
     private static double startDragY = 0;
     
     private static boolean isDragging = false;
+
+    private static final Pane world = GuiController.getInstance().getWorld();
     
     public static void setCameraLocation(Point2D location)
     {
-        Pane world = GuiController.getInstance().getWorld();
         camLocation = location;
         world.setTranslateX(camLocation.getX());
         world.setTranslateY(camLocation.getY());
@@ -57,7 +53,6 @@ public class GuiCamera {
     private static void setZoom(double newZoom, ScrollEvent event) {
         if (newZoom < ZOOM_SCALE_MIN) newZoom = ZOOM_SCALE_MIN;
         if (newZoom > ZOOM_SCALE_MAX) newZoom = ZOOM_SCALE_MAX;
-        Pane world = GuiController.getInstance().getWorld();
         Point2D before = world.sceneToLocal(event.getSceneX(), event.getSceneY());//Get og realitive
         
         world.setScaleX(newZoom);
@@ -104,6 +99,10 @@ public class GuiCamera {
         
         //Logic to drag the camera around
         App.currentScene.setOnMouseDragged(event -> {
+            if (event.isShiftDown()){
+                GuiSelectDrag.selectDrag(event);
+                return;
+            }
             double currentX = event.getScreenX();
             double currentY = event.getScreenY();
             switch (event.getButton()) {
@@ -116,7 +115,7 @@ public class GuiCamera {
                     break;
             }
             startDragX = currentX;
-            startDragY = currentY; 
+            startDragY = currentY;
         });
         //Clicking into the void deselects any textbox...
         App.currentScene.setOnMousePressed(event -> {
@@ -132,6 +131,7 @@ public class GuiCamera {
             if (e.getButton() == MouseButton.PRIMARY) {
                 isDragging = false;
             }
+            GuiSelectDrag.selectDragRelease(e);
         });
     }
     /**
@@ -143,7 +143,6 @@ public class GuiCamera {
     public static Point2D screenToWorld(Point2D screenSpace)
     {
         Pane view = GuiController.getInstance().getViewPane();
-        Pane world = GuiController.getInstance().getWorld();
         
         Point2D sceneLocation = view.localToScene(screenSpace);
         Point2D worldLocation = world.sceneToLocal(sceneLocation);

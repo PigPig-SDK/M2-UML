@@ -115,7 +115,7 @@ public class Server extends Thread {
             }
             catch(IOException e)
             {
-                System.out.println("Server Socket:" +  e.getMessage());
+                //System.out.println("Server Socket:" +  e.getMessage());
                 //Try close socket! Something went wrong.
                 try { 
                     if(socket != null)
@@ -178,7 +178,19 @@ public class Server extends Thread {
         clientHandlers.removeIf(client -> !client.getUserID().isTerminalUser);
         return clientHandlers;
     }
-    
+    /**
+     * Reports a chat message back to the user.
+     * @param message The message you desire to send.
+     */
+    public void sendChatMessageToAll(String message)
+    {
+        Set<ClientHandler> allClients = getClients();
+        
+        for(ClientHandler c : allClients)
+        {
+            c.sendChatToClient(message);
+        }
+    }
     /**
      * Shutsdown the current server.
      */
@@ -186,7 +198,7 @@ public class Server extends Thread {
     {
         //Shutdown all clients...
         clientUpdateTimer.cancel();
-        System.out.println("Shutdown server. Closing all clients!");
+        System.out.println("Shutdown server");
         sendMessageToAllClients(new NetworkPacket(0, PacketType.DISCONNECT,""));
         try {
             Thread.sleep(50);
@@ -257,10 +269,6 @@ public class Server extends Thread {
             }
         }
         return tempList;
-    }
-    public static NetworkPacket generateDocumentPacket()
-    {
-        return NetworkPacket.objectToNetworkPacket(NetworkManager.getTick(), PacketType.FULL_DOCUMENT, UMLDocument.getInstance());
     }
     /**
      * Gets the server's local client handler.

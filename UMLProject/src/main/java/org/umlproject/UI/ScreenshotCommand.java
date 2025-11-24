@@ -13,6 +13,9 @@ import java.io.File;
 import java.io.IOException;
 import javafx.scene.paint.Color;
 import javafx.scene.transform.Transform;
+import org.umlproject.DiagramElementListener;
+import org.umlproject.DocumentState;
+import org.umlproject.UMLDocument;
 
 /**
  * Concrete command class within the Command design pattern. This class implements the exportCommand interface
@@ -37,16 +40,31 @@ public class ScreenshotCommand implements ExportCommand {
      * and save it to the user designated saveLocation.
      * @throws IOException which may result from the ImageIO.write() call.
      */
-    public void execute() throws IOException{
+    public void execute() throws IOException {
         SnapshotParameters snapshotParameters = new SnapshotParameters();
         snapshotParameters.setFill(GuiColor.WORLD_BACKGROUND_COLOR);
-        snapshotParameters.setTransform(Transform.scale(2,2));
+        snapshotParameters.setTransform(Transform.scale(4,4));
+        
+        //Hide buttons and selection
+        GuiSelect.getInstance().resetSelect();
+        
+        for(DiagramElementListener element :UMLDocument.getInstance().getUIListeners())
+        {
+            if(element instanceof GuiClass guiClass)
+            {
+                guiClass.formatForScreenshot();
+            }
+        }
+        
         //Convert World to WriteableImage object.
         WritableImage fxImage = world.snapshot(snapshotParameters, null);
         //Convert WriteableImage object into a BufferedImage so it can be saved as a "png".
         BufferedImage awtImage = ScreenshotCommand.toBufferedImage(fxImage);
         //Save image as a png in the given file location.
         ImageIO.write(awtImage, "png", saveLocation);
+        
+        //Return scene to normal
+        GuiController.getInstance().redrawAllElements();
     }
 
     /**

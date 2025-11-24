@@ -50,6 +50,11 @@ public class NetworkMouse {
         });
     }
     
+    public void cleanUp()
+    {
+        Platform.runLater(()->{GuiController.getInstance().getWorld().getChildren().removeAll(mouseImage, usernameLabel);});
+    }
+    
     public void update()
     {
         if(mouseImage == null) return;

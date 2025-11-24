@@ -1,0 +1,33 @@
+11/21/25:
+
+Javafx, can you write code to parse a textfile into a VBOX. 
+If theres text, we add it to a label, If we read a line with <LINEBREAK> than we add a line break
+
+> AI : " ... Gives code ..."
+
+My main problem is that this will create a ton of labels for each line right
+
+> AI : " ... Gives fixed code ..."
+
+(At this point I modified the code AI gave me to add psudo code comments.)
+
+**PASTED CODE I HAD EDITED**
+
+Fix this code.
+
+When we hit a <LINEBREAK> we add a Separator and finish the appending into a textbox, making a new one for more appending after the linebreak. 
+Then at the end of the reading, we append whatever textbox wasn't appended from the linebreak sequence. You get me?
+
+> AI : " ... Gives fixed code ..."
+
+Make the text use inputstream.
+
+> AI : " ... Gives fixed code ..."
+
+Use label instead of textbox
+
+> AI : " ... Gives fixed code ..."
+
+END:
+At this point the code was close enough to what I had required.
+AI was used because parsing text is the most boring thing in history of world.

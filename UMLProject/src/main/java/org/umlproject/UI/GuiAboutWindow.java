@@ -17,10 +17,7 @@ import javafx.util.Duration;
 public class GuiAboutWindow {
 
     public static void showAbout() {
-        Alert aboutBox = new Alert(Alert.AlertType.INFORMATION);
-        aboutBox.setTitle("About UML Editor");
-        aboutBox.setHeaderText(null);
-
+        
         VBox content = new VBox(10);
         content.setAlignment(Pos.CENTER_LEFT);
 
@@ -73,13 +70,8 @@ public class GuiAboutWindow {
         description.setWrapText(true);
 
         content.getChildren().addAll(title, subtitle, line1, teamInfo, line2, description);
-        aboutBox.getDialogPane().setContent(content);
-
-        FadeTransition fade = new FadeTransition(Duration.millis(250), aboutBox.getDialogPane());
-        fade.setFromValue(0);
-        fade.setToValue(1);
-        fade.play();
-
-        aboutBox.showAndWait();
+        Alert aboutBox = FXDialogueFactory.createAlertWindow(Alert.AlertType.INFORMATION, "About UML Editor", null, null, content);
+        aboutBox.show();
+        
     }
 }

@@ -3,6 +3,7 @@ package org.umlproject.UI;
 import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
@@ -48,6 +49,8 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     
     Point2D dragStartLocation = Point2D.ZERO;
     
+    List<Button> guiButtons = new LinkedList<>();//No random access is required. Using linked list.
+    
     private boolean isSelected = false;
     /**
      * Constructor for GuiClass responsible for building the initial class box and setting all the proper
@@ -88,36 +91,44 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     private void makeDraggable(StackPane nodeBackground) {
         
         nodeBackground.setOnMousePressed(e -> {
-            GuiCamera.setDragging(true);
-            Point2D mouseWorldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
-            Point2D paneWorldSpace = new Point2D(nodeBackground.getLayoutX(), nodeBackground.getLayoutY());     
-            this.mouseAnchorX = mouseWorldSpace.getX() - paneWorldSpace.getX();
-            this.mouseAnchorY = mouseWorldSpace.getY() - paneWorldSpace.getY();
-            dragStartLocation = this.parentClass.getLocation();
-            
-            nodeBackground.requestFocus();
+            if(e.getButton() == MouseButton.PRIMARY) {
+                GuiCamera.setDragging(true);
+                Point2D mouseWorldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
+                Point2D paneWorldSpace = new Point2D(nodeBackground.getLayoutX(), nodeBackground.getLayoutY());
+                this.mouseAnchorX = mouseWorldSpace.getX() - paneWorldSpace.getX();
+                this.mouseAnchorY = mouseWorldSpace.getY() - paneWorldSpace.getY();
+                dragStartLocation = this.parentClass.getLocation();
+
+                nodeBackground.requestFocus();
+            }
             e.consume(); // Prevent event from propagating to other nodes
         });
         //Used for selection
         //Mouse up...
         nodeBackground.setOnMouseClicked(e -> {
-            GuiCamera.setDragging(false);
-            Point2D worldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
-            Point2D selectionOffset = new Point2D(worldSpace.getX() - this.mouseAnchorX, worldSpace.getY() - this.mouseAnchorY);
-            
-            if(!selectionOffset.equals(dragStartLocation))
-                this.parentClass.setLocation(selectionOffset, true);
-            
-            GuiSelect.getInstance().clickUiElement(e, this);
+            if(e.getButton() == MouseButton.PRIMARY) {
+                GuiCamera.setDragging(false);
+                if (GuiCamera.isDragging()) {
+                    Point2D worldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
+                    Point2D selectionOffset = new Point2D(worldSpace.getX() - this.mouseAnchorX, worldSpace.getY() - this.mouseAnchorY);
+                    if (!selectionOffset.equals(dragStartLocation))
+                        this.parentClass.setLocation(selectionOffset, true);
+                }
+            }
+            if(e.getButton() == MouseButton.SECONDARY){
+                GuiSelect.getInstance().clickUiElement(e, this);
+            }
             e.consume(); // Prevent event from propagating to other nodes
         });
 
         this.nodeBackground.setOnMouseDragged(e -> {
-            //I swear if i have to instantiate another immutable point2d im going to create a wrapper class.
-            Point2D worldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
-            Point2D selectionOffset = new Point2D(worldSpace.getX() - this.mouseAnchorX, worldSpace.getY() - this.mouseAnchorY);
-            UMLDocument.executeActionUnderState(DocumentState.SILENT_MOVEMENT, () -> this.parentClass.setLocation(selectionOffset, true));
-            this.nodeBackground.getParent().requestLayout(); // Force layout update
+            if(e.getButton() == MouseButton.PRIMARY) {
+                //I swear if i have to instantiate another immutable point2d im going to create a wrapper class.
+                Point2D worldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
+                Point2D selectionOffset = new Point2D(worldSpace.getX() - this.mouseAnchorX, worldSpace.getY() - this.mouseAnchorY);
+                UMLDocument.executeActionUnderState(DocumentState.SILENT_MOVEMENT, () -> this.parentClass.setLocation(selectionOffset, true));
+                this.nodeBackground.getParent().requestLayout(); // Force layout update
+            }
             e.consume(); // Prevent event from propagating to other nodes
         });
     }
@@ -301,7 +312,6 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     public void addDataFieldButtonClickable(Button addDataField){
         addDataField.setOnAction(e -> {
             String dummyFieldSignature = parentClass.findValidFieldDummySignature();
-            System.out.println("the dummyFieldSignature is: " + dummyFieldSignature);
 
             //create a new UMLDataFIeld object and insert into parent class
             String[] dummyFieldAsArray = dummyFieldSignature.split(" ");
@@ -489,7 +499,8 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         //create AddField Button, set action to make a new DataField
         Button addDataField = new Button("Add data field");
         addDataFieldButtonClickable(addDataField);
-
+        guiButtons.add(addDataField);
+        
         //convertDataFieldsToHBoxes filled the dataFIeldTexxtFields VBox with all the delete button
         //TextField combinations. Note that dataFieldTextFields VBox was reset upon calling update().
         this.parentVBox.getChildren().addAll(dataFieldsLabel, this.dataFieldTextFields, addDataField, new Separator());
@@ -502,6 +513,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         convertMethodsToHBoxes(umlMethods);
         Button addMethod = new Button("Add method");
         addMethodButtonClickable(addMethod);
+        guiButtons.add(addMethod);
         this.parentVBox.getChildren().addAll(methodsLabel, this.methodTextFields, addMethod);
         //-------------------------------------------------------------------------------------------------
 
@@ -579,8 +591,14 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
             )));
         }
     }
-
-
+    
+    public void formatForScreenshot()
+    {
+        for(Button b : guiButtons)
+        {
+            b.setVisible(false);
+        }
+    }
     /**This method will update the location of the gui element representing
      *the umlClass. That is, any calls to this function will visibly move
      *the class box on the screen.
@@ -637,6 +655,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
 
     @Override
     public void cleanUp() {
+        guiButtons.clear();
         if(this.nodeBackground == null)
             return;
         this.world.getChildren().remove(this.nodeBackground);
@@ -665,7 +684,24 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
 
     @Override
     public boolean intersects(Rectangle2D selectionRectangle) {
-        return false;
+
+        //Reused getRectBounds code with more accurate to visual bounds
+        if(this.parentVBox == null)
+            return false;
+        Bounds bounds = this.parentVBox.getBoundsInLocal();
+
+        Point2D offset = getLocation();
+        Rectangle2D rect = new Rectangle2D(
+                bounds.getMinX() + offset.getX() - bounds.getWidth()/2.2,
+                bounds.getMinY() + offset.getY() - bounds.getHeight()/2.2,
+                bounds.getWidth(),
+                bounds.getHeight()
+        );
+
+        //debugging lines
+        //GuiDebugging.showBounds(selectionRectangle, 5, 5, Color.RED);
+        //GuiDebugging.showBounds(rect, 5, 5, Color.GREEN);
+        return selectionRectangle.intersects(rect);
     }
 
     @Override
@@ -697,7 +733,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         Point2D offset = getLocation();
         Rectangle2D rect = new Rectangle2D(
                 bounds.getMinX() + offset.getX(),
-                bounds.getMinY() + offset.getY(), 
+                bounds.getMinY() + offset.getY(),
                 bounds.getWidth(), 
                 bounds.getHeight()
             );
