@@ -62,7 +62,7 @@ public class NetworkMouseHandler
         Point2D screenLocation = GuiCamera.screenToWorld(GuiCamera.getMouseInScene());
        
         PayloadNetworkMouse nmp = new PayloadNetworkMouse(null, null, screenLocation.getX(), screenLocation.getY(), GuiCamera.isDragging());
-        NetworkPacket networkPacket = NetworkPacket.objectToNetworkPacket(NetworkManager.getTick(), PacketType.MOUSE_UPDATE, nmp);
+        NetworkPacket networkPacket = NetworkPacket.objectToNetworkPacket(PacketType.MOUSE_UPDATE, nmp);
         NetworkManager.getClientInstance().sendNetworkPacket(networkPacket);
     }
     

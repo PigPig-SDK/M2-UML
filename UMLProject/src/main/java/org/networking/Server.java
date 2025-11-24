@@ -178,7 +178,19 @@ public class Server extends Thread {
         clientHandlers.removeIf(client -> !client.getUserID().isTerminalUser);
         return clientHandlers;
     }
-    
+    /**
+     * Reports a chat message back to the user.
+     * @param message The message you desire to send.
+     */
+    public void sendChatMessageToAll(String message)
+    {
+        Set<ClientHandler> allClients = getClients();
+        
+        for(ClientHandler c : allClients)
+        {
+            c.sendChatToClient(message);
+        }
+    }
     /**
      * Shutsdown the current server.
      */
@@ -257,10 +269,6 @@ public class Server extends Thread {
             }
         }
         return tempList;
-    }
-    public static NetworkPacket generateDocumentPacket()
-    {
-        return NetworkPacket.objectToNetworkPacket(NetworkManager.getTick(), PacketType.FULL_DOCUMENT, UMLDocument.getInstance());
     }
     /**
      * Gets the server's local client handler.

@@ -7,6 +7,7 @@ import org.networking.ClientHandler;
 import org.networking.NetworkManager;
 import org.networking.NetworkPacket;
 import org.networking.PacketType;
+import org.networking.PayloadRequestDocument;
 
 public class CommandNetwork extends BaseCommand {
 
@@ -27,6 +28,21 @@ public class CommandNetwork extends BaseCommand {
         
         switch(subcommand)
         {
+            case "refresh" ->
+            {
+                if(!NetworkManager.isConnected())
+                {
+                    System.out.println("Not connected to a server. Cannot refresh");    
+                    return;
+                }
+                if(NetworkManager.isHosting())
+                {
+                    System.out.println("Cannot refresh document. You are hosting a server.");    
+                    return;
+                }
+                System.out.println("Asking server for a document refresh...");
+                NetworkManager.getClientInstance().sendNetworkPacket(PayloadRequestDocument.generatePacket());
+            }
             case "connect" ->
             {
                 if(args.length != 2)
