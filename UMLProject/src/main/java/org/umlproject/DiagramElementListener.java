@@ -17,5 +17,4 @@ public interface DiagramElementListener<T> {
      */
     void cleanUp();
 
-    boolean intersects(Rectangle2D rectangle2D);
 }

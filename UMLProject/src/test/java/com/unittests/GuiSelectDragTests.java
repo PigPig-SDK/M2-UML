@@ -39,7 +39,7 @@ public class GuiSelectDragTests {
         Platform.runLater( () ->{
             //Arrange
             MouseEvent event = new MouseEvent(MouseEvent.MOUSE_DRAGGED, 5, 5, 5, 5,
-                    MouseButton.PRIMARY, 1, false, true, false, false,
+                    MouseButton.PRIMARY, 1, true, false, false, false,
                     true, false, false, false,
                     false, false, new PickResult(world, 5, 5));
 
@@ -56,7 +56,7 @@ public class GuiSelectDragTests {
         Platform.runLater( () ->{
             //Arrange
             MouseEvent event = new MouseEvent(MouseEvent.MOUSE_DRAGGED, 0, 0, 0, 0,
-                    MouseButton.PRIMARY, 1, false, true, false, false,
+                    MouseButton.PRIMARY, 1, true, false, false, false,
                     true, false, false, false,
                     false, false, new PickResult(world, 0, 0));
 
@@ -73,7 +73,7 @@ public class GuiSelectDragTests {
         Platform.runLater( () ->{
             //Arrange
             MouseEvent event = new MouseEvent(MouseEvent.MOUSE_DRAGGED, 0, 0, 0, 0,
-                    MouseButton.PRIMARY, 1, false, true, false, false,
+                    MouseButton.PRIMARY, 1, true, false, false, false,
                     true, false, false, false,
                     false, false, new PickResult(world, 0, 0));
 
@@ -91,7 +91,7 @@ public class GuiSelectDragTests {
         Platform.runLater( () ->{
             //Arrange
             MouseEvent event = new MouseEvent(MouseEvent.MOUSE_DRAGGED, 5, 5, 5, 5,
-                    MouseButton.PRIMARY, 1, false, true, false, false,
+                    MouseButton.PRIMARY, 1, true, false, false, false,
                     true, false, false, false,
                     false, false, new PickResult(world, 5, 5));
 
@@ -110,7 +110,7 @@ public class GuiSelectDragTests {
         Platform.runLater( () ->{
             //Arrange
             MouseEvent event = new MouseEvent(MouseEvent.MOUSE_DRAGGED, 0, 0, 0, 0,
-                    MouseButton.PRIMARY, 1, false, true, false, false,
+                    MouseButton.PRIMARY, 1, true, false, false, false,
                     true, false, false, false,
                     false, false, new PickResult(world, 0, 0));
 
@@ -128,7 +128,7 @@ public class GuiSelectDragTests {
         Platform.runLater( () ->{
             //Arrange
             MouseEvent event = new MouseEvent(MouseEvent.MOUSE_DRAGGED, 0, 0, 0, 0,
-                    MouseButton.PRIMARY, 1, false, true, false, false,
+                    MouseButton.PRIMARY, 1, true, false, false, false,
                     true, false, false, false,
                     false, false, new PickResult(world, 0, 0));
 

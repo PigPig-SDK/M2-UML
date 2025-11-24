@@ -55,11 +55,13 @@ public class GuiSelectDrag {
             }
             //Iterates generalized UML elements to determine selection behaviour
             ArrayList<DiagramElementListener> guiElements = new ArrayList<>(UMLDocument.getInstance().getUIListeners());
-            for(DiagramElementListener element : guiElements){
-                    if(element.intersects(new Rectangle2D(selectRectangle.getX(), selectRectangle.getY(),
+            for(DiagramElementListener element  : guiElements){
+                if(element instanceof UISelectable selectable){
+                    if(selectable.intersects(new Rectangle2D(selectRectangle.getX(), selectRectangle.getY(),
                             selectRectangle.getWidth(), selectRectangle.getHeight()))){
-                        GuiSelect.getInstance().selectUiElement((UISelectable) element);
+                        GuiSelect.getInstance().selectUiElement( selectable);
                     }
+                }
             }
             //Clear select rectangle
             world.getChildren().remove(selectRectangle);

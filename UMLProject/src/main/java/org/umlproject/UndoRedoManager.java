@@ -75,11 +75,6 @@ public class UndoRedoManager implements DiagramElementListener, DocumentListner
         //Do nothing...
     }
 
-    @Override
-    public boolean intersects(Rectangle2D rectangle2D) {
-        return false;
-    }//Do nothing!
-
     @Override public void loadFile(UMLDocument umlDocument) {
         //Do nothing... Server handles it :^)
     }
