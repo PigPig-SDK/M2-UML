@@ -99,7 +99,7 @@ public class GuiCamera {
         
         //Logic to drag the camera around
         App.currentScene.setOnMouseDragged(event -> {
-            if (event.isShiftDown()){
+            if (event.getButton() == MouseButton.PRIMARY){
                 GuiSelectDrag.selectDrag(event);
                 return;
             }
@@ -107,7 +107,7 @@ public class GuiCamera {
             double currentY = event.getScreenY();
             switch (event.getButton()) {
                 case MIDDLE:
-                case PRIMARY:
+                case SECONDARY:
                     Point2D offset = new Point2D(currentX - startDragX, currentY - startDragY);
                     setCameraLocation(camLocation.add(offset));
                     break;
