@@ -11,7 +11,7 @@ public class AStarNode implements Comparable<AStarNode>{
     int gridY;
 
     //f(x) = g(x) + h(x) is the function used by A* to sort nodes inside the open set Heap.
-    //gCost and hCost reflect teh values of g(x) and h(x) for a given AStarNode.
+    //gCost and hCost reflect the values of g(x) and h(x) for a given AStarNode.
     double gCost;
     double hCost;
 
@@ -23,6 +23,16 @@ public class AStarNode implements Comparable<AStarNode>{
         this.gridY = gridY;
         this.gCost = gCost;
         this.hCost = hCost;
+        this.parent = parent;
+    }
+
+    public void setHCost(double hCost){
+        this.hCost = hCost;
+    }
+    public void setGCost(double gCost){
+        this.gCost = gCost;
+    }
+    public void setParent(AStarNode parent){
         this.parent = parent;
     }
 
