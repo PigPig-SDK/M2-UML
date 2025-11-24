@@ -6,20 +6,15 @@ import java.util.Map;
 import java.util.UUID;
 import javafx.animation.AnimationTimer;
 import javafx.geometry.Point2D;
-import java.awt.MouseInfo;
-import java.awt.Point;
-import java.io.IOException;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
-import javafx.scene.Scene;
-import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.umlproject.App;
 import org.umlproject.Main;
 import org.umlproject.UI.GuiCamera;
 
-public class NetworkMouseHandler 
+public class NetworkMouseHandler implements NetworkManagerListener
 {
     private static Map<UUID, NetworkMouse> userMice = new HashMap<>();
     
@@ -28,6 +23,11 @@ public class NetworkMouseHandler
     private static Timeline timeline;
     
     public static void initialize()
+    {
+        if(Main.isInTerminalMode()) return;
+        NetworkManager.listeners.add(new NetworkMouseHandler());
+    }
+    public static void setup()
     {        
         if(Main.isInTerminalMode()) return;
         
@@ -106,8 +106,37 @@ public class NetworkMouseHandler
     {
         if(Main.isInTerminalMode()) return;
         
+        for(NetworkMouse networkMouse : userMice.values())
+        {
+            networkMouse.cleanUp();
+        }
+        
         userMice.clear();
         mouseUpdateTimer.stop();
         timeline.stop();
     }
+    
+//region NetworkManagerListener
+    @Override
+    public void onNetworkConnect() { 
+        System.out.println("Setup called");
+        setup();
+    }
+
+    @Override
+    public void onNetworkDisconnect() { 
+        System.out.println("Shutdown called");
+        shutdown();
+    }
+    
+    @Override
+    public void onClientDisconnect(UUID clientId) {
+        
+        if(Main.isInTerminalMode()) return;
+        
+        if(!userMice.containsKey(clientId)) return;
+        userMice.get(clientId).cleanUp();
+        userMice.remove(clientId);
+    }
+//endregion
 }

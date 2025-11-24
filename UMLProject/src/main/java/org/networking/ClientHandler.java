@@ -27,6 +27,7 @@ public class ClientHandler extends SocketManager
     private boolean firstID = true;
     private long lastHeartbeatTime = 0;
     private static final long TIMEOUT = 5; // In seconds
+    private boolean shutdownShouted = false;
     
     private UUID clientID = UUID.randomUUID();
     
@@ -184,7 +185,15 @@ public class ClientHandler extends SocketManager
      */
     @Override
     public void disconnect() {
+        //Before shutdown... Send our death note.
         super.disconnect();
+        if(!shutdownShouted)
+        {
+            Server server =  NetworkManager.getServerInstance();
+            if(server == null) return;
+            server.sendMessageToAllClients(NetworkPacket.objectToNetworkPacket(PacketType.USER_DISCONNECT, new PayloadUserDisconnect(clientID)));
+            shutdownShouted = true;
+        }
     }
     /**
      * Gets the heartbeat delta

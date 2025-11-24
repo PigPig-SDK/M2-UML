@@ -39,6 +39,7 @@ public class NetworkManager {
     public static void initialize()
     {
         //While this method currently does nothing, it might come in handy later...
+        
     }
     
     /**
@@ -102,9 +103,8 @@ public class NetworkManager {
             clientManager.start();
             
             NetworkDocumentListener.setupListener();
-            NetworkMouseHandler.initialize();
-            listeners.forEach((e) -> e.onNetworkConnect());
             
+            listeners.forEach((e) -> e.onNetworkConnect());
         }
         catch(IOException ex)
         {
@@ -137,7 +137,6 @@ public class NetworkManager {
             setClientNull();
             setServerNull();
             NetworkDocumentListener.shutdownListener();
-            NetworkMouseHandler.shutdown();
         } 
         catch (Exception e) 
         {

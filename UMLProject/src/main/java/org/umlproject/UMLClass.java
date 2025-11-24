@@ -542,7 +542,6 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
         {
             String testName = dummyName + increment;
             if(!methods.containsKey(testName)) {//Name is not taken
-                System.out.println("the signature being returned is: " + testName + dummySignature);
                 return testName + dummySignature;
             }
             increment++;

@@ -27,6 +27,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
 import org.networking.NetworkManager;
+import org.networking.NetworkMouseHandler;
 import org.umlproject.RelationshipType;
 import org.umlproject.TerminalHandler;
 import org.umlproject.UMLClass;
@@ -139,6 +140,7 @@ public class GuiController implements DocumentListner {
         GuiKeyBinds.setupKeyBinds();
         GuiConsole.setupConsole();
         GuiNetwork.initialize();
+        NetworkMouseHandler.initialize();
         //Setup button icons.
         applyIconsToButtons(addClassButton,"/org/umlproject/icons/new_class.png");
         applyIconsToButtons(addRelationshipButton,"/org/umlproject/icons/new_relationship.png");

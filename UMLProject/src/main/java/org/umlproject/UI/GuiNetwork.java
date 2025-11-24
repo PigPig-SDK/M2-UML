@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import javafx.geometry.Insets;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
@@ -160,5 +161,10 @@ public class GuiNetwork  implements NetworkManagerListener
             InetSocketAddress socketAddress = new InetSocketAddress(ipAddress, portTry);
             NetworkManager.connect(socketAddress);
         }
+    }
+
+    @Override
+    public void onClientDisconnect(UUID clientId) {
+        // Do nothing...
     }
 }

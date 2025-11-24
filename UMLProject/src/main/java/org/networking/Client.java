@@ -103,6 +103,10 @@ public class Client extends SocketManager
             {
                 System.out.println("> " +netPacket.payload());
             }
+            case USER_DISCONNECT -> 
+            {
+                PayloadUserDisconnect.handlePacket(netPacket);
+            }
             default ->
             {
                 System.out.println("UNKNOWN PACKET -> " +netPacket.payload());

@@ -115,7 +115,7 @@ public class Server extends Thread {
             }
             catch(IOException e)
             {
-                System.out.println("Server Socket:" +  e.getMessage());
+                //System.out.println("Server Socket:" +  e.getMessage());
                 //Try close socket! Something went wrong.
                 try { 
                     if(socket != null)
@@ -198,7 +198,7 @@ public class Server extends Thread {
     {
         //Shutdown all clients...
         clientUpdateTimer.cancel();
-        System.out.println("Shutdown server. Closing all clients!");
+        System.out.println("Shutdown server");
         sendMessageToAllClients(new NetworkPacket(0, PacketType.DISCONNECT,""));
         try {
             Thread.sleep(50);

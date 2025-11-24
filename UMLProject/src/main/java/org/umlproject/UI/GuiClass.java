@@ -312,7 +312,6 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     public void addDataFieldButtonClickable(Button addDataField){
         addDataField.setOnAction(e -> {
             String dummyFieldSignature = parentClass.findValidFieldDummySignature();
-            System.out.println("the dummyFieldSignature is: " + dummyFieldSignature);
 
             //create a new UMLDataFIeld object and insert into parent class
             String[] dummyFieldAsArray = dummyFieldSignature.split(" ");
