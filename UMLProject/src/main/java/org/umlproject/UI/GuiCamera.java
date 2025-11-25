@@ -122,7 +122,7 @@ public class GuiCamera {
         });
         //Clicking into the void deselects any textbox...
         App.currentScene.setOnMousePressed(event -> {
-            if(!event.isControlDown())
+            if(!event.isControlDown() && event.getButton() == MouseButton.PRIMARY)
             {
                 GuiSelect.getInstance().resetSelect();
             }
