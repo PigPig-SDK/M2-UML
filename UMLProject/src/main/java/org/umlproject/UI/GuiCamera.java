@@ -70,7 +70,9 @@ public class GuiCamera {
         //Key down
         App.currentScene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
             if (event.isControlDown())
+            {
                 return;
+            }
             
             switch (event.getCode()) {
                 case UP, W -> {up = true;event.consume();}
@@ -82,6 +84,7 @@ public class GuiCamera {
         //Key up
         App.currentScene.addEventHandler(KeyEvent.KEY_RELEASED, event -> {
             switch (event.getCode()) {
+
                 case UP, W -> {up = false;event.consume();}
                 case DOWN, S -> {down = false;event.consume();}
                 case LEFT, A -> {left = false;event.consume();}
@@ -119,6 +122,10 @@ public class GuiCamera {
         });
         //Clicking into the void deselects any textbox...
         App.currentScene.setOnMousePressed(event -> {
+            if(!event.isControlDown())
+            {
+                GuiSelect.getInstance().resetSelect();
+            }
             isDragging = true;
             //Reset our current drag distance.
             startDragX = event.getScreenX();
@@ -128,10 +135,12 @@ public class GuiCamera {
         });
         //Stop drag...
         App.currentScene.setOnMouseReleased(e -> {
-            if (e.getButton() == MouseButton.PRIMARY) {
+            if (e.getButton() == MouseButton.PRIMARY) 
+            {
                 isDragging = false;
             }
             GuiSelectDrag.selectDragRelease(e);
+            
         });
     }
     /**

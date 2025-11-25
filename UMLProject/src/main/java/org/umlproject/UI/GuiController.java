@@ -52,7 +52,7 @@ public class GuiController implements DocumentListner {
     }
     
     @FXML
-    private Pane world;//'World' is where all UI objects should live.
+    public Pane world;//'World' is where all UI objects should live.
     @FXML
     public TextField console;
     @FXML

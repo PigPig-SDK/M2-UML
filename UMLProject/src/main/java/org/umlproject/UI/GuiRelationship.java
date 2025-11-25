@@ -98,7 +98,7 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
         
         //Add clickableness...
         lineMain.setOnMouseClicked(e -> {
-            GuiSelect.getInstance().clickUiElement(e, this);
+            GuiSelect.getInstance().clickUiElement(e, this, false);
             e.consume(); // Prevent event from propagating to other nodes
         });
         setSelected(isSelected);//Update our selected state
@@ -327,7 +327,4 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
         this.selectionOutline.setStrokeDashOffset(10*Math.sin(time * 0.000000001));
         
     }
-
-
-    
 }

@@ -20,6 +20,7 @@ public class GuiSelect {
     private static GuiSelect instance;
 
     private static ArrayList<UISelectable> selectedObjects;
+    private static UISelectable latestSelection = null;
 
     /**
      * Singleton GuiSelect constructor. Creates three relevant ArrayLists and sets a condition on clicking the scene.
@@ -58,20 +59,41 @@ public class GuiSelect {
      * @param e - Event checked for ctrl being held
      * @param selectable - Class being selected/deselected
      */
-    public void clickUiElement(MouseEvent e, UISelectable selectable) {
-
-        //Checks if class is already selected. If so, deselects it.
-        if(selectedObjects.contains(selectable)){
-            deselectUiElement(selectable);
+    public void clickUiElement(MouseEvent e, UISelectable selectable, boolean isDragging) {
+        
+        //Mouse UP
+        if(e.getEventType() == MouseEvent.MOUSE_CLICKED)
+        {
+            
+            if(e.isControlDown() && !isDragging && latestSelection != selectable)
+            {
+                System.out.println("latestSelection : " + (latestSelection != selectable) + " | " + (!isDragging));    
+                //Fuck java. Fuck passby refrence. We fucking ball, we ball by ourselves without stupid functions.
+                deselectUiElement(selectable);
+                selectedObjects.remove(selectable);
+            }
+            latestSelection = null;
             return;
         }
-        //Selects class if not already selected.
-        selectUiElement(selectable);
+
+        if(e.isControlDown())
+        {
+            if(!selectedObjects.contains(selectable))
+                latestSelection = selectable;
+            System.out.println("Select lool");
+            selectUiElement(selectable);
+        }
+        else
+        {
+            resetSelect();
+            System.out.println("Select Reset.");
+            selectUiElement(selectable);
+        }
     }
     public void deselectUiElement(UISelectable selectable)
     {
-        selectable.setSelected(false);
         selectedObjects.remove(selectable);
+        selectable.setSelected(false);
     }
     public void selectUiElement(UISelectable selectable)
     {

@@ -51,8 +51,10 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     Point2D dragStartLocation = Point2D.ZERO;
     
     List<Button> guiButtons = new LinkedList<>();//No random access is required. Using linked list.
-    
+    private boolean isDragging = false;
     private boolean isSelected = false;
+    private UUID id = UUID.randomUUID();
+    
     /**
      * Constructor for GuiClass responsible for building the initial class box and setting all the proper
      * actions on its nodes. TextFields will be editable and those edits will be reflected in the underlying
@@ -63,6 +65,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
      */
     public GuiClass(Pane world, UMLClass parentClass)
     {
+        id = UUID.randomUUID();//Fuck man.
         this.world = world;
         world.setFocusTraversable(true);//lets world request focus.
         this.parentClass = parentClass;
@@ -91,9 +94,11 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
       */
     private void makeDraggable(StackPane nodeBackground) {
 
+        //Mouse down.
         nodeBackground.setOnMousePressed(e -> {
             if(e.getButton() == MouseButton.PRIMARY) {
                 GuiCamera.setDragging(true);
+                GuiSelect.getInstance().clickUiElement(e, this, isDragging);
                 mouseWorldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
                 Point2D paneWorldSpace = new Point2D(nodeBackground.getLayoutX(), nodeBackground.getLayoutY());
                 this.mouseAnchorX = mouseWorldSpace.getX() - paneWorldSpace.getX();
@@ -119,22 +124,22 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         //Mouse up...
         nodeBackground.setOnMouseClicked(e -> {
             if(e.getButton() == MouseButton.PRIMARY) {
-                GuiCamera.setDragging(false);
-                if (GuiCamera.isDragging()) {
+                GuiSelect.getInstance().clickUiElement(e, this, isDragging);
+                if (isDragging) {
                     Point2D worldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
                     Point2D selectionOffset = new Point2D(worldSpace.getX() - this.mouseAnchorX, worldSpace.getY() - this.mouseAnchorY);
                     if (!selectionOffset.equals(dragStartLocation))
                         this.parentClass.setLocation(selectionOffset, true);
                 }
-            }
-            if(e.getButton() == MouseButton.SECONDARY){
-                GuiSelect.getInstance().clickUiElement(e, this);
+                isDragging = false;
+                GuiCamera.setDragging(false);
             }
             e.consume(); // Prevent event from propagating to other nodes
         });
 
         this.nodeBackground.setOnMouseDragged(e -> {
             if(e.getButton() == MouseButton.PRIMARY) {
+                isDragging = true;
                 //I swear if i have to instantiate another immutable point2d im going to create a wrapper class.
                 Point2D worldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
                 Point2D selectionOffset = new Point2D(worldSpace.getX() - this.mouseAnchorX, worldSpace.getY() - this.mouseAnchorY);
@@ -780,5 +785,18 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     public void selectionAnimationUpdate(float time) {
 
         updateVbox(true, time);
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof GuiClass other)) return false;
+        if (this == o) return true;
+        
+        return Objects.equals(this.id, other.id);
+    }
+    
+    @Override
+    public int hashCode() {
+        return id.hashCode();
     }
 }
