@@ -4,6 +4,7 @@ import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
 import org.umlproject.UMLClass;
 import org.umlproject.UMLDocument;
+import org.umlproject.UMLRelationship;
 
 import java.util.*;
 
@@ -19,12 +20,18 @@ public class RelationshipRouter {
     private PriorityQueue<AStarNode> openSet;
     private HashSet<AStarNode> openSetFastLookup;
     private HashSet<AStarNode> closedSet;
+    private HashSet<AStarNode> occupiedPathCells;
     private final PathGridMapper mapper;
+    private static final double EXISTING_RELATIONSHIP_PENALTY = 1000.0;
 
+    /**
+     * Constructor.
+     */
     public RelationshipRouter(){
         this.openSet = new PriorityQueue<>();
         this.closedSet = new HashSet<>();
         this.openSetFastLookup = new HashSet<>();
+        occupiedPathCells = new HashSet<>();
         //Use padding size of 20 pixels.
         this.mapper = new PathGridMapper(UMLDocument.getInstance(), 20.0);
     }
@@ -47,7 +54,54 @@ public class RelationshipRouter {
     }
 
     /**
-     * Helper method to calculat the hCost of an AStarNode.
+     * This is a helper method to the isCrossingExistingRelationship method and will be used when checking to see if
+     * a neighbor to an existing node occupies a tile that a relationship line crosses.
+     * @return an ArrayList containing ArrayLists of Point2D objects representing points on a given relationship line.
+     */
+    public void extractRelationshipPoints(){
+        occupiedPathCells.clear();
+        ArrayList<ArrayList<Point2D>> relationshipPaths = new ArrayList<>();
+        //We need to extract a list containing all the relationship paths between any two pair of classes with a relationship.
+        Map<String, ArrayList<UMLRelationship>> relationshipsMap = UMLDocument.getInstance().getRelationshipList();
+        Set<String> keys = relationshipsMap.keySet();
+        //Note every key is a source class.
+        ArrayList<String> relationshipKeys = new ArrayList<>(keys);
+        ArrayList<ArrayList<UMLRelationship>> listOfRelationshipLists = new ArrayList<>();
+        for(String key : relationshipKeys){
+            listOfRelationshipLists.add(relationshipsMap.get(key));
+        }
+        //We now need to extract the lists of Point2D objects.
+        for(ArrayList<UMLRelationship> existingRel : listOfRelationshipLists){
+            //Extract GuiRelationship listener so we can then extract the list of Points associated with the listener.
+            for(int i = 0; i < existingRel.size(); i++) {
+                GuiRelationship guiRelationship = (GuiRelationship)existingRel.get(i).getListener();
+                ArrayList<Point2D> nextPath = new ArrayList<>(guiRelationship.getPathPoints());
+                relationshipPaths.add(nextPath);
+            }
+        }
+        for(int i = 0; i < relationshipPaths.size(); i++){
+            for(Point2D nextPoint : relationshipPaths.get(i)){
+                int gridX = PathGridMapper.toGridIndex(nextPoint.getX());
+                int gridY = PathGridMapper.toGridIndex(nextPoint.getY());
+                AStarNode occupiedTile = new AStarNode(gridX, gridY, 0.0, 0.0, null);
+                occupiedPathCells.add(occupiedTile);
+            }
+        }
+    }
+
+    /**
+     * Helper method for the AStar Algorithm method. It will check to see if the neighbor node under consideration
+     * occupies the same grid tile as any of the existing relationship lines. If so, we will consider the neighbor
+     * intractable for a new path and will return false. Otherwise return true.
+     * @param neighbor, The new node to be processed.
+     * @return, a boolean representing whether or not the neighbor node should be accepted as part of the path.
+     */
+    public boolean isCrossingExistingRelationship( AStarNode neighbor){
+        return this.occupiedPathCells.contains(neighbor);
+    }
+
+    /**
+     * Helper method to calculate the hCost of an AStarNode.
      * @param neighborGridX, X index of the AStar grid tile.
      * @param neighborGridY, Y index of the AStar grid tile.
      * @param target, target class
@@ -97,7 +151,7 @@ public class RelationshipRouter {
         //initialize the openSet with the perimeter.
         openSet.addAll(nodes);
         openSetFastLookup.addAll(nodes);
-
+        this.extractRelationshipPoints();
         while(!openSet.isEmpty()){
             //While nextNode is not contained in target class box bounds, continue building path:
             AStarNode nextNode = openSet.poll();
@@ -120,11 +174,11 @@ public class RelationshipRouter {
                     //Check if neighbor is in open or closed set:
                     double hCost = calculateHCost(neighborGridX, neighborGridY, target);
                     double additionalGCost = (i != 0 && j != 0) ? DIAGONAL_COST : HORIZONTAL_COST;
-                    //--------------------------------------------------------------------------------
-                    //Implement a penalty check for crossing a relationship line here:
-
-
-                    //--------------------------------------------------------------------------------
+                    //Check to see if the neighbor intersects an existing relationship line.
+                    AStarNode neighborLookup = new AStarNode(neighborGridX, neighborGridY, 0, 0, null);
+                    if(isCrossingExistingRelationship(neighborLookup)){
+                        additionalGCost += EXISTING_RELATIONSHIP_PENALTY;
+                    }
                     double newGCost = nextNode.getGCost() + additionalGCost;
                     AStarNode neighbor = new AStarNode(neighborGridX, neighborGridY,newGCost, hCost, nextNode);
 

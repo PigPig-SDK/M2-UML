@@ -32,6 +32,24 @@ public class UMLRelationship  extends UMLDiagramElement implements Cloneable
         this.relationshipType = relationshipType;
     }
     /**
+     *
+     * @return the source UMLClass.
+     */
+    public UMLClass getSource(){
+        String sourceName = getSourceName();
+        UMLDocument doc = UMLDocument.getInstance();
+        return doc.getClass(sourceName);
+    }
+    /**
+     *
+     * @return the destination UMLClass.
+     */
+    public UMLClass getDestination(){
+        String destinationName = getDestinationName();
+        UMLDocument doc = UMLDocument.getInstance();
+        return doc.getClass(destinationName);
+    }
+    /**
      * @return the source name
      */
     public String getSourceName()
@@ -96,7 +114,7 @@ public class UMLRelationship  extends UMLDiagramElement implements Cloneable
     /**
      * Sets the relationship type, calls to update listener
      * Automatically assigns relationshipType to OTHER, enforcing a new custom relationship
-     * @param newType The new type.
+     * @param newTypeCustom The new type.
      */
     public void setCustomNameType(String newTypeCustom){
         this.relationshipType = OTHER;
