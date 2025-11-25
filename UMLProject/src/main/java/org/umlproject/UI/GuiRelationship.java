@@ -93,11 +93,12 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
     @Override
     public void update(UMLRelationship desiredElement) {
         cleanUp();
-        if(this.pathPoints == null || this.pathPoints.size() < 2){
+        this.calculateAndSetPath();
+        if (this.pathPoints == null || this.pathPoints.size() < 2) {
             return;
         }
         List<Double> polylinePoints = new ArrayList<>();
-        for(Point2D p : this.pathPoints){
+        for (Point2D p : this.pathPoints) {
             polylinePoints.add(p.getX());
             polylinePoints.add(p.getY());
         }
@@ -122,12 +123,11 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
         this.lineMain.setStroke(GuiColor.GENERIC_LINE_COLOR);
         this.lineOutline.setStroke(Color.BLACK);
         this.selectionOutline.setStroke(GuiColor.SELECTION_COLOR);
-        this.selectionOutline.getStrokeDashArray().addAll(30.0,30.0);
+        this.selectionOutline.getStrokeDashArray().addAll(30.0, 30.0);
 
-        if(desiredElement.getRelationshipType() == GENERALIZATION)
-        {
-            this.lineMain.getStrokeDashArray().addAll(30.0,15.0);
-            this.lineOutline.getStrokeDashArray().addAll(30.0,15.0);
+        if (desiredElement.getRelationshipType() == GENERALIZATION) {
+            this.lineMain.getStrokeDashArray().addAll(30.0, 15.0);
+            this.lineOutline.getStrokeDashArray().addAll(30.0, 15.0);
         }
         //Not sure if placeText will work with the new Polyline
         //placeText(desiredElement);
@@ -142,6 +142,7 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
             e.consume(); // Prevent event from propagating to other nodes
         });
         setSelected(isSelected);//Update our selected state
+
 
         /**
         UMLClass startClass = UMLDocument.getInstance().getClass(desiredElement.getSourceName());

@@ -18,7 +18,7 @@ public class RelationshipRouter {
     private static final double DIAGONAL_COST = GRID_SIZE * Math.sqrt(2.0);
     private static final double HORIZONTAL_COST = GRID_SIZE;
     private PriorityQueue<AStarNode> openSet;
-    private HashSet<AStarNode> openSetFastLookup;
+    private HashMap<AStarNode, AStarNode> openSetFastLookupMap;
     private HashSet<AStarNode> closedSet;
     private HashSet<AStarNode> occupiedPathCells;
     private final PathGridMapper mapper;
@@ -30,7 +30,7 @@ public class RelationshipRouter {
     public RelationshipRouter(){
         this.openSet = new PriorityQueue<>();
         this.closedSet = new HashSet<>();
-        this.openSetFastLookup = new HashSet<>();
+        this.openSetFastLookupMap = new HashMap<>();
         occupiedPathCells = new HashSet<>();
         //Use padding size of 20 pixels.
         this.mapper = new PathGridMapper(UMLDocument.getInstance(), 20.0);
@@ -74,8 +74,17 @@ public class RelationshipRouter {
         for(ArrayList<UMLRelationship> existingRel : listOfRelationshipLists){
             //Extract GuiRelationship listener so we can then extract the list of Points associated with the listener.
             for(int i = 0; i < existingRel.size(); i++) {
-                GuiRelationship guiRelationship = (GuiRelationship)existingRel.get(i).getListener();
+                UMLRelationship nextRelationship = existingRel.get(i);
+                //A relationship whose path is being constructed will not yet have a listener and so needs to be skipped.
+                if(nextRelationship.getListener() == null){
+                    continue;
+                }
+                GuiRelationship guiRelationship = (GuiRelationship)nextRelationship.getListener();
+
                 ArrayList<Point2D> nextPath = new ArrayList<>(guiRelationship.getPathPoints());
+                if(nextPath == null || nextPath.isEmpty()){
+                    continue;
+                }
                 relationshipPaths.add(nextPath);
             }
         }
@@ -148,14 +157,19 @@ public class RelationshipRouter {
         GuiClass targetGui = (GuiClass)target.getListener();
         Rectangle2D targetBounds = targetGui.getRectBounds();
         List<AStarNode> nodes = mapper.getInitialPerimeterNodes(sourceGui, target);
+        System.out.println("hello adam");
+        System.out.println("number of initialNodes is: " + nodes.size());
         //initialize the openSet with the perimeter.
         openSet.addAll(nodes);
-        openSetFastLookup.addAll(nodes);
+        for(AStarNode node : nodes){
+            openSetFastLookupMap.put(node, node);
+        }
+
         this.extractRelationshipPoints();
         while(!openSet.isEmpty()){
             //While nextNode is not contained in target class box bounds, continue building path:
             AStarNode nextNode = openSet.poll();
-            openSetFastLookup.remove(nextNode);
+            openSetFastLookupMap.remove(nextNode);
             closedSet.add(nextNode);
             //If nextNode is touching the target class box, generate the path and return it.
             if(inTargetBounds(nextNode, targetBounds)){
@@ -188,27 +202,21 @@ public class RelationshipRouter {
                     }
                     //Check if AStarNode is already in openSet. If so, check to see if gCost is lower along current path.
                     //If so update gCost value of existingNode.
-                    if(openSetFastLookup.contains(neighbor)){
-                        AStarNode existingNode;
-                        for(AStarNode queueNode : openSet){
-                            if(neighbor.equals(queueNode)){
-                                existingNode = queueNode;
-                                //If new GCost is shorter, we need to update the existingNode's value.
-                                if(existingNode.getGCost() > newGCost){
-                                    existingNode.setGCost(newGCost);
-                                    //If we update an existingNode, then we need to remove and re-add it to the openSet so
-                                    //it can re-heapify and put the node in its proper order according to its value of f(n).
-                                    openSet.remove(existingNode);
-                                    openSet.add(existingNode);
-                                }
-                            }
-                        }
+                    AStarNode existingNode = openSetFastLookupMap.get(neighbor);
+                    if(existingNode != null){
+                        //If new GCost is shorter, we need to update the existingNode's value.
+                        if(existingNode.getGCost() > newGCost){
+                            existingNode.setGCost(newGCost);
+                            existingNode.setParent(nextNode);
+                            openSet.remove(existingNode);
+                            openSet.add(existingNode);
+                    }
                         //We don't want to add the neighbor again if it is already in the openSet.
                         continue;
                     }
-                    //Neighbor can be placed in openSet and openSetFastLookup Hash set:
+                    //Neighbor can be placed in openSet and openSetFastLookupMap HashMap:
                     openSet.add(neighbor);
-                    openSetFastLookup.add(neighbor);
+                    openSetFastLookupMap.put(neighbor, neighbor);
                 }
             }
         }
