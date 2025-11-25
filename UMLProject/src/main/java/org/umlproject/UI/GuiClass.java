@@ -46,7 +46,8 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     VBox methodTextFields;
     //VBox that holds className TextField and VBoxes for data fields and methods.
     VBox parentVBox;
-    
+
+    Point2D mouseWorldSpace;
     Point2D dragStartLocation = Point2D.ZERO;
     
     List<Button> guiButtons = new LinkedList<>();//No random access is required. Using linked list.
@@ -89,15 +90,25 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
       * @param nodeBackground, a StackPane representing the container for the class box contents.
       */
     private void makeDraggable(StackPane nodeBackground) {
-        
+
         nodeBackground.setOnMousePressed(e -> {
             if(e.getButton() == MouseButton.PRIMARY) {
                 GuiCamera.setDragging(true);
-                Point2D mouseWorldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
+                mouseWorldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
                 Point2D paneWorldSpace = new Point2D(nodeBackground.getLayoutX(), nodeBackground.getLayoutY());
                 this.mouseAnchorX = mouseWorldSpace.getX() - paneWorldSpace.getX();
                 this.mouseAnchorY = mouseWorldSpace.getY() - paneWorldSpace.getY();
+
                 dragStartLocation = this.parentClass.getLocation();
+
+                //Setup dragStartLocation for multi-drag
+                if(!GuiSelect.getInstance().getSelectedObjects().isEmpty()){
+                    for(UISelectable selectable : GuiSelect.getInstance().getSelectedObjects()){
+                        if(selectable instanceof org.umlproject.UI.GuiClass guiClass) {
+                            guiClass.dragStartLocation = guiClass.parentClass.getLocation();
+                        }
+                    }
+                }
 
                 nodeBackground.requestFocus();
             }
@@ -127,6 +138,19 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
                 Point2D worldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
                 Point2D selectionOffset = new Point2D(worldSpace.getX() - this.mouseAnchorX, worldSpace.getY() - this.mouseAnchorY);
                 UMLDocument.executeActionUnderState(DocumentState.SILENT_MOVEMENT, () -> this.parentClass.setLocation(selectionOffset, true));
+
+                //Multi-Drag
+                if(!GuiSelect.getInstance().getSelectedObjects().isEmpty()){
+                    for(UISelectable selectable : GuiSelect.getInstance().getSelectedObjects()){
+                        if(selectable instanceof org.umlproject.UI.GuiClass guiClass){
+                            if(guiClass == this) continue;
+                            Point2D locationOffset = worldSpace.subtract(mouseWorldSpace);
+                            UMLDocument.executeActionUnderState(DocumentState.SILENT_MOVEMENT, () ->
+                                    guiClass.setLocation(guiClass.dragStartLocation.add(locationOffset)));
+                        }
+                    }
+                }
+
                 this.nodeBackground.getParent().requestLayout(); // Force layout update
             }
             e.consume(); // Prevent event from propagating to other nodes
