@@ -67,8 +67,8 @@ public class GuiSelect {
             
             if(e.isControlDown() && !isDragging && latestSelection != selectable)
             {
-                System.out.println("latestSelection : " + (latestSelection != selectable) + " | " + (!isDragging));    
-                //Fuck java. Fuck passby refrence. We fucking ball, we ball by ourselves without stupid functions.
+                //System.out.println("latestSelection : " + latestSelection + " | " + (!isDragging));    
+                //System.out.println("Length: " + selectedObjects.size());
                 deselectUiElement(selectable);
                 selectedObjects.remove(selectable);
             }
@@ -79,14 +79,14 @@ public class GuiSelect {
         if(e.isControlDown())
         {
             if(!selectedObjects.contains(selectable))
+            {
                 latestSelection = selectable;
-            System.out.println("Select lool");
-            selectUiElement(selectable);
+                selectUiElement(selectable);
+            }
         }
         else
         {
             resetSelect();
-            System.out.println("Select Reset.");
             selectUiElement(selectable);
         }
     }

@@ -644,6 +644,8 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         this.nodeBackground.setLayoutY(desiredElement.getLocation().getY());
 
         //System.out.println("stackpane layout is changed to:" + ((UMLClass)(desiredElement)).getLocation());
+        if(this.nodeBackground.getParent() == null) return;
+        
         this.nodeBackground.getParent().requestLayout();
     }
     /**
