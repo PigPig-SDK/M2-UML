@@ -102,7 +102,8 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
                 dragStartLocation = this.parentClass.getLocation();
 
                 //Setup dragStartLocation for multi-drag
-                if(!GuiSelect.getInstance().getSelectedObjects().isEmpty()){
+                if(!GuiSelect.getInstance().getSelectedObjects().isEmpty() &&
+                        GuiSelect.getInstance().getSelectedObjects().contains(this)){
                     for(UISelectable selectable : GuiSelect.getInstance().getSelectedObjects()){
                         if(selectable instanceof org.umlproject.UI.GuiClass guiClass) {
                             guiClass.dragStartLocation = guiClass.parentClass.getLocation();
@@ -140,7 +141,8 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
                 UMLDocument.executeActionUnderState(DocumentState.SILENT_MOVEMENT, () -> this.parentClass.setLocation(selectionOffset, true));
 
                 //Multi-Drag
-                if(!GuiSelect.getInstance().getSelectedObjects().isEmpty()){
+                if(!GuiSelect.getInstance().getSelectedObjects().isEmpty() &&
+                        GuiSelect.getInstance().getSelectedObjects().contains(this)){
                     for(UISelectable selectable : GuiSelect.getInstance().getSelectedObjects()){
                         if(selectable instanceof org.umlproject.UI.GuiClass guiClass){
                             if(guiClass == this) continue;
