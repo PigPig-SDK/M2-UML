@@ -685,15 +685,19 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     @Override
     public boolean intersects(Rectangle2D selectionRectangle) {
 
-        //Reused getRectBounds code with more accurate to visual bounds
+        //Reused getRectBounds code with more accurate to visual bounds.
         if(this.parentVBox == null)
             return false;
         Bounds bounds = this.parentVBox.getBoundsInLocal();
 
         Point2D offset = getLocation();
+
+        //Takes border outsets into account when calculating bounds
         Rectangle2D rect = new Rectangle2D(
-                bounds.getMinX() + offset.getX() - bounds.getWidth()/2.2,
-                bounds.getMinY() + offset.getY() - bounds.getHeight()/2.2,
+                bounds.getMinX() + offset.getX()
+                        - bounds.getWidth() / 2.0 + this.parentVBox.getBorder().getOutsets().getLeft(),
+                bounds.getMinY() + offset.getY()
+                        - bounds.getHeight() / 2.0 + this.parentVBox.getBorder().getOutsets().getTop(),
                 bounds.getWidth(),
                 bounds.getHeight()
         );
