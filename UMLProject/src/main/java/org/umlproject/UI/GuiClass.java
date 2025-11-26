@@ -145,19 +145,21 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
                 Point2D selectionOffset = new Point2D(worldSpace.getX() - this.mouseAnchorX, worldSpace.getY() - this.mouseAnchorY);
                 UMLDocument.executeActionUnderState(DocumentState.SILENT_MOVEMENT, () -> this.parentClass.setLocation(selectionOffset, true));
 
+
                 //Multi-Drag
-                if(!GuiSelect.getInstance().getSelectedObjects().isEmpty() &&
-                        GuiSelect.getInstance().getSelectedObjects().contains(this)){
-                    for(UISelectable selectable : GuiSelect.getInstance().getSelectedObjects()){
-                        if(selectable instanceof org.umlproject.UI.GuiClass guiClass){
-                            if(guiClass == this) continue;
-                            Point2D locationOffset = worldSpace.subtract(mouseWorldSpace);
-                            UMLDocument.executeActionUnderState(DocumentState.SILENT_MOVEMENT, () ->
-                                    guiClass.setLocation(guiClass.dragStartLocation.add(locationOffset)));
+                if(e.isControlDown()) {
+                    if (!GuiSelect.getInstance().getSelectedObjects().isEmpty() &&
+                            GuiSelect.getInstance().getSelectedObjects().contains(this)) {
+                        for (UISelectable selectable : GuiSelect.getInstance().getSelectedObjects()) {
+                            if (selectable instanceof org.umlproject.UI.GuiClass guiClass) {
+                                if (guiClass == this) continue;
+                                Point2D locationOffset = worldSpace.subtract(mouseWorldSpace);
+                                UMLDocument.executeActionUnderState(DocumentState.SILENT_MOVEMENT, () ->
+                                        guiClass.setLocation(guiClass.dragStartLocation.add(locationOffset)));
+                            }
                         }
                     }
                 }
-
                 this.nodeBackground.getParent().requestLayout(); // Force layout update
             }
             e.consume(); // Prevent event from propagating to other nodes
