@@ -147,7 +147,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
 
 
                 //Multi-Drag
-                if(e.isControlDown()) {
+                if(!e.isControlDown()) {
                     if (!GuiSelect.getInstance().getSelectedObjects().isEmpty() &&
                             GuiSelect.getInstance().getSelectedObjects().contains(this)) {
                         for (UISelectable selectable : GuiSelect.getInstance().getSelectedObjects()) {
