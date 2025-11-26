@@ -50,7 +50,7 @@ public class GuiSelectDrag {
         //Determines intersection/selection
         if(selectRectangle != null){
             //If right click, add to selection instead of reset
-            if(!event.isControlDown()){
+            if(!event.isControlDown() && !event.isShiftDown()){
                 GuiSelect.getInstance().resetSelect();
             }
             //Iterates generalized UML elements to determine selection behaviour
