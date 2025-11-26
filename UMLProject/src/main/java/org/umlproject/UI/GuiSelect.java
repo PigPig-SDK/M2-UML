@@ -61,33 +61,42 @@ public class GuiSelect {
      */
     public void clickUiElement(MouseEvent e, UISelectable selectable, boolean isDragging) {
         
-        //Mouse UP
+        //Mouse UP  
         if(e.getEventType() == MouseEvent.MOUSE_CLICKED)
         {
-            
-            if(e.isControlDown() && !isDragging && latestSelection != selectable)
+            if(!isDragging)
             {
-                //System.out.println("latestSelection : " + latestSelection + " | " + (!isDragging));    
-                //System.out.println("Length: " + selectedObjects.size());
-                deselectUiElement(selectable);
-                selectedObjects.remove(selectable);
+                if(e.isControlDown())
+                {
+                    if(latestSelection != selectable)
+                    {
+                        deselectUiElement(selectable);
+                        selectedObjects.remove(selectable);
+                    }
+                }
+                else
+                {
+                    resetSelect();
+                    selectUiElement(selectable);
+                }
             }
             latestSelection = null;
-            return;
         }
-
-        if(e.isControlDown())
+        else//Mouse down
         {
             if(!selectedObjects.contains(selectable))
             {
-                latestSelection = selectable;
-                selectUiElement(selectable);
-            }
-        }
-        else
-        {
-            resetSelect();
-            selectUiElement(selectable);
+                if(e.isControlDown())
+                {
+                    latestSelection = selectable;
+                    selectUiElement(selectable);
+                }
+                else
+                {
+                    resetSelect();
+                    selectUiElement(selectable);
+                }
+            } 
         }
     }
     public void deselectUiElement(UISelectable selectable)
