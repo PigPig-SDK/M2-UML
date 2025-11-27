@@ -48,6 +48,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     VBox parentVBox;
 
     Point2D mouseWorldSpace;
+    double padding = 20.0;
     Point2D dragStartLocation = Point2D.ZERO;
     
     List<Button> guiButtons = new LinkedList<>();//No random access is required. Using linked list.
@@ -762,13 +763,18 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     {
         if(this.parentVBox == null)
             return null;
+        //returns the dimensions of the VBox using its local coordinate system.
         Bounds bounds = this.parentVBox.getBoundsInLocal();
 
+        //The location of the class within the World Pane.
         Point2D offset = getLocation();
+
+        //Create a rectangle with the appropriate dimensions at the correct location in the World Pane.
+        //Apply padding of 20 pixels to the rectangle dimensions.
         Rectangle2D rect = new Rectangle2D(
                 bounds.getMinX() + offset.getX(),
                 bounds.getMinY() + offset.getY(),
-                bounds.getWidth(), 
+                bounds.getWidth(),
                 bounds.getHeight()
             );
         return rect;
