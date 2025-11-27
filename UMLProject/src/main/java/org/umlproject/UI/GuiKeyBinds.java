@@ -5,6 +5,7 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.input.KeyCode;
+import static javafx.scene.input.KeyCode.DELETE;
 import static javafx.scene.input.KeyCode.N;
 import static javafx.scene.input.KeyCode.Z;
 import javafx.scene.input.KeyCodeCombination;
@@ -30,7 +31,7 @@ public class GuiKeyBinds {
         addAccelerator(new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN), "Save As…");
         addAccelerator(new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN), "New");
         addAccelerator(new KeyCodeCombination(KeyCode.A, KeyCombination.CONTROL_DOWN), "Select All");
-        addAccelerator(new KeyCodeCombination(KeyCode.DELETE, KeyCombination.CONTROL_DOWN), "Delete");
+        addAccelerator(new KeyCodeCombination(KeyCode.DELETE), "Delete");
         addAccelerator(new KeyCodeCombination(KeyCode.C, KeyCombination.CONTROL_DOWN), "Copy");
         addAccelerator(new KeyCodeCombination(KeyCode.V, KeyCombination.CONTROL_DOWN), "Paste");
         addAccelerator(new KeyCodeCombination(KeyCode.F1), "Help");
@@ -61,6 +62,11 @@ public class GuiKeyBinds {
                     terminalButton.setSelected(!terminalButton.isSelected());
                     GuiConsole.smartFocus();
                 }
+                //Delete all (DELETE)
+                case DELETE -> {
+                    GuiSelect.getInstance().deleteAllSelected();
+                    event.consume();
+                }
             }
             
             if (!event.isControlDown())
@@ -88,11 +94,6 @@ public class GuiKeyBinds {
                 //Open file (CTRL+O)
                 case O -> {
                     if(!NetworkManager.isConnected()) GuiController.getInstance().openFileMenuAction();
-                    event.consume();
-                }
-                //Delete all (CTRL+DELETE)
-                case DELETE -> {
-                    GuiSelect.getInstance().deleteAllSelected();
                     event.consume();
                 }
                 //UNDO

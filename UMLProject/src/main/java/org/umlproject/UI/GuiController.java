@@ -142,8 +142,8 @@ public class GuiController implements DocumentListner {
         GuiNetwork.initialize();
         NetworkMouseHandler.initialize();
         //Setup button icons.
-        applyIconsToButtons(addClassButton,"/org/umlproject/icons/new_class.png");
-        applyIconsToButtons(addRelationshipButton,"/org/umlproject/icons/new_relationship.png");
+        FXUtility.getInstance().applyIconsToButtons("Add Class", addClassButton,"/org/umlproject/icons/new_class.png",50,50);
+        FXUtility.getInstance().applyIconsToButtons("Add Relationship", addRelationshipButton,"/org/umlproject/icons/new_relationship.png",50,50);
     }
     //----------------- Menu bar callbacks -----------------
     /**
@@ -562,23 +562,5 @@ public class GuiController implements DocumentListner {
         umlRelationship.disposeOfListener();
     }
 
-    private void applyIconsToButtons(Button button, String iconDirectory)
-    {
-        Image icon = new Image(getClass().getResource(iconDirectory).toExternalForm());
-        button.setText("");//Clear text...
-        ImageView iconView = new ImageView(icon);
-        iconView.setFitWidth(50);
-        iconView.setFitHeight(50);
-        iconView.setPreserveRatio(true);
-        //Remove background...
-        button.setStyle(
-            "-fx-background-color: transparent;" + "-fx-border-color: transparent;"
-        );
-        //Make the icon dim when mousing over.
-        iconView.setOpacity(0.7);
-        button.setOnMouseEntered(e -> iconView.setOpacity(1.0));
-        button.setOnMouseExited(e -> iconView.setOpacity(0.7));
-        //Set graphic
-        button.setGraphic(iconView);
-    }
+
 }

@@ -127,7 +127,7 @@ public class GuiSelect {
     {
         for(UISelectable selectable : selectedObjects){
                 selectable.setSelected(false);
-            }
+        }
         selectedObjects.clear();
     }
     /**
