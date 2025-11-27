@@ -46,7 +46,8 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     VBox methodTextFields;
     //VBox that holds className TextField and VBoxes for data fields and methods.
     VBox parentVBox;
-    
+
+    Point2D mouseWorldSpace;
     Point2D dragStartLocation = Point2D.ZERO;
     
     List<Button> guiButtons = new LinkedList<>();//No random access is required. Using linked list.
@@ -89,15 +90,26 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
       * @param nodeBackground, a StackPane representing the container for the class box contents.
       */
     private void makeDraggable(StackPane nodeBackground) {
-        
+
         nodeBackground.setOnMousePressed(e -> {
             if(e.getButton() == MouseButton.PRIMARY) {
                 GuiCamera.setDragging(true);
-                Point2D mouseWorldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
+                mouseWorldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
                 Point2D paneWorldSpace = new Point2D(nodeBackground.getLayoutX(), nodeBackground.getLayoutY());
                 this.mouseAnchorX = mouseWorldSpace.getX() - paneWorldSpace.getX();
                 this.mouseAnchorY = mouseWorldSpace.getY() - paneWorldSpace.getY();
+
                 dragStartLocation = this.parentClass.getLocation();
+
+                //Setup dragStartLocation for multi-drag
+                if(!GuiSelect.getInstance().getSelectedObjects().isEmpty() &&
+                        GuiSelect.getInstance().getSelectedObjects().contains(this)){
+                    for(UISelectable selectable : GuiSelect.getInstance().getSelectedObjects()){
+                        if(selectable instanceof org.umlproject.UI.GuiClass guiClass) {
+                            guiClass.dragStartLocation = guiClass.parentClass.getLocation();
+                        }
+                    }
+                }
 
                 nodeBackground.requestFocus();
             }
@@ -127,6 +139,20 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
                 Point2D worldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
                 Point2D selectionOffset = new Point2D(worldSpace.getX() - this.mouseAnchorX, worldSpace.getY() - this.mouseAnchorY);
                 UMLDocument.executeActionUnderState(DocumentState.SILENT_MOVEMENT, () -> this.parentClass.setLocation(selectionOffset, true));
+
+                //Multi-Drag
+                if(!GuiSelect.getInstance().getSelectedObjects().isEmpty() &&
+                        GuiSelect.getInstance().getSelectedObjects().contains(this)){
+                    for(UISelectable selectable : GuiSelect.getInstance().getSelectedObjects()){
+                        if(selectable instanceof org.umlproject.UI.GuiClass guiClass){
+                            if(guiClass == this) continue;
+                            Point2D locationOffset = worldSpace.subtract(mouseWorldSpace);
+                            UMLDocument.executeActionUnderState(DocumentState.SILENT_MOVEMENT, () ->
+                                    guiClass.setLocation(guiClass.dragStartLocation.add(locationOffset)));
+                        }
+                    }
+                }
+
                 this.nodeBackground.getParent().requestLayout(); // Force layout update
             }
             e.consume(); // Prevent event from propagating to other nodes
@@ -487,7 +513,9 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         classNameField.setFocusTraversable(false);
         //Make it so the UMLClass class name updates after modifying classNameField
         makeClassNameRenamable(classNameField);
-        this.parentVBox.getChildren().addAll(classNameField, new Separator());
+        Separator separator = new Separator();
+        separator.setMouseTransparent(true);
+        this.parentVBox.getChildren().addAll(classNameField, separator);
 
         //set up dataFields
         //retrieve dataFields hashMap, retrieve keySet, convert into an array, then cycle through each
@@ -503,7 +531,9 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         
         //convertDataFieldsToHBoxes filled the dataFIeldTexxtFields VBox with all the delete button
         //TextField combinations. Note that dataFieldTextFields VBox was reset upon calling update().
-        this.parentVBox.getChildren().addAll(dataFieldsLabel, this.dataFieldTextFields, addDataField, new Separator());
+        Separator separatorTwo = new Separator();
+        separatorTwo.setMouseTransparent(true);
+        this.parentVBox.getChildren().addAll(dataFieldsLabel, this.dataFieldTextFields, addDataField, separatorTwo);
 
         //-------------------------------------------------------------------------------------------
         //create methods
@@ -685,15 +715,19 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     @Override
     public boolean intersects(Rectangle2D selectionRectangle) {
 
-        //Reused getRectBounds code with more accurate to visual bounds
+        //Reused getRectBounds code with more accurate to visual bounds.
         if(this.parentVBox == null)
             return false;
         Bounds bounds = this.parentVBox.getBoundsInLocal();
 
         Point2D offset = getLocation();
+
+        //Takes border outsets into account when calculating bounds
         Rectangle2D rect = new Rectangle2D(
-                bounds.getMinX() + offset.getX() - bounds.getWidth()/2.2,
-                bounds.getMinY() + offset.getY() - bounds.getHeight()/2.2,
+                bounds.getMinX() + offset.getX()
+                        - bounds.getWidth() / 2.0 + this.parentVBox.getBorder().getOutsets().getLeft(),
+                bounds.getMinY() + offset.getY()
+                        - bounds.getHeight() / 2.0 + this.parentVBox.getBorder().getOutsets().getTop(),
                 bounds.getWidth(),
                 bounds.getHeight()
         );

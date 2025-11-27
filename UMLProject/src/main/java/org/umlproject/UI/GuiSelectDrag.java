@@ -50,7 +50,7 @@ public class GuiSelectDrag {
         //Determines intersection/selection
         if(selectRectangle != null){
             //If right click, add to selection instead of reset
-            if(!(event.getButton() == MouseButton.SECONDARY)){
+            if(!event.isShiftDown()){
                 GuiSelect.getInstance().resetSelect();
             }
             //Iterates generalized UML elements to determine selection behaviour
@@ -59,7 +59,7 @@ public class GuiSelectDrag {
                 if(element instanceof UISelectable selectable){
                     if(selectable.intersects(new Rectangle2D(selectRectangle.getX(), selectRectangle.getY(),
                             selectRectangle.getWidth(), selectRectangle.getHeight()))){
-                        GuiSelect.getInstance().selectUiElement( selectable);
+                        GuiSelect.getInstance().selectUiElement(selectable);
                     }
                 }
             }
@@ -79,7 +79,7 @@ public class GuiSelectDrag {
         selectRectangle = new Rectangle();
         world.getChildren().add(selectRectangle);
         //Transparent blue color for main body
-        selectRectangle.setFill(Color.color(0, 0, 1, 0.2));
+        selectRectangle.setFill(Color.color(0, 0, 1, 0.2 ));
         //Full blue for border
         selectRectangle.setStroke(Color.BLUE);
         selectRectangle.setStrokeWidth(1);
