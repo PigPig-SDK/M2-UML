@@ -7,19 +7,19 @@ import static org.umlproject.RelationshipType.OTHER;
 
 public class UMLRelationship  extends UMLDiagramElement implements Cloneable
 {
-    private String sourceName;//TODO: REFACTOR TO USE UMLDiagramElement netID!!!!
-    private String destinationName;//TODO: REFACTOR TO USE UMLDiagramElement netID!!!!
+    private String sourceName;
+    private String destinationName;
     private RelationshipType relationshipType;
     private String customNameType;
-    
+
     //-------------------------------- Main class -----------------------------------
     public UMLRelationship(String sourceName, String destinationName, RelationshipType relationshipType, String customNameType)
     {
         this(sourceName, destinationName, relationshipType);
-        if (this.relationshipType == RelationshipType.OTHER) 
+        if (this.relationshipType == RelationshipType.OTHER)
         {
             if(customNameType == null || customNameType.isEmpty()) throw new IllegalArgumentException("Custom name is required for OTHER data type");
-            
+
             this.customNameType = customNameType;
         }
         else
@@ -30,6 +30,24 @@ public class UMLRelationship  extends UMLDiagramElement implements Cloneable
         this.sourceName = sourceName;
         this.destinationName = destinationName;
         this.relationshipType = relationshipType;
+    }
+    /**
+     *
+     * @return the source UMLClass.
+     */
+    public UMLClass getSource(){
+        String sourceName = getSourceName();
+        UMLDocument doc = UMLDocument.getInstance();
+        return doc.getClass(sourceName);
+    }
+    /**
+     *
+     * @return the destination UMLClass.
+     */
+    public UMLClass getDestination(){
+        String destinationName = getDestinationName();
+        UMLDocument doc = UMLDocument.getInstance();
+        return doc.getClass(destinationName);
     }
     /**
      * @return the source name
@@ -64,7 +82,7 @@ public class UMLRelationship  extends UMLDiagramElement implements Cloneable
     {
         if(this.relationshipType == OTHER)
             return getCustomNameType();
-        
+
         return this.relationshipType.toString();
     }
     /**
@@ -96,7 +114,7 @@ public class UMLRelationship  extends UMLDiagramElement implements Cloneable
     /**
      * Sets the relationship type, calls to update listener
      * Automatically assigns relationshipType to OTHER, enforcing a new custom relationship
-     * @param newType The new type.
+     * @param newTypeCustom The new type.
      */
     public void setCustomNameType(String newTypeCustom){
         this.relationshipType = OTHER;
@@ -109,13 +127,13 @@ public class UMLRelationship  extends UMLDiagramElement implements Cloneable
         return String.format("%s -> %s : %s", sourceName, destinationName, this.relationshipType);
     }
     @Override
-    public boolean equals(Object  obj) 
+    public boolean equals(Object  obj)
     {
-        if(this == obj) 
+        if(this == obj)
             return true;
-        if(obj == null || getClass() != obj.getClass()) 
+        if(obj == null || getClass() != obj.getClass())
             return false;
-        
+
         UMLRelationship castedObject = (UMLRelationship)obj;
         //Bare bones implementation.
         //TODO: When you add more to the class, maintain this equals function.
@@ -132,7 +150,7 @@ public class UMLRelationship  extends UMLDiagramElement implements Cloneable
         hash = 29 * hash + Objects.hashCode(this.customNameType);
         return hash;
     }
-    
+
     @Override
     public UMLRelationship clone()
     {
