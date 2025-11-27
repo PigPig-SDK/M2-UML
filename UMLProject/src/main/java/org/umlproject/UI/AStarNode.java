@@ -72,11 +72,17 @@ public class AStarNode implements Comparable<AStarNode>{
      * @return an int value representing the relative order of the two AStarNodes.
      */
     public int compareTo(AStarNode other){
-        return Double.compare(this.getFCost(), other.getFCost());
+        if(this.getFCost() != other.getFCost()) {
+            return Double.compare(this.getFCost(), other.getFCost());
+        }
+        //Break ties using hCost.
+        else{
+            return Double.compare(this.getHCost(), other.getHCost());
+        }
     }
 
     /**
-     * hashCode function is utilized by the closed set in A* search.
+     * hashCode function is utilized by the closed set in A* search as well as openSetLookupMap.
      * @return int representing the hashCode of a given AStarNode.
      */
     @Override

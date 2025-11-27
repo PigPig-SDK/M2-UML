@@ -53,8 +53,8 @@ public class PathGridMapper {
     /**
      * This method will check to see if the AStarNode (tile) described by the indices (gridI, gridJ) is contained
      * by any non-goal class boxes. If it is, return false, otherwise return true.
-     * @param gridI, x coordinate for the center of the AStarNode being tested.
-     * @param gridJ, y coordinate for the center of the AStarNode being tested.
+     * @param gridI, x grid coordinate of the AStarNode tile being tested.
+     * @param gridJ, y coordinate of the of the AStarNode tile being tested.
      * @return a boolean value representing whether the AStarNode being tested is viable to move to or not.
      */
     public boolean isPassable(int gridI, int gridJ, UMLClass targetClass){
@@ -63,11 +63,15 @@ public class PathGridMapper {
         List<GuiClass> guiClasses = GuiController.extractGuiClasses();
         for(GuiClass nextClass : guiClasses){
             //If nextClass == target class, don't return false, this is the goal.
+
             if(nextClass.getParentClass() == targetClass){
                 continue;
             }
             Rectangle2D classBounds = nextClass.getRectBounds();
-
+            if(classBounds.contains(testX, testY)){
+                return false;
+            }
+            /**
             //Apply padding to classBounds before checking for containment of testX and testY.
             double paddedMinX = classBounds.getMinX() - this.padding;
             double paddedMinY = classBounds.getMinY() - this.padding;
@@ -77,6 +81,8 @@ public class PathGridMapper {
             if(new Rectangle2D(paddedMinX, paddedMinY, paddedWidth, paddedHeight).contains(testX, testY)){
                 return false;
             }
+             */
+
         }
         return true;
     }
@@ -95,7 +101,7 @@ public class PathGridMapper {
         List<AStarNode> perimeterNodes = new ArrayList<>();
         Rectangle2D sourceBounds = sourceGui.getRectBounds();
         Point2D targetCenter = target.getLocation();
-        double buffer = PathGridMapper.GRID_SIZE * 1.5;
+        double buffer = PathGridMapper.GRID_SIZE;
         //Define padded search area around source bounds.
         double searchMinX = sourceBounds.getMinX() - buffer;
         double searchMaxX = sourceBounds.getMaxX() + buffer;

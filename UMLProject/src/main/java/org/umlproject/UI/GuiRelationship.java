@@ -32,12 +32,14 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
     private boolean isSelected = false;
     private Node relationshipDiagramElement;
     private TextField relationshipText;
-    private List<Point2D> pathPoints;
+    private ArrayList<Point2D> pathPoints;
     
     private static final double SYMBOL_DISTANCE_BUFFER = 50;
     private static final double SYMBOL_MIN_DISTANCE = 100;
     private static final double MIN_LINE_DISTANCE_FOR_TEXT = 500;
-    private final RelationshipRouter router = new RelationshipRouter();
+
+    //Having an instance prevents redundant memory usage for occupiedCells hash set.
+    private final RelationshipRouter router = RelationshipRouter.getInstance();
     
     public GuiRelationship(Pane world, UMLRelationship umlRelationship)
     {
@@ -55,24 +57,26 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
         if(source == null || target == null){
             return;
         }
-        List<Point2D> newPath = router.AStarAlgorithm(source, target);
+        ArrayList<Point2D> newPath = router.AStarAlgorithm(source, target);
 
         if(newPath != null && !newPath.isEmpty()){
             this.setPathPoints(newPath);
         }
+        /**
         else{
             //fallbackPath is a straight line. May want to modify this later.
             System.err.println("A* failed to find a path for: " + source.getClassName() + " -> " + target.getClassName());
             List<Point2D> fallbackPath = List.of(source.getLocation(), target.getLocation());
             this.setPathPoints(fallbackPath);
         }
+         */
     }
 
     /**
      * Getter method for pathPoints. Used by RelationshipRouter class for the AStar algorithm.
      * @return a List of points representing the relationship path.
      */
-    public List<Point2D> getPathPoints(){
+    public ArrayList<Point2D> getPathPoints(){
         return this.pathPoints;
     }
 
@@ -81,7 +85,7 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
      * relationship.
      * @param newPathPoints, the new path of points to be stored in a given GuiRelationship object.
      */
-    public void setPathPoints(List<Point2D> newPathPoints){
+    public void setPathPoints(ArrayList<Point2D> newPathPoints){
         this.pathPoints = newPathPoints;
     }
 
@@ -130,7 +134,7 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
             this.lineOutline.getStrokeDashArray().addAll(30.0, 15.0);
         }
         //Not sure if placeText will work with the new Polyline
-        //placeText(desiredElement);
+        //placeText(desiredEleme0nt);
         //placeRelationshipMarker(endClass, desiredElement.getRelationshipType());
 
 

@@ -7,14 +7,11 @@ import org.umlproject.UMLDocument;
 import org.umlproject.UMLRelationship;
 
 import java.util.*;
-
-
 /**
  * AStar path finding logic goes here.
  */
 public class RelationshipRouter {
-
-    private static final double GRID_SIZE = 20.0;
+    private static final double GRID_SIZE = 50.0;
     private static final double DIAGONAL_COST = GRID_SIZE * Math.sqrt(2.0);
     private static final double HORIZONTAL_COST = GRID_SIZE;
     private PriorityQueue<AStarNode> openSet;
@@ -24,16 +21,24 @@ public class RelationshipRouter {
     private final PathGridMapper mapper;
     private static final double EXISTING_RELATIONSHIP_PENALTY = 1000.0;
 
+    private static RelationshipRouter instance;
     /**
      * Constructor.
      */
-    public RelationshipRouter(){
+    private RelationshipRouter(){
         this.openSet = new PriorityQueue<>();
         this.closedSet = new HashSet<>();
         this.openSetFastLookupMap = new HashMap<>();
         occupiedPathCells = new HashSet<>();
         //Use padding size of 20 pixels.
         this.mapper = new PathGridMapper(UMLDocument.getInstance(), 20.0);
+    }
+
+    public static RelationshipRouter getInstance(){
+        if(instance == null){
+            instance = new RelationshipRouter();
+        }
+        return instance;
     }
 
     /**
@@ -81,11 +86,14 @@ public class RelationshipRouter {
                 }
                 GuiRelationship guiRelationship = (GuiRelationship)nextRelationship.getListener();
 
+                /**
                 ArrayList<Point2D> nextPath = new ArrayList<>(guiRelationship.getPathPoints());
+
                 if(nextPath == null || nextPath.isEmpty()){
                     continue;
                 }
-                relationshipPaths.add(nextPath);
+                 */
+                relationshipPaths.add(guiRelationship.getPathPoints());
             }
         }
         for(int i = 0; i < relationshipPaths.size(); i++){
@@ -117,7 +125,7 @@ public class RelationshipRouter {
      * @return hCost
      */
     public double calculateHCost(int neighborGridX, int neighborGridY, UMLClass target){
-        //Convert to continous coordinates:
+        //Convert to continuous coordinates:
         double continuousCoordX = PathGridMapper.toPixelCoordinate(neighborGridX);
         double continuousCoordY = PathGridMapper.toPixelCoordinate(neighborGridY);
         double targetX = target.getLocation().getX();
@@ -132,8 +140,8 @@ public class RelationshipRouter {
      * @param endNode, The node at the end of the shortest path.
      * @return, A List of Point2D objects representing the points along the relationship line.
      */
-    public List<Point2D> recalculatePath(AStarNode endNode){
-        List<Point2D> shortestPath = new ArrayList<>();
+    public ArrayList<Point2D> recalculatePath(AStarNode endNode){
+        ArrayList<Point2D> shortestPath = new ArrayList<>();
         AStarNode nextNode = endNode;
         while(nextNode.getParent() != null){
             double continuousCoordX = PathGridMapper.toPixelCoordinate(nextNode.getGridX());
@@ -152,20 +160,23 @@ public class RelationshipRouter {
      * @param target, class box where the path terminates.
      * @return, a list of points representing the path from the source to the target.
      */
-    public List<Point2D> AStarAlgorithm(UMLClass source, UMLClass target){
+    public ArrayList<Point2D> AStarAlgorithm(UMLClass source, UMLClass target){
+        openSet.clear();
+        openSetFastLookupMap.clear();
+        closedSet.clear();
         GuiClass sourceGui = (GuiClass)source.getListener();
         GuiClass targetGui = (GuiClass)target.getListener();
         Rectangle2D targetBounds = targetGui.getRectBounds();
+        //Retrieve the perimeter nodes around the source class box.
         List<AStarNode> nodes = mapper.getInitialPerimeterNodes(sourceGui, target);
-        System.out.println("hello adam");
-        System.out.println("number of initialNodes is: " + nodes.size());
         //initialize the openSet with the perimeter.
         openSet.addAll(nodes);
+        //openSetFastLookupMap will provide O(1) lookup times when checking to see if a neighbor node is already in the
+        //openSet.
         for(AStarNode node : nodes){
             openSetFastLookupMap.put(node, node);
         }
 
-        this.extractRelationshipPoints();
         while(!openSet.isEmpty()){
             //While nextNode is not contained in target class box bounds, continue building path:
             AStarNode nextNode = openSet.poll();
@@ -173,36 +184,42 @@ public class RelationshipRouter {
             closedSet.add(nextNode);
             //If nextNode is touching the target class box, generate the path and return it.
             if(inTargetBounds(nextNode, targetBounds)){
-                return recalculatePath(nextNode);
+                openSet.clear();
+                openSetFastLookupMap.clear();
+                ArrayList<Point2D> rawPath = recalculatePath(nextNode);
+                Collections.reverse(rawPath);
+                return smoothOrthogonalPath(rawPath);
             }
 
             //Generate neighbors of nextNode and insert into openSet (assuming they aren't in the closed set.
             for(int i = -1; i <= 1; i++){
                 for(int j = -1; j <= 1; j++){
-                    int neighborGridX = nextNode.gridX + i;
+                    int neighborGridX = nextNode.getGridX() + i;
                     int neighborGridY = nextNode.getGridY() + j;
                     //Check the passability of the neighbor tile:
                     if(!mapper.isPassable(neighborGridX, neighborGridY, target)){
                         continue;
                     }
-                    //Check if neighbor is in open or closed set:
-                    double hCost = calculateHCost(neighborGridX, neighborGridY, target);
-                    double additionalGCost = (i != 0 && j != 0) ? DIAGONAL_COST : HORIZONTAL_COST;
-                    //Check to see if the neighbor intersects an existing relationship line.
+                    //Check if AStarNode is in the closedSet.
                     AStarNode neighborLookup = new AStarNode(neighborGridX, neighborGridY, 0, 0, null);
+                    if(closedSet.contains(neighborLookup)){
+                        continue;
+                    }
+
+                    //Check if neighbor crosses an existing relationship line:
+                    double additionalGCost = (i != 0 && j != 0) ? DIAGONAL_COST : HORIZONTAL_COST;
                     if(isCrossingExistingRelationship(neighborLookup)){
                         additionalGCost += EXISTING_RELATIONSHIP_PENALTY;
                     }
+                    //Generate a proper neighbor node with g and h costs.
                     double newGCost = nextNode.getGCost() + additionalGCost;
+                    double hCost = calculateHCost(neighborGridX, neighborGridY, target);
                     AStarNode neighbor = new AStarNode(neighborGridX, neighborGridY,newGCost, hCost, nextNode);
 
-                    //Check if AStarNode is in the closedSet.
-                    if(closedSet.contains(neighbor)){
-                        continue;
-                    }
                     //Check if AStarNode is already in openSet. If so, check to see if gCost is lower along current path.
                     //If so update gCost value of existingNode.
                     AStarNode existingNode = openSetFastLookupMap.get(neighbor);
+                    /**
                     if(existingNode != null){
                         //If new GCost is shorter, we need to update the existingNode's value.
                         if(existingNode.getGCost() > newGCost){
@@ -210,17 +227,45 @@ public class RelationshipRouter {
                             existingNode.setParent(nextNode);
                             openSet.remove(existingNode);
                             openSet.add(existingNode);
-                    }
+                        }
                         //We don't want to add the neighbor again if it is already in the openSet.
                         continue;
                     }
-                    //Neighbor can be placed in openSet and openSetFastLookupMap HashMap:
-                    openSet.add(neighbor);
-                    openSetFastLookupMap.put(neighbor, neighbor);
+                    else {
+                        //Neighbor can be placed in openSet and openSetFastLookupMap HashMap:
+                        openSet.add(neighbor);
+                        openSetFastLookupMap.put(neighbor, neighbor);
+                    }
+                     */
+                    if(existingNode == null){
+                        openSet.add(neighbor);
+                        openSetFastLookupMap.put(neighbor, neighbor);
+                        System.out.println("number of nodes in openSet is: " + openSet.size());
+                    }
+
                 }
             }
         }
         //Otherwise no path could be found so return null
         return null;
+    }
+
+    //smoothing method
+    private ArrayList<Point2D> smoothOrthogonalPath(ArrayList<Point2D> rawPath) {
+        if (rawPath.size() <= 2) return rawPath;
+        ArrayList<Point2D> smoothed = new ArrayList<>();
+        smoothed.add(rawPath.get(0));
+        for (int i = 1; i < rawPath.size() - 1; i++) {
+            Point2D a = rawPath.get(i - 1);
+            Point2D b = rawPath.get(i);
+            Point2D c = rawPath.get(i + 1);
+            boolean horizontal = Math.abs(a.getY() - b.getY()) < 1 && Math.abs(b.getY() - c.getY()) < 1;
+            boolean vertical   = Math.abs(a.getX() - b.getX()) < 1 && Math.abs(b.getX() - c.getX()) < 1;
+            if (!horizontal && !vertical) {
+                smoothed.add(b);
+            }
+        }
+        smoothed.add(rawPath.get(rawPath.size() - 1));
+        return smoothed;
     }
 }

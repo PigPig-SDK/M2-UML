@@ -503,6 +503,10 @@ public class GuiController implements DocumentListner {
     public void onRelationshipAdded(UMLRelationship umlRelationship) {
         GuiRelationship guiRelationship = new GuiRelationship(world, umlRelationship);
         umlRelationship.setListener(guiRelationship);
+
+        //Call extractRelationshipPoints to update occupiedCells HashSet which stores the tiles that relationship
+        //lines cross.
+        RelationshipRouter.getInstance().extractRelationshipPoints();
     }
     /**
      * Calls to redraw all relationships.
