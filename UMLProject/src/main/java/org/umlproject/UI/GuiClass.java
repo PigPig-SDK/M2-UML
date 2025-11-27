@@ -526,7 +526,9 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         classNameField.setFocusTraversable(false);
         //Make it so the UMLClass class name updates after modifying classNameField
         makeClassNameRenamable(classNameField);
-        this.parentVBox.getChildren().addAll(classNameField, new Separator());
+        Separator separator = new Separator();
+        separator.setMouseTransparent(true);
+        this.parentVBox.getChildren().addAll(classNameField, separator);
 
         //set up dataFields
         //retrieve dataFields hashMap, retrieve keySet, convert into an array, then cycle through each
