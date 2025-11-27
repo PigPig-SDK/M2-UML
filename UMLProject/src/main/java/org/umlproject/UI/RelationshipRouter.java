@@ -22,12 +22,14 @@ public class RelationshipRouter {
     private HashSet<AStarNode> closedSet;
     private HashSet<AStarNode> occupiedPathCells;
     private final PathGridMapper mapper;
-    private static final double EXISTING_RELATIONSHIP_PENALTY = 1000.0;
+    private static final double EXISTING_RELATIONSHIP_PENALTY = 100000000000000.0;
+
+    private static final RelationshipRouter router = new RelationshipRouter();
 
     /**
      * Constructor.
      */
-    public RelationshipRouter(){
+    private RelationshipRouter(){
         this.openSet = new PriorityQueue<>();
         this.closedSet = new HashSet<>();
         this.openSetFastLookupMap = new HashMap<>();
@@ -35,10 +37,13 @@ public class RelationshipRouter {
         //Use padding size of 20 pixels.
         this.mapper = new PathGridMapper(UMLDocument.getInstance(), 20.0);
     }
+    public static RelationshipRouter getRouterInstance(){
+        return router;
+    }
 
     /**
      * Helper method to determine if an AStarNode is within the bounds of the target class box.
-     * @param nextNode, The AStarNode to be checked.
+     * @param node, The AStarNode to be checked.
      * @param targetBounds, The bounds to be checked.
      * @return, a boolean representing whether or not the AStarNode is within the target bounds.
      */
@@ -162,11 +167,9 @@ public class RelationshipRouter {
         openSet.clear();
         closedSet.clear();
         openSetFastLookupMap.clear();
-        occupiedPathCells.clear();
+        System.out.println("the size of occupied is: " + occupiedPathCells.size());
 
         List<AStarNode> nodes = mapper.getInitialPerimeterNodes(sourceGui, target);
-        System.out.println("hello adam");
-        System.out.println("number of initialNodes is: " + nodes.size());
         //initialize the openSet with the perimeter.
         openSet.addAll(nodes);
         for(AStarNode node : nodes){

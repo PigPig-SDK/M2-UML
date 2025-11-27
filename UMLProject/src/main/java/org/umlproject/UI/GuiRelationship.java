@@ -37,12 +37,13 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
     private static final double SYMBOL_DISTANCE_BUFFER = 50;
     private static final double SYMBOL_MIN_DISTANCE = 100;
     private static final double MIN_LINE_DISTANCE_FOR_TEXT = 500;
-    private final RelationshipRouter router = new RelationshipRouter();
+    private static  RelationshipRouter router;
 
     public GuiRelationship(Pane world, UMLRelationship umlRelationship)
     {
         this.world = world;
         this.relationship = umlRelationship;
+        this.router = RelationshipRouter.getRouterInstance();
         update(umlRelationship);
     }
 
@@ -60,12 +61,14 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
         if(newPath != null && !newPath.isEmpty()){
             this.setPathPoints(newPath);
         }
+        /**
         else{
             //fallbackPath is a straight line. May want to modify this later.
             System.err.println("A* failed to find a path for: " + source.getClassName() + " -> " + target.getClassName());
             List<Point2D> fallbackPath = List.of(source.getLocation(), target.getLocation());
             this.setPathPoints(fallbackPath);
         }
+         */
     }
 
     /**
