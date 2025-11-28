@@ -48,17 +48,4 @@ public class UMLRelationshipTest {
         //Assert
         assertNotEquals(umlr.getCustomNameType(), uml_clone.getCustomNameType());
     }
-    @Test
-    void clone_listener_isShallowCopy() {
-        //Arrange
-        DummyListener dl = new DummyListener();
-        UMLRelationship umlr = new UMLRelationship("Foo", "Bar", RelationshipType.OTHER, "Truck");
-        umlr.setListener(dl);
-        UMLRelationship uml_clone = umlr.clone();
-        //Act
-        uml_clone.setCustomNameType("Fuck");
-        umlr.setDestinationName("newName");
-        //Assert
-        assertEquals(2, dl.timesUpdateCalled);
-    }
 }

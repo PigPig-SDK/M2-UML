@@ -20,6 +20,7 @@ public class GuiSelect {
     private static GuiSelect instance;
 
     private static ArrayList<UISelectable> selectedObjects;
+    private static UISelectable latestSelection = null;
 
     /**
      * Singleton GuiSelect constructor. Creates three relevant ArrayLists and sets a condition on clicking the scene.
@@ -58,20 +59,50 @@ public class GuiSelect {
      * @param e - Event checked for ctrl being held
      * @param selectable - Class being selected/deselected
      */
-    public void clickUiElement(MouseEvent e, UISelectable selectable) {
-
-        //Checks if class is already selected. If so, deselects it.
-        if(selectedObjects.contains(selectable)){
-            deselectUiElement(selectable);
-            return;
+    public void clickUiElement(MouseEvent e, UISelectable selectable, boolean isDragging) {
+        
+        //Mouse UP  
+        if(e.getEventType() == MouseEvent.MOUSE_CLICKED)
+        {
+            if(!isDragging)
+            {
+                if(e.isControlDown())
+                {
+                    if(latestSelection != selectable)
+                    {
+                        deselectUiElement(selectable);
+                        selectedObjects.remove(selectable);
+                    }
+                }
+                else
+                {
+                    resetSelect();
+                    selectUiElement(selectable);
+                }
+            }
+            latestSelection = null;
         }
-        //Selects class if not already selected.
-        selectUiElement(selectable);
+        else//Mouse down
+        {
+            if(!selectedObjects.contains(selectable))
+            {
+                if(e.isControlDown())
+                {
+                    latestSelection = selectable;
+                    selectUiElement(selectable);
+                }
+                else
+                {
+                    resetSelect();
+                    selectUiElement(selectable);
+                }
+            } 
+        }
     }
     public void deselectUiElement(UISelectable selectable)
     {
-        selectable.setSelected(false);
         selectedObjects.remove(selectable);
+        selectable.setSelected(false);
     }
     public void selectUiElement(UISelectable selectable)
     {
@@ -96,7 +127,7 @@ public class GuiSelect {
     {
         for(UISelectable selectable : selectedObjects){
                 selectable.setSelected(false);
-            }
+        }
         selectedObjects.clear();
     }
     /**

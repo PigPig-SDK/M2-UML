@@ -98,7 +98,7 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
         
         //Add clickableness...
         lineMain.setOnMouseClicked(e -> {
-            GuiSelect.getInstance().clickUiElement(e, this);
+            GuiSelect.getInstance().clickUiElement(e, this, false);
             e.consume(); // Prevent event from propagating to other nodes
         });
         setSelected(isSelected);//Update our selected state
@@ -304,19 +304,8 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
 
     @Override
     public boolean intersects(Rectangle2D selectionRectangle) {
-
-
-        //TODO: Re-Implement after A*
-
-        Point2D sourceLocation = UMLDocument.getInstance().getClass(relationship.getSourceName()).getLocation();
-        Point2D destinationLocation = UMLDocument.getInstance().getClass(relationship.getSourceName()).getLocation();
-
-        //debugging lines
-        //GuiDebugging.showBounds(selectionRectangle, 5, 5, Color.RED);
-        //GuiDebugging.showBounds(new Rectangle2D(sourceLocation.getX(), sourceLocation.getY(), 0, 0), 5, 5, Color.GREEN);
-
-        return selectionRectangle.intersects(sourceLocation.getX(), sourceLocation.getY(), 0, 0) ||
-                selectionRectangle.intersects(destinationLocation.getX(), destinationLocation.getY(), 0, 0);
+        //TODO: Re-Implement after A*//TODO: Re-Implement after A*
+        return false;
     }
 
     @Override
@@ -327,7 +316,4 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
         this.selectionOutline.setStrokeDashOffset(10*Math.sin(time * 0.000000001));
         
     }
-
-
-    
 }
