@@ -79,6 +79,10 @@ public class GuiKeyBinds {
                 {
                     GuiController.getInstance().console.setText(GuiConsole.getNextCommand());
                 }
+                case C->
+                {
+                    GuiController.getInstance().addClassButtonPushed();
+                }
             }
             
             if (!event.isControlDown())
@@ -135,11 +139,11 @@ public class GuiKeyBinds {
                 }
                 case MINUS->
                 {
-                    GuiCamera.setZoom(GuiCamera.getCameraZoom()-0.1, GuiCamera.getScreenCenter());
+                    GuiCamera.setZoom(GuiCamera.getCameraZoom()*0.85, GuiCamera.getScreenCenter());
                 }
                 case EQUALS->
                 {
-                    GuiCamera.setZoom(GuiCamera.getCameraZoom()+0.1, GuiCamera.getScreenCenter());
+                   GuiCamera.setZoom(GuiCamera.getCameraZoom()*1.15, GuiCamera.getScreenCenter());
                 }
 
             }
