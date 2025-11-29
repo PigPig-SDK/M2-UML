@@ -22,7 +22,7 @@ public class PathGridMapper {
     private final UMLDocument doc;
     //Padding around a given class box.
     private final double padding;
-
+    private final RelationshipRouter router = RelationshipRouter.getRouterInstance();
     public PathGridMapper(UMLDocument doc, double padding){
         this.doc = doc;
         this.padding = padding;
@@ -57,24 +57,35 @@ public class PathGridMapper {
      * @param gridJ, y coordinate for the center of the AStarNode being tested.
      * @return a boolean value representing whether the AStarNode being tested is viable to move to or not.
      */
-    public boolean isPassable(int gridI, int gridJ, UMLClass targetClass){
-        double testX = toPixelCoordinate(gridI);
-        double testY = toPixelCoordinate(gridJ);
+    public boolean isPassable(int gridI, int gridJ, UMLClass targetClass, UMLClass sourceClass){
+        double testX = toPixelCoordinate(gridI) - (GRID_SIZE / 2);
+        double testY = toPixelCoordinate(gridJ) - (GRID_SIZE / 2);
+        Rectangle2D testTile = new Rectangle2D(testX, testY, GRID_SIZE, GRID_SIZE);
         List<GuiClass> guiClasses = GuiController.extractGuiClasses();
         for(GuiClass nextClass : guiClasses){
             //If nextClass == target class, don't return false, this is the goal.
+            /**
             if(nextClass.getParentClass().getClassName().equals(targetClass.getClassName())){
+                continue;
+            }
+             */
+            if(nextClass.getParentClass() == targetClass || nextClass.getParentClass() == sourceClass){
                 continue;
             }
             Rectangle2D classBounds = nextClass.getRectBounds();
 
             //Apply padding to classBounds before checking for containment of testX and testY.
-            double paddedMinX = classBounds.getMinX() - this.padding;
-            double paddedMinY = classBounds.getMinY() - this.padding;
-            double paddedWidth = classBounds.getWidth() + (2 * this.padding);
-            double paddedHeight = classBounds.getHeight() + (2 * this.padding);
+            double margin = GRID_SIZE * Math.sqrt(2)/2;
+            double paddedMinX = classBounds.getMinX() - margin;
+            double paddedMinY = classBounds.getMinY() - margin;
+            double paddedWidth = classBounds.getWidth() + (2 * margin);
+            double paddedHeight = classBounds.getHeight() + (2 * margin);
             //Perform containment check on padded rectangle.
-            if(new Rectangle2D(paddedMinX, paddedMinY, paddedWidth, paddedHeight).contains(testX, testY)){
+            if(new Rectangle2D(paddedMinX, paddedMinY, paddedWidth, paddedHeight).intersects(testTile)){
+               /**
+                AStarNode nodeToAvoid = new AStarNode(gridI, gridJ, 0,0, null);
+                this.router.getClosedSet().add(nodeToAvoid);
+                */
                 return false;
             }
         }
@@ -92,6 +103,7 @@ public class PathGridMapper {
      * @return
      */
     public List<AStarNode> getInitialPerimeterNodes(GuiClass sourceGui, UMLClass target) {
+        UMLClass sourceClass = sourceGui.getParentClass();
         List<AStarNode> perimeterNodes = new ArrayList<>();
         Rectangle2D sourceBounds = sourceGui.getRectBounds();
         Point2D targetCenter = target.getLocation();
@@ -115,11 +127,17 @@ public class PathGridMapper {
                 double testY = PathGridMapper.toPixelCoordinate(j);
                 //Check to see if test coordinates are outside the unpadded
                 //source bounds.
-                if(sourceBounds.contains(testX, testY)){
+
+                //-------------------------------------------------------------
+                //test using tiles
+                Rectangle2D tile = new Rectangle2D(i * 20, j * 20, 20, 20);
+                if(tile.intersects(sourceBounds)){
                     continue;
                 }
+                //----------------------------------------------------------
+
                 //Check for obstacles.
-                if(!this.isPassable(i, j, target)){
+                if(!this.isPassable(i, j, target, sourceClass)){
                     continue;
                 }
                 //Node is valid so create AStarNode and insert into list.

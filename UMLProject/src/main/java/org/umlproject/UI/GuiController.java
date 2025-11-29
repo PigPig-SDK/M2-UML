@@ -507,9 +507,6 @@ public class GuiController implements DocumentListner {
     public void onRelationshipAdded(UMLRelationship umlRelationship) {
         GuiRelationship guiRelationship = new GuiRelationship(world, umlRelationship);
         umlRelationship.setListener(guiRelationship);
-        //Each time a new relationship is created, we need to catalogue the grid tiles that all relationship lines run through
-        //so that we can draw the new line without intersections.
-        RelationshipRouter.getRouterInstance().extractRelationshipPoints();
     }
     /**
      * Calls to redraw all relationships.

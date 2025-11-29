@@ -35,10 +35,14 @@ public class RelationshipRouter {
         this.openSetFastLookupMap = new HashMap<>();
         occupiedPathCells = new HashSet<>();
         //Use padding size of 20 pixels.
-        this.mapper = new PathGridMapper(UMLDocument.getInstance(), 20.0);
+        this.mapper = new PathGridMapper(UMLDocument.getInstance(), 15.0);
     }
     public static RelationshipRouter getRouterInstance(){
         return router;
+    }
+
+    public HashSet<AStarNode> getClosedSet(){
+        return this.closedSet;
     }
 
     /**
@@ -160,6 +164,7 @@ public class RelationshipRouter {
      * @return, a list of points representing the path from the source to the target.
      */
     public List<Point2D> AStarAlgorithm(UMLClass source, UMLClass target){
+        RelationshipRouter.getRouterInstance().extractRelationshipPoints();
         GuiClass sourceGui = (GuiClass)source.getListener();
         GuiClass targetGui = (GuiClass)target.getListener();
         Rectangle2D targetBounds = targetGui.getRectBounds();
@@ -186,7 +191,8 @@ public class RelationshipRouter {
             if(isGoalNode(nextNode, targetBounds)){
                 List<Point2D> path = recalculatePath(nextNode);
                 Collections.reverse(path);
-                return smoothOrthogonalPath(path);
+
+                return smoothPath(path);
             }
 
             //Generate neighbors of nextNode and insert into openSet (assuming they aren't in the closed set.
@@ -195,7 +201,8 @@ public class RelationshipRouter {
                     int neighborGridX = nextNode.gridX + i;
                     int neighborGridY = nextNode.getGridY() + j;
                     //Check the passability of the neighbor tile:
-                    if(!mapper.isPassable(neighborGridX, neighborGridY, target)){
+                    if(!mapper.isPassable(neighborGridX, neighborGridY, target, source)){
+                        System.out.println("node is in a non-target class box");
                         continue;
                     }
                     //Check if neighbor is in open or closed set:
@@ -209,7 +216,8 @@ public class RelationshipRouter {
                     double newGCost = nextNode.getGCost() + additionalGCost;
                     AStarNode neighbor = new AStarNode(neighborGridX, neighborGridY,newGCost, hCost, nextNode);
 
-                    //Check if AStarNode is in the closedSet.
+                    //Check if AStarNode is in the closedSet. Note that contains() relies on the hashCode function
+                    //of AstarNode class to determine the right bucket, and equals() is used for actual comparison.
                     if(closedSet.contains(neighbor)){
                         continue;
                     }
@@ -221,6 +229,8 @@ public class RelationshipRouter {
                         if(existingNode.getGCost() > newGCost){
                             existingNode.setGCost(newGCost);
                             existingNode.setParent(nextNode);
+                            //re-heapify by removing and then re-adding existingNode.
+                            openSet.remove(existingNode);
                             openSet.add(existingNode);
                         }
                         //We don't want to add the neighbor again if it is already in the openSet.
@@ -236,22 +246,139 @@ public class RelationshipRouter {
         return null;
     }
 
-    private List<Point2D> smoothOrthogonalPath(List<Point2D> rawPath) {
-        if (rawPath.size() <= 2) return rawPath;
-        List<Point2D> smoothed = new ArrayList<>();
-        smoothed.add(rawPath.get(0));
-        for (int i = 1; i < rawPath.size() - 1; i++) {
-            Point2D a = rawPath.get(i - 1);
-            Point2D b = rawPath.get(i);
-            Point2D c = rawPath.get(i + 1);
-            boolean horizontal = Math.abs(a.getY() - b.getY()) < 1 && Math.abs(b.getY() - c.getY()) < 1;
-            boolean vertical   = Math.abs(a.getX() - b.getX()) < 1 && Math.abs(b.getX() - c.getX()) < 1;
-            if (!horizontal && !vertical) {
-                smoothed.add(b);
-            }
+    public List<Point2D> smoothPath(List<Point2D> rawPath){
+        if(rawPath == null || rawPath.size() < 2){
+            throw new IllegalArgumentException("Raw Path is null or incorrect size for a path to be drawn.");
         }
-        smoothed.add(rawPath.get(rawPath.size() - 1));
-        return smoothed;
+        List<Point2D> smoothedPath = new ArrayList<>();
+        List<GuiClass> guiClasses = GuiController.extractGuiClasses();
+        smoothedPath.add(rawPath.get(0));
+        Point2D lastAcceptedPoint = smoothedPath.get(0);
+        Point2D safeFrontierPoint = smoothedPath.get(0);
+        boolean intersectsRectangle = false;
+        for(int i = 1; i < rawPath.size(); i++) {
+            Point2D lookAheadPoint = rawPath.get(i);
+            for (GuiClass nextClass : guiClasses) {
+                Rectangle2D nextRectangle = nextClass.getRectBounds();
+                intersectsRectangle = segmentIntersectsRectangle(lastAcceptedPoint, lookAheadPoint, nextRectangle);
+                if(intersectsRectangle){
+                    break;
+                }
+            }
+            if(intersectsRectangle == true && i != 1){
+                smoothedPath.add(safeFrontierPoint);
+                lastAcceptedPoint = safeFrontierPoint;
+            }
+            safeFrontierPoint = lookAheadPoint;
+        }
+        //Add endpoint of rawPath.
+        smoothedPath.add(rawPath.get(rawPath.size() - 1));
+        return smoothedPath;
     }
+
+    /**
+     *
+     * @param a
+     * @param b
+     * @param c
+     * @return
+     */
+    public int orientation(Point2D a, Point2D b, Point2D c){
+        //Cross product of the vectors ab and ac. These vectors span a parallelogram. The signed area of this parallelogram
+        //indicates the orientation of these two vectors to each other. If the sign is negative, then c lies to the left of ab
+        //if positive, then c lies to the right of ab.
+        double val = (b.getX() - a.getX()) * (c.getY() - a.getY()) - (b.getY() - a.getY())*(c.getX() - a.getX());
+        //floating point arithmetic considers numbers extremely close to zero to be equal to zero.
+        double epsilon = 1e-9;
+        // If val is 0, this means the vectors are colinear.
+        if(Math.abs(val) < epsilon) return 0;
+        //1 means c is to the right, and 2 means c is to the left of ab.
+        return (val > 0) ? 1 : 2;
+
+    }
+
+    /**
+     *
+     * @param p1
+     * @param q1
+     * @param p2
+     * @param q2
+     * @return
+     */
+    private boolean segmentsIntersect(Point2D p1, Point2D q1, Point2D p2, Point2D q2){
+        int o1 = orientation(p1, q1, p2);
+        int o2 = orientation(p1, q1, q2);
+        int o3 = orientation(p2, q2, p1);
+        int o4 = orientation(p2, q2, q1);
+        //Check to see if the two segments intersect each other:
+        if(o1 != o2 && o3 != o4){
+            return true;
+        }
+        //Consider cases where the two segments are collinear:
+        if(o1 == 0 && onSegment(p1, q1, p2))
+            return true;
+        if(o2 == 0 && onSegment(p1, q1, q2))
+            return true;
+        if(o3 == 0 && onSegment(p2, q2, p1))
+            return true;
+        if(o4 == 0 && onSegment(p2, q2, q1))
+            return true;
+        return false;
+    }
+
+    /**
+     * This method is used for edge cases where two line segments are collinear. If two segments are collinear, then we
+     * check to see if the segments overlap in anyway by looking to see if either of the end points of one segment lies on
+     * the other segment.
+     * @param a
+     * @param b
+     * @param c
+     * @return
+     */
+    public boolean onSegment(Point2D a, Point2D b, Point2D c){
+        //Let ab be the segment to be crossed.
+        return c.getX() <= Math.max(a.getX(), b.getX()) &&
+                c.getX() >= Math.min(a.getX(), b.getX()) &&
+                c.getY() <= Math.max(a.getY(), b.getY()) &&
+                c.getY() >= Math.min(a.getY(), b.getY());
+    }
+
+    /**
+     *
+     * @param a
+     * @param b
+     * @param rect
+     * @return
+     */
+    public boolean segmentIntersectsRectangle(Point2D a, Point2D b, Rectangle2D rect){
+        //We need to check and see if the segment ab intersects any of the
+        //boundary edges of the given rectangle. To this end we generate
+        //the four corner points of the rectangle from which we will form the edges.
+        Point2D topLeft = new Point2D(rect.getMinX(), rect.getMinY());
+        Point2D topRight = new Point2D(rect.getMaxX(), rect.getMinY());
+        Point2D bottomLeft = new Point2D(rect.getMinX(), rect.getMaxY());
+        Point2D bottomRight = new Point2D(rect.getMaxX(), rect.getMaxY());
+
+        //First check to see if either a or b lies inside the rectangle. Note
+        //contains() does not check for containment along the boundary.
+        if(rect.contains(a) || rect.contains(b)){
+            return true;
+        }
+        //Next check whether ab intersects any of the four edges of the rectangle.
+        if(segmentsIntersect(a, b, topLeft, topRight)) {
+            return true;
+        }
+        if(segmentsIntersect(a, b, topRight, bottomRight)){
+            return true;
+        }
+        if(segmentsIntersect(a, b, bottomRight, bottomLeft)){
+            return true;
+        }
+        if(segmentsIntersect(a, b, bottomLeft, topLeft)){
+            return true;
+        }
+        return false;
+    }
+
 }
 
