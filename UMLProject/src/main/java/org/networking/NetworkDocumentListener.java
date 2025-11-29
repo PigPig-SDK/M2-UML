@@ -203,6 +203,9 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
     {
         if(invalidDocumentStates.contains(UMLDocument.getDocumentState())) return;
         
+        if(dragLastSent.containsKey(element.networkId))
+            dragLastSent.remove(element.networkId);
+        
         NetworkPacket networkPacket = NetworkPacket.objectToNetworkPacket(PacketType.OBJECT_DELETED, new PayloadRemoveObject(element.networkId));
         
         if(NetworkManager.isHosting())//Bypass communication. Enforce everyone to use this packet.
