@@ -50,6 +50,7 @@ public class PathGridMapper {
         return cellCenterCoord;
     }
 
+
     /**
      * This method will check to see if the AStarNode (tile) described by the indices (gridI, gridJ) is contained
      * by any non-goal class boxes. If it is, return false, otherwise return true.
@@ -113,12 +114,14 @@ public class PathGridMapper {
         double searchMaxX = sourceBounds.getMaxX() + buffer;
         double searchMinY = sourceBounds.getMinY() - buffer;
         double searchMaxY = sourceBounds.getMaxY() + buffer;
-        //Convert continuous coordinate boundaries into discrete grid indices.
+        //
+
         int minI = PathGridMapper.toGridIndex(searchMinX);
         int maxI = PathGridMapper.toGridIndex(searchMaxX);
         int minJ = PathGridMapper.toGridIndex(searchMinY);
         int maxJ = PathGridMapper.toGridIndex(searchMaxY);
-        //Cycle through the discrete grid tile indices and check to see which tiles are along the perimeter
+
+          //Cycle through the discrete grid tile indices and check to see which tiles are along the perimeter
         //of the class box and which tiles are at least partially inside the class box. Fill the perimeterNodes list
         //only with those tiles along the perimeter that don't intersect the class box.
         for(int i = minI; i <= maxI; i++){
