@@ -144,7 +144,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
                                 if (guiClass == this) continue;
                                 Point2D locationOffset = worldSpace.subtract(mouseWorldSpace);
                                 UMLDocument.executeActionUnderState(DocumentState.SILENT_MOVEMENT, () ->
-                                        guiClass.setLocation(guiClass.dragStartLocation.add(locationOffset)));
+                                        guiClass.getParentClass().setLocation(guiClass.dragStartLocation.add(locationOffset),true));
                             }
                         }
                     }

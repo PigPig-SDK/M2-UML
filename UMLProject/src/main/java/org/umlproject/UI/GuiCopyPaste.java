@@ -107,9 +107,9 @@ public class GuiCopyPaste {
                             "-copy" + increment)){
                         increment++;
                     }
+                    classCopy.networkId = UUID.randomUUID();//This is a unique object.
                     classCopy.setClassName(classCopy.getClassName() + "-copy" + increment);
-
-
+                    
                     if(!Main.isInTerminalMode()){
                         classCopy.setLocation(umlClass.getLocation().add(
                                 GuiCamera.getScreenCenter().subtract(oldCameraLocation)), false);
@@ -129,7 +129,6 @@ public class GuiCopyPaste {
                     source = umlRelationship.getSourceName();
                     destination = umlRelationship.getDestinationName();
                     relationshipType = umlRelationship.getRelationshipType().toString();
-
                     if(oldToNewNameMap.containsKey(source) &&
                             oldToNewNameMap.containsKey(destination)){
 
