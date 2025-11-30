@@ -1,11 +1,13 @@
 package org.networking;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javafx.geometry.Rectangle2D;
 import org.umlproject.DiagramElementListener;
@@ -34,7 +36,10 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
     private static NetworkDocumentListener instance;
     
     private static final double dragSendDelay = 0.02;//~50 times a second
-    private static long dragLastSent = 0;
+    
+    
+    
+    private static Map<UUID, AtomicLong> dragLastSent = new HashMap<>();
     
     /**
      * Get the memento of instance listener.
@@ -154,24 +159,34 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
         }
     }
     @Override public void updateLocation(Object desiredElement) {
-        
-        // This code checks for 'mid dragging' updates.
-        //We still send 'mid dragging' updates, just at a slower rate than what javafx gives.
-        if(UMLDocument.getDocumentState().equals(DocumentState.SILENT_MOVEMENT))
+        if(desiredElement instanceof UMLDiagramElement element)
         {
-            long delta = System.nanoTime() - dragLastSent;
-            double refireDelay = TimeUnit.SECONDS.toNanos(1) * dragSendDelay;//toNanos dosnt take 'double', jank workaround.
-            
-            if(delta < refireDelay) return;//Does not quality for sending network packet.
-            dragLastSent = System.nanoTime();
-        }
-        
-        switch(desiredElement)
-        {
-            case UMLClass umlClass -> sendClassTranslation(umlClass);
-            default ->
+            if(!dragLastSent.containsKey(element.networkId))
             {
-                System.out.println("Got location update from invalid source!");
+                dragLastSent.put(element.networkId, new AtomicLong(0));
+            }
+            // This code checks for 'mid dragging' updates.
+            //We still send 'mid dragging' updates, just at a slower rate than what javafx gives.
+            if(UMLDocument.getDocumentState().equals(DocumentState.SILENT_MOVEMENT))
+            {
+                long delta = System.nanoTime() - dragLastSent.get(element.networkId).longValue();
+                double refireDelay = TimeUnit.SECONDS.toNanos(1) * dragSendDelay;//toNanos dosnt take 'double', jank workaround.
+
+                if(delta < refireDelay) return;//Does not quality for sending network packet.
+                dragLastSent.get(element.networkId).set(System.nanoTime() + 0L);
+            }
+            else
+            {
+                return;
+            }
+
+            switch(desiredElement)
+            {
+                case UMLClass umlClass -> sendClassTranslation(umlClass);
+                default ->
+                {
+                    System.out.println("Got location update from invalid source!");
+                }
             }
         }
     }
@@ -187,6 +202,9 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
     private void netRemoveDiagramElement(UMLDiagramElement element)
     {
         if(invalidDocumentStates.contains(UMLDocument.getDocumentState())) return;
+        
+        if(dragLastSent.containsKey(element.networkId))
+            dragLastSent.remove(element.networkId);
         
         NetworkPacket networkPacket = NetworkPacket.objectToNetworkPacket(PacketType.OBJECT_DELETED, new PayloadRemoveObject(element.networkId));
         

@@ -73,7 +73,6 @@ public class GuiCamera {
             {
                 return;
             }
-            
             switch (event.getCode()) {
                 case UP, W -> {up = true;event.consume();}
                 case DOWN, S -> {down = true;event.consume();}
@@ -135,10 +134,7 @@ public class GuiCamera {
         });
         //Stop drag...
         App.currentScene.setOnMouseReleased(e -> {
-            if (e.getButton() == MouseButton.PRIMARY) 
-            {
-                isDragging = false;
-            }
+            isDragging = false;
             GuiSelectDrag.selectDragRelease(e);
             
         });
