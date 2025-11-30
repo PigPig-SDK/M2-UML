@@ -376,6 +376,34 @@ public class GuiController implements DocumentListner {
             destinationBox.setValue("...");
             
             ComboBox<String> typebox = new ComboBox<>();
+
+
+            String class1 = "";
+            String class2 = "";
+            boolean setClasses = true;
+            ArrayList<UISelectable> selectedObjects = GuiSelect.getInstance().getSelectedObjects();
+            for(UISelectable selectable : selectedObjects){
+                if(selectable instanceof GuiClass guiClass){
+                    if (class1.isEmpty()) {
+                        class1 = guiClass.getParentClass().getClassName();
+                        continue;
+                    }
+                    if(class2.isEmpty()) {
+                        class2 = guiClass.getParentClass().getClassName();
+                        continue;
+                    }
+                    setClasses = false;
+                    break;
+                }
+            }
+
+            if(!class1.isEmpty() && setClasses){
+                startBox.setValue((class1));
+                if(!class2.isEmpty()){
+                    destinationBox.setValue(class2);
+                }
+            }
+
             //Populate combo box with types.
             for(RelationshipType rType : RelationshipType.values())
             {

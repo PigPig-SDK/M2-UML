@@ -6,6 +6,7 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.input.KeyCode;
+import static javafx.scene.input.KeyCode.C;
 import static javafx.scene.input.KeyCode.DOWN;
 import static javafx.scene.input.KeyCode.MINUS;
 import static javafx.scene.input.KeyCode.N;
@@ -82,6 +83,10 @@ public class GuiKeyBinds {
                 case C->
                 {
                     GuiController.getInstance().addClassButtonPushed();
+                }
+                case R->
+                {
+                    GuiController.getInstance().addRelationshipButtonPushed();
                 }
             }
             
