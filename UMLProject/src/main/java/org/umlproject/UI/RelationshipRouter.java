@@ -192,6 +192,10 @@ public class RelationshipRouter {
                 List<Point2D> path = recalculatePath(nextNode);
                 Collections.reverse(path);
 
+                if(path == null || path.size() < 2){
+                    System.err.println("A* reached target, but path reconstruction failed. Likely source and target are right next to each other");
+                    return null;
+                }
                 return smoothPath(path);
             }
 
