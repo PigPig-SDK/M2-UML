@@ -25,6 +25,8 @@ public class GuiSelectDragTests {
 
     @BeforeEach
     public void setUp() {
+        System.setProperty("javafx.platform", "Monocle");
+        System.setProperty("monocle.platform", "Headless");
         // Initialize JavaFX runtime (needed even in headless mode)
         new JFXPanel();
         world = new Pane();
