@@ -156,17 +156,6 @@ public class GuiKeyBinds {
                     GuiCopyPaste.getInstance().paste();
                     event.consume();
                 }
-                //Go backwards in terminal history
-                case UP->
-                {
-                    GuiConsole.traverseHistory(-1);
-                }
-                //Go forwards in terminal history
-                case DOWN->
-                {
-                    GuiConsole.traverseHistory(1);
-
-                }
                 //Zoom out
                 case MINUS->
                 {
