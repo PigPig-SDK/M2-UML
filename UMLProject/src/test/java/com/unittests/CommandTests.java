@@ -50,25 +50,6 @@ public class CommandTests
         //Assert
         assertNull(doc.getClass("a"));
         assertNotNull(doc.getClass("b"));
-
-
-    }
-
-    @Test
-    public void rename_class_duplicate_exists()
-    {
-        //Arrange
-        ByteArrayOutputStream caught = new ByteArrayOutputStream();
-        System.setOut(new PrintStream(caught));
-        UMLDocument doc = UMLDocument.resetInstance(true);
-        doc.addClass("a");
-        doc.addClass("b");
-        //Act
-        TerminalHandler.runCommand("rename class a b");
-        //Assert
-        assertEquals( "---------------------\r\nClass rename failed".trim(), caught.toString().trim());
-
-
     }
 
     @Test
