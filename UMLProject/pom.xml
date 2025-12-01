@@ -11,8 +11,8 @@
     <version>1.0</version>
 
     <properties>
-        <maven.compiler.source>24</maven.compiler.source>
-        <maven.compiler.target>24</maven.compiler.target>
+        <maven.compiler.source>25</maven.compiler.source>
+        <maven.compiler.target>25</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <javafx.version>23</javafx.version>
     </properties>
@@ -70,7 +70,9 @@
 				<version>3.11.0</version>
 				<configuration>
 					<release>${maven.compiler.source}</release>
-					<compilerArgs>--enable-preview</compilerArgs>
+					<compilerArgs>
+						<arg>--enable-preview</arg>
+					</compilerArgs>
 				</configuration>
 			</plugin>
 
