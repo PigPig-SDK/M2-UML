@@ -22,7 +22,7 @@ public class RelationshipRouter {
     private HashSet<AStarNode> closedSet;
     private HashSet<AStarNode> occupiedPathCells;
     private final PathGridMapper mapper;
-    private static final double EXISTING_RELATIONSHIP_PENALTY = 100000000000000.0;
+    private static final double EXISTING_RELATIONSHIP_PENALTY = 1000.0;
 
     private static final RelationshipRouter router = new RelationshipRouter();
 
@@ -65,50 +65,109 @@ public class RelationshipRouter {
         return expanded.contains(x, y);
     }
 
-    /**
-     * This is a helper method to the isCrossingExistingRelationship method and will be used when checking to see if
-     * a neighbor to an existing node occupies a tile that a relationship line crosses.
-     * @return an ArrayList containing ArrayLists of Point2D objects representing points on a given relationship line.
-     */
-    public void extractRelationshipPoints(){
-        occupiedPathCells.clear();
-        ArrayList<ArrayList<Point2D>> relationshipPaths = new ArrayList<>();
-        //We need to extract a list containing all the relationship paths between any two pair of classes with a relationship.
-        Map<String, ArrayList<UMLRelationship>> relationshipsMap = UMLDocument.getInstance().getRelationshipList();
-        Set<String> keys = relationshipsMap.keySet();
-        //Note every key is a source class.
-        ArrayList<String> relationshipKeys = new ArrayList<>(keys);
-        ArrayList<ArrayList<UMLRelationship>> listOfRelationshipLists = new ArrayList<>();
-        for(String key : relationshipKeys){
-            listOfRelationshipLists.add(relationshipsMap.get(key));
-        }
-        //We now need to extract the lists of Point2D objects.
-        for(ArrayList<UMLRelationship> existingRel : listOfRelationshipLists){
-            //Extract GuiRelationship listener so we can then extract the list of Points associated with the listener.
-            for(int i = 0; i < existingRel.size(); i++) {
-                UMLRelationship nextRelationship = existingRel.get(i);
-                //A relationship whose path is being constructed will not yet have a listener and so needs to be skipped.
-                if(nextRelationship.getListener() == null){
-                    continue;
-                }
-                GuiRelationship guiRelationship = (GuiRelationship)nextRelationship.getListener();
+  //Test method written by gemini, rewrite later.
 
-                ArrayList<Point2D> nextPath = new ArrayList<>(guiRelationship.getPathPoints());
-                if(nextPath == null || nextPath.isEmpty()){
-                    continue;
-                }
-                relationshipPaths.add(nextPath);
+    public List<AStarNode> getGridCellsCrossed(Point2D p1, Point2D p2) {
+        List<AStarNode> crossedCells = new ArrayList<>();
+
+        // Convert to grid coordinates
+        int x1 = PathGridMapper.toGridIndex(p1.getX());
+        int y1 = PathGridMapper.toGridIndex(p1.getY());
+        int x2 = PathGridMapper.toGridIndex(p2.getX());
+        int y2 = PathGridMapper.toGridIndex(p2.getY());
+
+        int dx = Math.abs(x2 - x1);
+        int dy = Math.abs(y2 - y1);
+        int sx = x1 < x2 ? 1 : -1;
+        int sy = y1 < y2 ? 1 : -1;
+        int err = dx - dy;
+
+        int currentX = x1;
+        int currentY = y1;
+
+        while (true) {
+            AStarNode node = new AStarNode(currentX, currentY, 0, 0, null);
+            // We can just add it, as the HashSet in the next step will handle duplicates.
+            crossedCells.add(node);
+
+            if (currentX == x2 && currentY == y2) {
+                break;
+            }
+
+            int e2 = 2 * err;
+            if (e2 > -dy) {
+                err -= dy;
+                currentX += sx;
+            }
+            if (e2 < dx) {
+                err += dx;
+                currentY += sy;
             }
         }
-        for(int i = 0; i < relationshipPaths.size(); i++){
-            for(Point2D nextPoint : relationshipPaths.get(i)){
-                int gridX = PathGridMapper.toGridIndex(nextPoint.getX());
-                int gridY = PathGridMapper.toGridIndex(nextPoint.getY());
-                AStarNode occupiedTile = new AStarNode(gridX, gridY, 0.0, 0.0, null);
-                occupiedPathCells.add(occupiedTile);
+        return crossedCells;
+    }
+
+
+    /**This is a helper method to the isCrossingExistingRelationship method and will be used when checking to see
+    * if a neighbor to an existing node occupies a tile that a relationship line crosses.
+    */
+    public void extractRelationshipPathPoints(){
+    occupiedPathCells.clear();
+    ArrayList<ArrayList<Point2D>> relationshipPaths = new ArrayList<>();
+    // Need to generate a list containing all the relationship paths of Point2D objects between
+    // any two classes with a relationship
+    Map<String, ArrayList<UMLRelationship>> relationshipsMap = UMLDocument.getInstance().getRelationshipList();
+    Set<String> keys = relationshipsMap.keySet();
+    //Note every key is a source class.
+    ArrayList<String> relationshipKeys = new ArrayList<>(keys);
+    ArrayList<ArrayList<UMLRelationship>> listOfRelationshipLists = new ArrayList<>();
+    for(String key : relationshipKeys) {
+        listOfRelationshipLists.add(relationshipsMap.get(key));
+    }
+    //Extract GuiRelationship listeners from each UMLRelationship to retrieve its pathPoints list/
+    ArrayList<Point2D> relationshipPoints = new ArrayList<>();
+    for(ArrayList<UMLRelationship> nextList : listOfRelationshipLists){
+        for(UMLRelationship nextRelationship : nextList){
+            GuiRelationship nextGuiRelationship = (GuiRelationship)nextRelationship.getListener();
+            if(nextGuiRelationship == null){
+                continue;
             }
+            System.out.println("number of pathPoints for nextRelationship: " + nextGuiRelationship.getPathPoints().size());
+            relationshipPoints = new ArrayList<>(nextGuiRelationship.getPathPoints());
+            if(relationshipPoints == null){
+                continue;
+            }
+            relationshipPaths.add(relationshipPoints);
         }
     }
+        //Generate tiles and apply penalty cost to encourage AStar Algorithm to avoid these tiles.
+        for(ArrayList<Point2D> nextPath : relationshipPaths){
+            for(int i = 0; i < nextPath.size() - 1; i++){
+                Point2D p1 = nextPath.get(i);
+                Point2D p2 = nextPath.get(i + 1);
+
+
+                //calls getGridCellsCrossed() which uses Besenthals algorithm.
+                List<AStarNode> segmentCells = getGridCellsCrossed(p1, p2);
+                for(AStarNode cell : segmentCells){
+                    occupiedPathCells.add(cell);
+
+//creates a buffer around a relationship line.
+                    for(int dx = -1; dx <= 1; dx++){
+                        for(int dy = -1; dy <= 1; dy++){
+                            AStarNode neighborTile = new AStarNode(cell.getGridX() + dx, cell.getGridY() + dy, 0.0, 0.0, null);
+                            occupiedPathCells.add(neighborTile);
+                        }
+                    }
+
+                }
+            }
+        }
+        System.out.println("The size of occupied PathCells is: " + occupiedPathCells.size());
+
+}
+
+
 
     /**
      * Helper method for the AStar Algorithm method. It will check to see if the neighbor node under consideration
@@ -118,7 +177,10 @@ public class RelationshipRouter {
      * @return, a boolean representing whether or not the neighbor node should be accepted as part of the path.
      */
     public boolean isCrossingExistingRelationship( AStarNode neighbor){
-        return this.occupiedPathCells.contains(neighbor);
+        if(this.occupiedPathCells.contains(neighbor)) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -164,7 +226,7 @@ public class RelationshipRouter {
      * @return, a list of points representing the path from the source to the target.
      */
     public List<Point2D> AStarAlgorithm(UMLClass source, UMLClass target){
-        RelationshipRouter.getRouterInstance().extractRelationshipPoints();
+        RelationshipRouter.getRouterInstance().extractRelationshipPathPoints();
         GuiClass sourceGui = (GuiClass)source.getListener();
         GuiClass targetGui = (GuiClass)target.getListener();
         Rectangle2D targetBounds = targetGui.getRectBounds();
@@ -172,7 +234,6 @@ public class RelationshipRouter {
         openSet.clear();
         closedSet.clear();
         openSetFastLookupMap.clear();
-        System.out.println("the size of occupied is: " + occupiedPathCells.size());
 
         List<AStarNode> nodes = mapper.getInitialPerimeterNodes(sourceGui, target);
         //initialize the openSet with the perimeter.
@@ -181,7 +242,6 @@ public class RelationshipRouter {
             openSetFastLookupMap.put(node, node);
         }
 
-        //this.extractRelationshipPoints();
         while(!openSet.isEmpty()){
             //While nextNode is not contained in target class box bounds, continue building path:
             AStarNode nextNode = openSet.poll();
@@ -206,7 +266,6 @@ public class RelationshipRouter {
                     int neighborGridY = nextNode.getGridY() + j;
                     //Check the passability of the neighbor tile:
                     if(!mapper.isPassable(neighborGridX, neighborGridY, target, source)){
-                        System.out.println("node is in a non-target class box");
                         continue;
                     }
                     //Check if neighbor is in open or closed set:
@@ -250,6 +309,11 @@ public class RelationshipRouter {
         return null;
     }
 
+    /**
+     *
+     * @param rawPath
+     * @return
+     */
     public List<Point2D> smoothPath(List<Point2D> rawPath){
         if(rawPath == null || rawPath.size() < 2){
             throw new IllegalArgumentException("Raw Path is null or incorrect size for a path to be drawn.");

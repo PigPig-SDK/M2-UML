@@ -65,11 +65,6 @@ public class PathGridMapper {
         List<GuiClass> guiClasses = GuiController.extractGuiClasses();
         for(GuiClass nextClass : guiClasses){
             //If nextClass == target class, don't return false, this is the goal.
-            /**
-            if(nextClass.getParentClass().getClassName().equals(targetClass.getClassName())){
-                continue;
-            }
-             */
             if(nextClass.getParentClass() == targetClass || nextClass.getParentClass() == sourceClass){
                 continue;
             }
@@ -83,10 +78,7 @@ public class PathGridMapper {
             double paddedHeight = classBounds.getHeight() + (2 * margin);
             //Perform containment check on padded rectangle.
             if(new Rectangle2D(paddedMinX, paddedMinY, paddedWidth, paddedHeight).intersects(testTile)){
-               /**
-                AStarNode nodeToAvoid = new AStarNode(gridI, gridJ, 0,0, null);
-                this.router.getClosedSet().add(nodeToAvoid);
-                */
+
                 return false;
             }
         }
@@ -115,7 +107,6 @@ public class PathGridMapper {
         double searchMinY = sourceBounds.getMinY() - buffer;
         double searchMaxY = sourceBounds.getMaxY() + buffer;
         //
-
         int minI = PathGridMapper.toGridIndex(searchMinX);
         int maxI = PathGridMapper.toGridIndex(searchMaxX);
         int minJ = PathGridMapper.toGridIndex(searchMinY);
