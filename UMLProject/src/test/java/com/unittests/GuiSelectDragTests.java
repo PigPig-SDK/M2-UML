@@ -26,7 +26,7 @@ public class GuiSelectDragTests {
 
     @BeforeEach
     public void setUp() {
-        assumeTrue(System.getenv("CLI") != null, "Skipping test");
+        assumeTrue(!"true".equals(System.getenv("CLI")), "Skipping GUI test in CLI");
         // Initialize JavaFX runtime (needed even in headless mode)
         new JFXPanel();
         world = new Pane();
