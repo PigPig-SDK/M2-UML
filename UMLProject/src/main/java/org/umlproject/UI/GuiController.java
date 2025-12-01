@@ -531,6 +531,10 @@ public class GuiController implements DocumentListner {
         return testLocation;
     }
 
+    public boolean isConsoleFocused(){
+        return this.console.isFocused();
+    }
+
     @Override
     public void onRelationshipAdded(UMLRelationship umlRelationship) {
         GuiRelationship guiRelationship = new GuiRelationship(world, umlRelationship);

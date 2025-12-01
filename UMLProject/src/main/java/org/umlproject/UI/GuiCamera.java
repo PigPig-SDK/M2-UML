@@ -84,7 +84,7 @@ public class GuiCamera {
             return;
         //Key down
         App.currentScene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
-            if (!event.isControlDown())
+            if (GuiController.getInstance().isConsoleFocused())
             {
                 return;
             }

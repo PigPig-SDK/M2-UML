@@ -85,6 +85,21 @@ public class GuiKeyBinds {
                 }
             }
 
+            //Fires cases if console is in focus
+            //Notably, ctrl overrides default textbox keybinds, so it is still necessary
+            if(GuiController.getInstance().isConsoleFocused()){
+                switch (event.getCode()) {
+                    //Go backwards in terminal history
+                    case UP -> {
+                        GuiConsole.traverseHistory(-1);
+                    }
+                    //Go forwards in terminal history
+                    case DOWN -> {
+                        GuiConsole.traverseHistory(1);
+                    }
+                }
+            }
+
             //Fires cases if ctrl is not being held
             if (!event.isControlDown()) {
                 switch (event.getCode()) {
