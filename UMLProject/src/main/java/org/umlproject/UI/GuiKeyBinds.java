@@ -1,12 +1,17 @@
 package org.umlproject.UI;
 
+import javafx.geometry.Point2D;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.input.KeyCode;
+import static javafx.scene.input.KeyCode.C;
+import static javafx.scene.input.KeyCode.DOWN;
+import static javafx.scene.input.KeyCode.MINUS;
 import static javafx.scene.input.KeyCode.DELETE;
 import static javafx.scene.input.KeyCode.N;
+import static javafx.scene.input.KeyCode.UP;
 import static javafx.scene.input.KeyCode.Z;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
@@ -37,14 +42,21 @@ public class GuiKeyBinds {
         addAccelerator(new KeyCodeCombination(KeyCode.F1), "Help");
         addAccelerator(new KeyCodeCombination(KeyCode.F2), "About UML Editor");
         addAccelerator(new KeyCodeCombination(KeyCode.F12), GuiController.getInstance().viewTerminalMenuItem);
-        addAccelerator(new KeyCodeCombination(KeyCode.UP, KeyCombination.CONTROL_DOWN), "Get Previous Command");
-        addAccelerator(new KeyCodeCombination(KeyCode.DOWN, KeyCombination.CONTROL_DOWN), "Get Next Command");
+
+        addAccelerator(new KeyCodeCombination(KeyCode.UP), "Get Previous Command");
+        addAccelerator(new KeyCodeCombination(KeyCode.DOWN), "Get Next Command");
+        addAccelerator(new KeyCodeCombination(KeyCode.MINUS, KeyCombination.CONTROL_DOWN), "Zoom Out");
+        addAccelerator(new KeyCodeCombination(KeyCode.PLUS, KeyCombination.CONTROL_DOWN), "Zoom In");
+        addAccelerator(new KeyCodeCombination(KeyCode.F), "Reset Camera");
+        addAccelerator(new KeyCodeCombination(KeyCode.R), "Add Relationship");
+        addAccelerator(new KeyCodeCombination(KeyCode.C), "Add Class");
         
         
         App.currentScene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
             if(GuiController.getInstance() == null)//Cannot execute quickbind. The menu dosn't exist.
                 return;
-          
+
+            //Fires cases regardless of additional keys
             switch(event.getCode())
             {
                 case F2->
@@ -60,18 +72,31 @@ public class GuiKeyBinds {
                     CheckMenuItem terminalButton = GuiController.getInstance().viewTerminalMenuItem;
                     GuiConsole.terminalOverrideOut(!terminalButton.isSelected());//Override output, this is required due to a javafx bug...
                     terminalButton.setSelected(!terminalButton.isSelected());
-                    GuiConsole.smartFocus();
                 }
                 //Delete all (DELETE)
                 case DELETE -> {
                     GuiSelect.getInstance().deleteAllSelected();
                     event.consume();
                 }
+                //Add relationship
+                case R->
+                {
+                    GuiController.getInstance().addRelationshipButtonPushed();
+                }
             }
-            
-            if (!event.isControlDown())
+
+            //Fires cases if ctrl is not being held
+            if (!event.isControlDown()) {
+                switch (event.getCode()) {
+                    //Add class
+                    case C -> {
+                        GuiController.getInstance().addClassButtonPushed();
+                    }
+                }
                 return;
-            
+            }
+
+            //Fires cases if ctrl is being held
             switch(event.getCode())
             {
                 case S -> {
@@ -111,23 +136,35 @@ public class GuiKeyBinds {
                     GuiCopyPaste.getInstance().copy();
                     event.consume();
                 }
-                //Copy all (CTRL+V)
+                //Paste all (CTRL+V)
                 case V ->{
                     GuiCopyPaste.getInstance().paste();
                     event.consume();
                 }
+                //Go backwards in terminal history
                 case UP->
                 {
                     GuiConsole.traverseHistory(-1);
                 }
+                //Go forwards in terminal history
                 case DOWN->
                 {
                     GuiConsole.traverseHistory(1);
-                    
+
                 }
+                //Zoom out
+                case MINUS->
+                {
+                    GuiCamera.setZoom(GuiCamera.getCameraZoom()*0.85, GuiCamera.getScreenCenter());
+                }
+                //Zoom in
+                case EQUALS->
+                {
+                    GuiCamera.setZoom(GuiCamera.getCameraZoom()*1.15, GuiCamera.getScreenCenter());
+                }
+
             }
         });
-        
     }
     /**
      * PURELY DECORATION! No function comes from this!
