@@ -56,7 +56,7 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
         if(source == null || target == null){
             return;
         }
-        List<Point2D> newPath = router.AStarAlgorithm(source, target);
+        List<Point2D> newPath = router.AStarAlgorithm(relationship, source, target);
         System.out.println("The size of the newPath is: " + newPath.size());
         //Check if newPath is empty or null, in which case draw a default straight line.
         if(newPath == null || newPath.isEmpty()){

@@ -111,7 +111,7 @@ public class RelationshipRouter {
     /**This is a helper method to the isCrossingExistingRelationship method and will be used when checking to see
     * if a neighbor to an existing node occupies a tile that a relationship line crosses.
     */
-    public void extractRelationshipPathPoints(){
+    public void extractRelationshipPathPoints(UMLRelationship relationshipToExclude){
     occupiedPathCells.clear();
     ArrayList<ArrayList<Point2D>> relationshipPaths = new ArrayList<>();
     // Need to generate a list containing all the relationship paths of Point2D objects between
@@ -128,6 +128,12 @@ public class RelationshipRouter {
     ArrayList<Point2D> relationshipPoints = new ArrayList<>();
     for(ArrayList<UMLRelationship> nextList : listOfRelationshipLists){
         for(UMLRelationship nextRelationship : nextList){
+            //Make sure to skip over the relationshipToExclude, otherwise there will be invisible tiles from the
+            //previous AStar calculation that will need to be avoided by this round of path finding. This will cause a
+            //fluttering in the linde drawing.
+            if(nextRelationship.equals(relationshipToExclude)){
+                continue;
+            }
             GuiRelationship nextGuiRelationship = (GuiRelationship)nextRelationship.getListener();
             if(nextGuiRelationship == null){
                 continue;
@@ -152,7 +158,7 @@ public class RelationshipRouter {
                 for(AStarNode cell : segmentCells){
                     occupiedPathCells.add(cell);
 
-//creates a buffer around a relationship line.
+                    //creates a buffer around a relationship line.
                     for(int dx = -1; dx <= 1; dx++){
                         for(int dy = -1; dy <= 1; dy++){
                             AStarNode neighborTile = new AStarNode(cell.getGridX() + dx, cell.getGridY() + dy, 0.0, 0.0, null);
@@ -225,8 +231,8 @@ public class RelationshipRouter {
      * @param target, class box where the path terminates.
      * @return, a list of points representing the path from the source to the target.
      */
-    public List<Point2D> AStarAlgorithm(UMLClass source, UMLClass target){
-        RelationshipRouter.getRouterInstance().extractRelationshipPathPoints();
+    public List<Point2D> AStarAlgorithm(UMLRelationship relationshipToExclude,UMLClass source, UMLClass target){
+        RelationshipRouter.getRouterInstance().extractRelationshipPathPoints(relationshipToExclude);
         GuiClass sourceGui = (GuiClass)source.getListener();
         GuiClass targetGui = (GuiClass)target.getListener();
         Rectangle2D targetBounds = targetGui.getRectBounds();
