@@ -254,7 +254,8 @@ public class RelationshipRouter {
 
                 if(path == null || path.size() < 2){
                     System.err.println("A* reached target, but path reconstruction failed. Likely source and target are right next to each other");
-                    return null;
+                    //return null;
+                    continue; // fix the bug where class boxes get locked when touching in same relationship
                 }
                 return smoothPath(path);
             }
