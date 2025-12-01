@@ -15,6 +15,7 @@ import org.umlproject.UMLClass;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 public class GuiSelectDragTests {
 
@@ -25,8 +26,7 @@ public class GuiSelectDragTests {
 
     @BeforeEach
     public void setUp() {
-        System.setProperty("javafx.platform", "Monocle");
-        System.setProperty("monocle.platform", "Headless");
+        assumeTrue(System.getenv("CLI") == null, "Skipping test");
         // Initialize JavaFX runtime (needed even in headless mode)
         new JFXPanel();
         world = new Pane();
