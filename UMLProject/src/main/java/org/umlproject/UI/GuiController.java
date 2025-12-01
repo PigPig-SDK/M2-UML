@@ -69,6 +69,8 @@ public class GuiController implements DocumentListner {
     public TextArea consoleOut;
     @FXML
     public CheckMenuItem viewTerminalMenuItem;
+    @FXML
+    public MenuItem viewThemeMenuItem;
 
     final double initialClassBoxWidthOffset = 100;
     final double initialClassBoxHeightOffset = 100;
@@ -116,6 +118,11 @@ public class GuiController implements DocumentListner {
     @FXML
     public void aboutHelpMenuAction() {
         GuiAboutWindow.showAbout();
+    }
+    
+    @FXML
+    public void themeViewMenuAction() {
+        
     }
 
     /**
