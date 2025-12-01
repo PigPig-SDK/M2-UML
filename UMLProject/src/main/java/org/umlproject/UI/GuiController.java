@@ -145,6 +145,9 @@ public class GuiController implements DocumentListner {
 		if (result.isPresent() && result.get() == ButtonType.OK) //User Acceptance
         {
 			curTheme = ThemeBox.getValue();
+                        //change css file
+                        //probably switch here
+                        //change non css elements
 		}
 
     }
