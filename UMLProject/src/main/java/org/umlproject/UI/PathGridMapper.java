@@ -92,10 +92,10 @@ public class PathGridMapper {
      * @param router, the RelationshipRouter instance we use to call calculateHCost().
      * @return a list of perimeter nodes.
      */
-    public List<AStarNode> getInitialPerimeterNodes(GuiClass sourceGui, UMLClass target, RelationshipRouter router) {
+    public List<AStarSegment> getInitialPerimeterNodes(GuiClass sourceGui, UMLClass target, RelationshipRouter router) {
 
         UMLClass sourceClass = sourceGui.getParentClass();
-        List<AStarNode> perimeterNodes = new ArrayList<>();
+        List<AStarSegment> perimeterNodes = new ArrayList<>();
         Rectangle2D sourceBounds = sourceGui.getRectBounds();
         Point2D targetCenter = target.getLocation();
          //Define padded search area around source bounds.
@@ -113,7 +113,7 @@ public class PathGridMapper {
             for(int j = minJ; j <= maxJ; j++){
                 if(i == minI || i == maxI){
                     double hCost = router.calculateHCost(i, j, target);
-                    AStarNode nextPerimeterTile = new AStarNode(i, j, 0.0, hCost, null);
+                    AStarSegment nextPerimeterTile = new AStarSegment(i, j, 0.0, hCost, null);
                     perimeterNodes.add(nextPerimeterTile);
                 }
 
@@ -124,8 +124,8 @@ public class PathGridMapper {
                 int maximumJ = maxJ;
                 double hCostMinJ = router.calculateHCost(i,minimumJ, target);
                 double hCostMaxJ = router.calculateHCost(i, maximumJ, target);
-                AStarNode minJTile = new AStarNode(i, minimumJ, 0.0, hCostMinJ, null);
-                AStarNode maxJTile = new AStarNode(i, maximumJ, 0.0, hCostMaxJ, null);
+                AStarSegment minJTile = new AStarSegment(i, minimumJ, 0.0, hCostMinJ, null);
+                AStarSegment maxJTile = new AStarSegment(i, maximumJ, 0.0, hCostMaxJ, null);
                 perimeterNodes.add(minJTile);
                 perimeterNodes.add(maxJTile);
             }

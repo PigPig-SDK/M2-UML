@@ -17,12 +17,24 @@ public class RelationshipRouter {
     private static final double GRID_SIZE = 50.0;
     private static final double DIAGONAL_COST = GRID_SIZE * Math.sqrt(2.0);
     private static final double HORIZONTAL_COST = GRID_SIZE;
-    private PriorityQueue<AStarNode> openSet;
-    private HashMap<AStarNode, AStarNode> openSetFastLookupMap;
-    private HashSet<AStarNode> closedSet;
-    private HashSet<AStarNode> occupiedPathCells;
+    private PriorityQueue<AStarSegment> openSet;
+    private HashMap<AStarSegment, AStarSegment> openSetFastLookupMap;
+    private HashSet<AStarSegment> closedSet;
+    private HashSet<AStarSegment> occupiedPathCells;
     private final PathGridMapper mapper;
     private static final double EXISTING_RELATIONSHIP_PENALTY = 1000.0;
+    
+    
+    private static final Point2D[] DIRECTIONS = {
+    new Point2D(0, -1),
+    new Point2D(1, -1),
+    new Point2D(1, 0),
+    new Point2D(1, 1),
+    new Point2D(0, 1),
+    new Point2D(-1, 1),
+    new Point2D(-1, 0),
+    new Point2D(-1, -1)
+};
 
     private static final RelationshipRouter router = new RelationshipRouter();
 
@@ -41,7 +53,7 @@ public class RelationshipRouter {
         return router;
     }
 
-    public HashSet<AStarNode> getClosedSet(){
+    public HashSet<AStarSegment> getClosedSet(){
         return this.closedSet;
     }
 
@@ -51,7 +63,7 @@ public class RelationshipRouter {
      * @param targetBounds, The bounds to be checked.
      * @return, a boolean representing whether or not the AStarNode is within the target bounds.
      */
-    private boolean isGoalNode(AStarNode node, Rectangle2D targetBounds) {
+    private boolean isGoalNode(AStarSegment node, Rectangle2D targetBounds) {
         double x = PathGridMapper.toPixelCoordinate(node.getGridX());
         double y = PathGridMapper.toPixelCoordinate(node.getGridY());
 
@@ -77,8 +89,8 @@ public class RelationshipRouter {
      * @param p2, point 2 of a given line segment.
      * @return, a list of the minimum number of points needed to draw a straight line between p1 and p2.
      */
-    public List<AStarNode> getGridCellsCrossed(Point2D p1, Point2D p2) {
-        List<AStarNode> crossedCells = new ArrayList<>();
+    public List<AStarSegment> getGridCellsCrossed(Point2D p1, Point2D p2) {
+        List<AStarSegment> crossedCells = new ArrayList<>();
 
         // Convert to grid coordinates
         int x1 = PathGridMapper.toGridIndex(p1.getX());
@@ -96,7 +108,7 @@ public class RelationshipRouter {
         int currentY = y1;
 
         while (true) {
-            AStarNode node = new AStarNode(currentX, currentY, 0, 0, null);
+            AStarSegment node = new AStarSegment(currentX, currentY, 0, 0, null);
             // We can just add it, as the HashSet in the next step will handle duplicates.
             crossedCells.add(node);
 
@@ -172,14 +184,14 @@ public class RelationshipRouter {
 
 
                 //calls getGridCellsCrossed() which uses Besenthals algorithm.
-                List<AStarNode> segmentCells = getGridCellsCrossed(p1, p2);
-                for(AStarNode cell : segmentCells){
+                List<AStarSegment> segmentCells = getGridCellsCrossed(p1, p2);
+                for(AStarSegment cell : segmentCells){
                     occupiedPathCells.add(cell);
 
                     //creates a buffer around a relationship line.
                     for(int dx = -1; dx <= 1; dx++){
                         for(int dy = -1; dy <= 1; dy++){
-                            AStarNode neighborTile = new AStarNode(cell.getGridX() + dx, cell.getGridY() + dy, 0.0, 0.0, null);
+                            AStarSegment neighborTile = new AStarSegment(cell.getGridX() + dx, cell.getGridY() + dy, 0.0, 0.0, null);
                             occupiedPathCells.add(neighborTile);
                         }
                     }
@@ -187,19 +199,6 @@ public class RelationshipRouter {
             }
         }
         System.out.println("The size of occupied PathCells is: " + occupiedPathCells.size());
-}
-    /**
-     * Helper method for the AStar Algorithm method. It will check to see if the neighbor node under consideration
-     * occupies the same grid tile as any of the existing relationship lines. If so, we will consider the neighbor
-     * intractable for a new path and will return false. Otherwise return true.
-     * @param neighbor, The new node to be processed.
-     * @return, a boolean representing whether or not the neighbor node should be accepted as part of the path.
-     */
-    public boolean isCrossingExistingRelationship( AStarNode neighbor){
-        if(this.occupiedPathCells.contains(neighbor)) {
-            return true;
-        }
-        return false;
     }
 
     /**
@@ -225,9 +224,9 @@ public class RelationshipRouter {
      * @param endNode, The node at the end of the shortest path.
      * @return, A List of Point2D objects representing the points along the relationship line.
      */
-    public List<Point2D> recalculatePath(AStarNode endNode){
+    public List<Point2D> recalculatePath(AStarSegment endNode){
         List<Point2D> path = new ArrayList<>();
-        AStarNode current = endNode;
+        AStarSegment current = endNode;
         while (current != null) {
             double x = PathGridMapper.toPixelCoordinate(current.getGridX());
             double y = PathGridMapper.toPixelCoordinate(current.getGridY());
@@ -256,15 +255,15 @@ public class RelationshipRouter {
         closedSet.clear();
         openSetFastLookupMap.clear();
 
-        List<AStarNode> nodes = mapper.getInitialPerimeterNodes(sourceGui, target, this);
+        List<AStarSegment> nodes = mapper.getInitialPerimeterNodes(sourceGui, target, this);
         //initialize the openSet with the perimeter.
         openSet.addAll(nodes);
-        for(AStarNode node : nodes){
+        for(AStarSegment node : nodes){
             openSetFastLookupMap.put(node, node);
         }
         while(!openSet.isEmpty()){
             //While nextNode is not contained in target class box bounds, continue building path:
-            AStarNode nextNode = openSet.poll();
+            AStarSegment nextNode = openSet.poll();
             openSetFastLookupMap.remove(nextNode);
             closedSet.add(nextNode);
             //If nextNode is touching the target class box, generate the path and return it.
@@ -280,49 +279,49 @@ public class RelationshipRouter {
                 return smoothPath(path);
             }
             //Generate neighbors of nextNode and insert into openSet (assuming they aren't in the closed set.
-            for(int i = -1; i <= 1; i++){
-                for(int j = -1; j <= 1; j++){
-                    int neighborGridX = nextNode.gridX + i;
-                    int neighborGridY = nextNode.getGridY() + j;
-                    //Check the passability of the neighbor tile:
-                    if(!mapper.isPassable(neighborGridX, neighborGridY, target, source)){
-                        continue;
-                    }
-                    //Check if neighbor is in open or closed set:
-                    double hCost = calculateHCost(neighborGridX, neighborGridY, target);
-                    double additionalGCost = (i != 0 && j != 0) ? DIAGONAL_COST : HORIZONTAL_COST;
-                    //Check to see if the neighbor intersects an existing relationship line.
-                    AStarNode neighborLookup = new AStarNode(neighborGridX, neighborGridY, 0, 0, null);
-                    if(isCrossingExistingRelationship(neighborLookup)){
-                        additionalGCost += EXISTING_RELATIONSHIP_PENALTY;
-                    }
-                    double newGCost = nextNode.getGCost() + additionalGCost;
-                    AStarNode neighbor = new AStarNode(neighborGridX, neighborGridY,newGCost, hCost, nextNode);
-
-                    //Check if AStarNode is in the closedSet. Note that contains() relies on the hashCode function
-                    //of AstarNode class to determine the right bucket, and equals() is used for actual comparison.
-                    if(closedSet.contains(neighbor)){
-                        continue;
-                    }
-                    //Check if AStarNode is already in openSet. If so, check to see if gCost is lower along current path.
-                    //If so update gCost value of existingNode.
-                    AStarNode existingNode = openSetFastLookupMap.get(neighbor);
-                    if(existingNode != null){
-                        //If new GCost is shorter, we need to update the existingNode's value.
-                        if(existingNode.getGCost() > newGCost){
-                            existingNode.setGCost(newGCost);
-                            existingNode.setParent(nextNode);
-                            //re-heapify by removing and then re-adding existingNode.
-                            openSet.remove(existingNode);
-                            openSet.add(existingNode);
-                        }
-                        //We don't want to add the neighbor again if it is already in the openSet.
-                        continue;
-                    }
-                    //Neighbor can be placed in openSet and openSetFastLookupMap HashMap:
-                    openSet.add(neighbor);
-                    openSetFastLookupMap.put(neighbor, neighbor);
+            for(Point2D dir : DIRECTIONS)
+            {
+                int neighborGridX = nextNode.gridX + (int)dir.getX();
+                int neighborGridY = nextNode.getGridY() + (int)dir.getY();
+                //Check the passability of the neighbor tile:
+                if(!mapper.isPassable(neighborGridX, neighborGridY, target, source)){
+                    continue;
                 }
+                //Check if neighbor is in open or closed set:
+                double hCost = calculateHCost(neighborGridX, neighborGridY, target);
+                double additionalGCost = (dir.getX() != 0 && dir.getY() != 0) ? DIAGONAL_COST : HORIZONTAL_COST;
+                //Check to see if the neighbor intersects an existing relationship line.
+                AStarSegment neighborLookup = new AStarSegment(neighborGridX, neighborGridY, 0, 0, null);
+                if(this.occupiedPathCells.contains(neighborLookup)){
+                    additionalGCost += EXISTING_RELATIONSHIP_PENALTY;
+                }
+                double newGCost = nextNode.getGCost() + additionalGCost;
+                AStarSegment neighbor = new AStarSegment(neighborGridX, neighborGridY,newGCost, hCost, nextNode);
+
+                //Check if AStarNode is in the closedSet. Note that contains() relies on the hashCode function
+                //of AstarNode class to determine the right bucket, and equals() is used for actual comparison.
+                if(closedSet.contains(neighbor)){
+                    continue;
+                }
+                //Check if AStarNode is already in openSet. If so, check to see if gCost is lower along current path.
+                //If so update gCost value of existingNode.
+                AStarSegment existingNode = openSetFastLookupMap.get(neighbor);
+                if(existingNode != null){
+                    //If new GCost is shorter, we need to update the existingNode's value.
+                    if(existingNode.getGCost() > newGCost){
+                        existingNode.setGCost(newGCost);
+                        existingNode.setParent(nextNode);
+                        //re-heapify by removing and then re-adding existingNode.
+                        openSet.remove(existingNode);
+                        openSet.add(existingNode);
+                    }
+                    //We don't want to add the neighbor again if it is already in the openSet.
+                    continue;
+                }
+                //Neighbor can be placed in openSet and openSetFastLookupMap HashMap:
+                openSet.add(neighbor);
+                openSetFastLookupMap.put(neighbor, neighbor);
+
             }
         }
         //Otherwise no path could be found so return null

@@ -46,6 +46,10 @@ public class GuiKeyBinds {
           
             switch(event.getCode())
             {
+                case F3->
+                {
+                    UITilemap.visualizeConsumedTiles();
+                }
                 case F2->
                 {
                     GuiController.getInstance().aboutHelpMenuAction();

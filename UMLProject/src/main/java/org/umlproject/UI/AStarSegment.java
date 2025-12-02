@@ -1,11 +1,13 @@
 package org.umlproject.UI;
 
+import java.util.List;
 import java.util.Objects;
+import org.umlproject.UMLDiagramElement;
 
 /**
  * This class wil represent an individual grid tile to be used in the A* path finding algorithm.
  */
-public class AStarNode implements Comparable<AStarNode>{
+public class AStarSegment implements Comparable<AStarSegment>{
     //gridX and gridY will be the discrete coordinates of the top-left corner of a given tile.
     int gridX;
     int gridY;
@@ -16,9 +18,16 @@ public class AStarNode implements Comparable<AStarNode>{
     double hCost;
 
     //The parent AStarNode to be used for reconstructing the final path.
-    AStarNode parent;
+    AStarSegment parent;
+    List<UMLDiagramElement> element = null;
 
-    public AStarNode(int gridX, int gridY, double gCost, double hCost, AStarNode parent){
+    public AStarSegment(int gridX, int gridY)
+    {
+        this.gridX = gridX;
+        this.gridY = gridY;
+    }
+    
+    public AStarSegment(int gridX, int gridY, double gCost, double hCost, AStarSegment parent){
         this.gridX = gridX;
         this.gridY = gridY;
         this.gCost = gCost;
@@ -32,7 +41,7 @@ public class AStarNode implements Comparable<AStarNode>{
     public void setGCost(double gCost){
         this.gCost = gCost;
     }
-    public void setParent(AStarNode parent){
+    public void setParent(AStarSegment parent){
         this.parent = parent;
     }
 
@@ -51,7 +60,7 @@ public class AStarNode implements Comparable<AStarNode>{
         return this.gridY;
     }
 
-    public AStarNode getParent(){
+    public AStarSegment getParent(){
         return this.parent;
     }
 
@@ -71,7 +80,7 @@ public class AStarNode implements Comparable<AStarNode>{
      * from the goal class box.
      * @return an int value representing the relative order of the two AStarNodes.
      */
-    public int compareTo(AStarNode other){
+    public int compareTo(AStarSegment other){
         if(this.getFCost() != other.getFCost()) {
             return Double.compare(this.getFCost(), other.getFCost());
         }
@@ -104,7 +113,7 @@ public class AStarNode implements Comparable<AStarNode>{
         else if((other == null) || (getClass() != other.getClass())){
             return false;
         }
-        AStarNode otherNode = (AStarNode)other;
+        AStarSegment otherNode = (AStarSegment)other;
         if(this.gridX == otherNode.gridX && this.gridY == otherNode.gridY){
             return true;
         }
