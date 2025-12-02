@@ -22,7 +22,6 @@ public class PathGridMapper {
     private final UMLDocument doc;
     //Padding around a given class box.
     private final double padding;
-    private final RelationshipRouter router = RelationshipRouter.getRouterInstance();
     public PathGridMapper(UMLDocument doc, double padding){
         this.doc = doc;
         this.padding = padding;
@@ -85,64 +84,56 @@ public class PathGridMapper {
         return true;
     }
 
-    /**
-     * USED AI to build this Method.
-     * This method is responsible for creating AStarNodes for every tile along the perimeter of the source
-     * class box. These nodes will be used to initialize the open set so that we can begin the A star search. Pad the initial
-     * source class box bounds with grid tiles of size 1.5 (to ensure there is no overlap with class box,
-     * then scan each tile within this padded rectangle to extract perimeter AStarNodes.
-     * @param sourceGui, starting class box
-     * @param target, target class box
-     * @return
+    /**This method will generate a list of grid tiles from the perimeter of the source class box.
+     * We will use tiles that are inside the boundary of the class box, and flush against the boundary,
+     * so that the relationship line appears attached to the class box after being drawn.
+     * @param sourceGui, The gui Listener of the source UMLClass.
+     * @param target, the target UMLClass.
+     * @param router, the RelationshipRouter instance we use to call calculateHCost().
+     * @return a list of perimeter nodes.
      */
-    public List<AStarNode> getInitialPerimeterNodes(GuiClass sourceGui, UMLClass target) {
+    public List<AStarNode> getInitialPerimeterNodes(GuiClass sourceGui, UMLClass target, RelationshipRouter router) {
+
         UMLClass sourceClass = sourceGui.getParentClass();
         List<AStarNode> perimeterNodes = new ArrayList<>();
         Rectangle2D sourceBounds = sourceGui.getRectBounds();
         Point2D targetCenter = target.getLocation();
-        double buffer = PathGridMapper.GRID_SIZE * 1.5;
-        //Define padded search area around source bounds.
-        double searchMinX = sourceBounds.getMinX() - buffer;
-        double searchMaxX = sourceBounds.getMaxX() + buffer;
-        double searchMinY = sourceBounds.getMinY() - buffer;
-        double searchMaxY = sourceBounds.getMaxY() + buffer;
-        //
+         //Define padded search area around source bounds.
+        double searchMinX = sourceBounds.getMinX();
+        double searchMaxX = sourceBounds.getMaxX();
+        double searchMinY = sourceBounds.getMinY();
+        double searchMaxY = sourceBounds.getMaxY();
+
         int minI = PathGridMapper.toGridIndex(searchMinX);
         int maxI = PathGridMapper.toGridIndex(searchMaxX);
         int minJ = PathGridMapper.toGridIndex(searchMinY);
         int maxJ = PathGridMapper.toGridIndex(searchMaxY);
-
-          //Cycle through the discrete grid tile indices and check to see which tiles are along the perimeter
-        //of the class box and which tiles are at least partially inside the class box. Fill the perimeterNodes list
-        //only with those tiles along the perimeter that don't intersect the class box.
+        //rewrite so we grab the perimeter just inside the class bounds:
         for(int i = minI; i <= maxI; i++){
             for(int j = minJ; j <= maxJ; j++){
-                double testX = PathGridMapper.toPixelCoordinate(i);
-                double testY = PathGridMapper.toPixelCoordinate(j);
-                //Check to see if test coordinates are outside the unpadded
-                //source bounds.
-
-                //-------------------------------------------------------------
-                //test using tiles
-                Rectangle2D tile = new Rectangle2D(i * 20, j * 20, 20, 20);
-                if(tile.intersects(sourceBounds)){
-                    continue;
+                if(i == minI || i == maxI){
+                    double hCost = router.calculateHCost(i, j, target);
+                    AStarNode nextPerimeterTile = new AStarNode(i, j, 0.0, hCost, null);
+                    perimeterNodes.add(nextPerimeterTile);
                 }
-                //----------------------------------------------------------
 
-                //Check for obstacles.
-                if(!this.isPassable(i, j, target, sourceClass)){
-                    continue;
-                }
-                //Node is valid so create AStarNode and insert into list.
-                double xValue = targetCenter.getX() - testX;
-                double yValue = targetCenter.getY() - testY;
-                double hCost = Math.sqrt(xValue * xValue + yValue * yValue);
-                AStarNode newNode = new AStarNode(i, j, 0.0, hCost, null);
-                perimeterNodes.add(newNode);
             }
+            if(i > minI && i < maxI){
+                //Include j == minJ and j = maxJ tiles
+                int minimumJ = minJ;
+                int maximumJ = maxJ;
+                double hCostMinJ = router.calculateHCost(i,minimumJ, target);
+                double hCostMaxJ = router.calculateHCost(i, maximumJ, target);
+                AStarNode minJTile = new AStarNode(i, minimumJ, 0.0, hCostMinJ, null);
+                AStarNode maxJTile = new AStarNode(i, maximumJ, 0.0, hCostMaxJ, null);
+                perimeterNodes.add(minJTile);
+                perimeterNodes.add(maxJTile);
+            }
+
         }
+        System.out.println("The size of perimeterNodes is: " + perimeterNodes.size());
         return perimeterNodes;
-    }
+ }
+
 }
 

@@ -14,7 +14,7 @@ import java.util.*;
  */
 public class RelationshipRouter {
 
-    private static final double GRID_SIZE = 20.0;
+    private static final double GRID_SIZE = 50.0;
     private static final double DIAGONAL_COST = GRID_SIZE * Math.sqrt(2.0);
     private static final double HORIZONTAL_COST = GRID_SIZE;
     private PriorityQueue<AStarNode> openSet;
@@ -65,8 +65,18 @@ public class RelationshipRouter {
         return expanded.contains(x, y);
     }
 
-  //Test method written by gemini, rewrite later.
-
+    /**
+     * This method uses Besenthal's algorithm to generate the minimum number of tiles needed to draw a straight line
+     * segment between two points. This method is necessary because the smoothPath() method can reduce the actually number
+     * of points on a polyLine path down to 2, just the points in contact with the source and target class boxes. This means
+     * The entire drawn line would be completely open and passable to any other relationship line that wanted to cross it.
+     * Besenthal's algorithm generates a rough, impenetrable skeleton we can use to prevent these crossings. Tiles would
+     * still be able to cross at their corners though, so we need to apply further padding to this skeletal line to block
+     * this crossable holes. This padding is done at the bottom of extractRelationshipPathPoints.
+     * @param p1, point 1 of a given line segment.
+     * @param p2, point 2 of a given line segment.
+     * @return, a list of the minimum number of points needed to draw a straight line between p1 and p2.
+     */
     public List<AStarNode> getGridCellsCrossed(Point2D p1, Point2D p2) {
         List<AStarNode> crossedCells = new ArrayList<>();
 
@@ -109,8 +119,16 @@ public class RelationshipRouter {
 
 
     /**This is a helper method to the isCrossingExistingRelationship method and will be used when checking to see
-    * if a neighbor to an existing node occupies a tile that a relationship line crosses.
-    */
+    * if a neighbor to an existing node occupies a tile that a relationship line crosses. Since the relationship path points
+     * are smoothed before being drawn, this can reduce the total number of points on the line down to a minimum of 2, just
+     * the points in contact with the target and source class boxes. This method needs to extract all relationship paths,
+     * and then use Besenthal's line drawing algorithm (getGridCellsCrossed()) to generate the minimum number of tiles
+     * That would actually be needed to draw each segment of a relationship path. THen this minimum line neds to be padded
+     * with surrounding neighbor tiles to ensure there are no holes in a given relationship line which another can cross.
+     * @param relationshipToExclude, This is the relationship whose line is being redrawn. It needs to be excluded each
+     *                               time this method is called so we can erase its padding tiles from the last time AStar
+     *                               generated its path.
+     */
     public void extractRelationshipPathPoints(UMLRelationship relationshipToExclude){
     occupiedPathCells.clear();
     ArrayList<ArrayList<Point2D>> relationshipPaths = new ArrayList<>();
@@ -165,16 +183,11 @@ public class RelationshipRouter {
                             occupiedPathCells.add(neighborTile);
                         }
                     }
-
                 }
             }
         }
         System.out.println("The size of occupied PathCells is: " + occupiedPathCells.size());
-
 }
-
-
-
     /**
      * Helper method for the AStar Algorithm method. It will check to see if the neighbor node under consideration
      * occupies the same grid tile as any of the existing relationship lines. If so, we will consider the neighbor
@@ -225,6 +238,8 @@ public class RelationshipRouter {
         return path;
     }
 
+
+
     /**
      * AStar algorithm used to determine the shortest path from the source class box to the target class box.
      * @param source, class box the path begins from.
@@ -241,13 +256,12 @@ public class RelationshipRouter {
         closedSet.clear();
         openSetFastLookupMap.clear();
 
-        List<AStarNode> nodes = mapper.getInitialPerimeterNodes(sourceGui, target);
+        List<AStarNode> nodes = mapper.getInitialPerimeterNodes(sourceGui, target, this);
         //initialize the openSet with the perimeter.
         openSet.addAll(nodes);
         for(AStarNode node : nodes){
             openSetFastLookupMap.put(node, node);
         }
-
         while(!openSet.isEmpty()){
             //While nextNode is not contained in target class box bounds, continue building path:
             AStarNode nextNode = openSet.poll();
@@ -265,7 +279,6 @@ public class RelationshipRouter {
                 }
                 return smoothPath(path);
             }
-
             //Generate neighbors of nextNode and insert into openSet (assuming they aren't in the closed set.
             for(int i = -1; i <= 1; i++){
                 for(int j = -1; j <= 1; j++){
@@ -317,20 +330,30 @@ public class RelationshipRouter {
     }
 
     /**
-     *
-     * @param rawPath
-     * @return
+     *This method is responsible for smoothing the rawPath passed to it by the initial AStar algorithm run. This
+     * method uses a line of sight approach to eliminate excess tiles from the raw path. Basically, we take the most
+     * recently accepted point in the final path and attempt to draw a straight line between it and another point on the
+     * frontier of our unprocessed raw path. As long as there are no obstacles intersecting the line segment between
+     * the two points, we can disregard all other raw path points between the two of them. In this way we reduce the
+     * raw path down to its essential line segments.
+     * along the line segment.
+     * @param rawPath, the path generated by the Astar algorithm that needs to be smoothed.
+     * @return a list representing the points along a smoothed path.
      */
     public List<Point2D> smoothPath(List<Point2D> rawPath){
         if(rawPath == null || rawPath.size() < 2){
             throw new IllegalArgumentException("Raw Path is null or incorrect size for a path to be drawn.");
         }
         List<Point2D> smoothedPath = new ArrayList<>();
-        List<GuiClass> guiClasses = GuiController.extractGuiClasses();
+        List<GuiClass> guiClasses = GuiController.extractGuiClasses(
+        );
+        //Add the initial starting point.
         smoothedPath.add(rawPath.get(0));
         Point2D lastAcceptedPoint = smoothedPath.get(0);
         Point2D safeFrontierPoint = smoothedPath.get(0);
         boolean intersectsRectangle = false;
+        //Use lookAheadPoint to explore the frontier. If the line segment formed between lastAcceptedPoint and
+        //lookAheadPoint doesn't intersect any obstacles, assign the value of lookAheadPoint to safeFrontierPoint.
         for(int i = 1; i < rawPath.size(); i++) {
             Point2D lookAheadPoint = rawPath.get(i);
             for (GuiClass nextClass : guiClasses) {
@@ -346,17 +369,22 @@ public class RelationshipRouter {
             }
             safeFrontierPoint = lookAheadPoint;
         }
-        //Add endpoint of rawPath.
+        //Add endpoint of rawPath since it is excluded otherwise for intersecting the target rectangle.
         smoothedPath.add(rawPath.get(rawPath.size() - 1));
         return smoothedPath;
     }
 
-    /**
-     *
-     * @param a
-     * @param b
-     * @param c
-     * @return
+    /**This method will allow us to determine what side of the line segment ab that the point c resides on. We
+     * will use this calculation within the segmentsIntersect() method to determine whether a line segment along the
+     * smoothed path crosses the boundary of a class box or is collinear with a boundary.
+     *The determinant of the two vectors ab and ac is equivalent to the area of a signed rectangle. The sign of that
+     * rectangle is positive if c is to the right of ab and negative if it is to the left. The determinant is 0 if
+     * the two vectors are collinear, i.e. c lies on the boundary of a class rectangle.
+     * We use the sign of this area to determine the orientation
+     * @param a, one of the points making up the boundary of a class box.
+     * @param b, one of the points making up the boundary of a class box.
+     * @param c, the point whose orientation to the line segment ab we are trying to determine.
+     * @return an int representing the orientation or collinearity of c with the segment ab.
      */
     public int orientation(Point2D a, Point2D b, Point2D c){
         //Cross product of the vectors ab and ac. These vectors span a parallelogram. The signed area of this parallelogram
@@ -372,13 +400,21 @@ public class RelationshipRouter {
 
     }
 
-    /**
-     *
-     * @param p1
-     * @param q1
-     * @param p2
-     * @param q2
-     * @return
+    /**This method will use the orientation of a line segment along the path being smoothed to the line segment along
+     * one of the boundary edges of a class box to determine whether or not the two segments cross or are collinear.
+     * This calculation is used in the path smoothing process to see which points on the raw line can be removed.
+     * If the orientation calculation, which is a calculation of the  SIGNED area of a parallelogram spanned by
+     * two vectors,returns 0, then the lines are colLinear and this will require that we check to see if either of the
+     * endpoints of one of the segments intersects the other line segment. A nonzero result of the orientation calculation
+     * indicates that if the line segments were extended indefinitely they would intersect. We can use a theorem from
+     * geometry to determine if the line segments themselves cross. If the end points of a line segment A lie on opposite
+     * sides of the other segment B, and similarly the end points of segment B lie on opposite sides of segment A,
+     * then we can be sure they cross.
+     * @param p1 One of the end points of line segment A.
+     * @param q1 One of the end points of line segment A.
+     * @param p2 One of the end points of line segment B.
+     * @param q2 One of the end points of line segment B.
+     * @return true or false depending on whether or not the segments intersect.
      */
     private boolean segmentsIntersect(Point2D p1, Point2D q1, Point2D p2, Point2D q2){
         int o1 = orientation(p1, q1, p2);
@@ -405,10 +441,10 @@ public class RelationshipRouter {
      * This method is used for edge cases where two line segments are collinear. If two segments are collinear, then we
      * check to see if the segments overlap in anyway by looking to see if either of the end points of one segment lies on
      * the other segment.
-     * @param a
-     * @param b
-     * @param c
-     * @return
+     * @param a, one of the points of the line segment ab.
+     * @param b, one of the points of the line segment ab.
+     * @param c, the point we are examining for intersection.
+     * @return, true or false depending on whether or not c lies on ab.
      */
     public boolean onSegment(Point2D a, Point2D b, Point2D c){
         //Let ab be the segment to be crossed.
@@ -418,12 +454,12 @@ public class RelationshipRouter {
                 c.getY() >= Math.min(a.getY(), b.getY());
     }
 
-    /**
-     *
-     * @param a
-     * @param b
-     * @param rect
-     * @return
+    /**This method checks to see if a line segment ab is contained inside the rectangular boundary of a class
+     * box or whether it intersects any of the four of the class boxes boundary edges.
+     * @param a, an endpoint of the line segment ab.
+     * @param b, an endpoint of the line segment ab.
+     * @param rect, the rectangular boundary of a class box.
+     * @return true or false depending on whether or not the segment intersects the class box.
      */
     public boolean segmentIntersectsRectangle(Point2D a, Point2D b, Rectangle2D rect){
         //We need to check and see if the segment ab intersects any of the
