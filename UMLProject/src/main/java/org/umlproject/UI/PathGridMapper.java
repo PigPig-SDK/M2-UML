@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javafx.scene.paint.Color;
 
 /**
  * This class is responsible for converting the continuous JavaFX coordinates to discrete grid corodinates and
@@ -17,8 +18,8 @@ import java.util.Set;
  */
 public class PathGridMapper {
 
-    //Grid cells should be 20 x 20. Use this in conversion calculations.
-    private static final double GRID_SIZE = 20.0;
+    //Grid cells should be N x N. Use this in conversion calculations.
+    public static final double GRID_SIZE = 20.0;
     private final UMLDocument doc;
     //Padding around a given class box.
     private final double padding;
@@ -131,7 +132,11 @@ public class PathGridMapper {
             }
 
         }
-        System.out.println("The size of perimeterNodes is: " + perimeterNodes.size());
+        //System.out.println("The size of perimeterNodes is: " + perimeterNodes.size());
+//        for(AStarSegment ass : perimeterNodes)
+//        {
+//            GuiDebugging.drawLocationalDot(new Point2D(toPixelCoordinate(ass.gridX), toPixelCoordinate(ass.gridY)), 2.0, 10, Color.GREEN);
+//        }
         return perimeterNodes;
  }
 

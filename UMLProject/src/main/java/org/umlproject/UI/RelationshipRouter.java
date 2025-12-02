@@ -7,6 +7,7 @@ import org.umlproject.UMLDocument;
 import org.umlproject.UMLRelationship;
 
 import java.util.*;
+import javafx.scene.paint.Color;
 
 
 /**
@@ -14,9 +15,8 @@ import java.util.*;
  */
 public class RelationshipRouter {
 
-    private static final double GRID_SIZE = 50.0;
-    private static final double DIAGONAL_COST = GRID_SIZE * Math.sqrt(2.0);
-    private static final double HORIZONTAL_COST = GRID_SIZE;
+    private static final double DIAGONAL_COST = PathGridMapper.GRID_SIZE * Math.sqrt(2.0);
+    private static final double HORIZONTAL_COST = PathGridMapper.GRID_SIZE;
     private PriorityQueue<AStarSegment> openSet;
     private HashMap<AStarSegment, AStarSegment> openSetFastLookupMap;
     private HashSet<AStarSegment> closedSet;
@@ -155,12 +155,16 @@ public class RelationshipRouter {
     public List<Point2D> recalculatePath(AStarSegment endNode){
         List<Point2D> path = new ArrayList<>();
         AStarSegment current = endNode;
+        int count = 0;
         while (current != null) {
+            count++;
+            
             double x = PathGridMapper.toPixelCoordinate(current.getGridX());
             double y = PathGridMapper.toPixelCoordinate(current.getGridY());
             path.add(new Point2D(x, y));
             current = current.getParent();
         }
+        System.out.println("OUTPUT : " + count);
         Collections.reverse(path);
         return path;
     }
@@ -190,14 +194,20 @@ public class RelationshipRouter {
         }
         while(!openSet.isEmpty()){
             //While nextNode is not contained in target class box bounds, continue building path:
-            AStarSegment nextNode = openSet.poll();
-            openSetFastLookupMap.remove(nextNode);
-            closedSet.add(nextNode);
+            AStarSegment curNode = openSet.poll();
+            openSetFastLookupMap.remove(curNode);
+            closedSet.add(curNode);
             //If nextNode is touching the target class box, generate the path and return it.
-            if(isGoalNode(nextNode, targetBounds)){
-                List<Point2D> path = recalculatePath(nextNode);
+            if(isGoalNode(curNode, targetBounds)){
+                List<Point2D> path = recalculatePath(curNode);
+                
+                for(Point2D point : path)
+                {
+                    GuiDebugging.drawLocationalDot(point, 1.0,25, Color.CORAL);
+                }
+                
                 Collections.reverse(path);
-
+                
                 if(path == null || path.size() < 2){
                     System.err.println("A* reached target, but path reconstruction failed. Likely source and target are right next to each other");
                     //return null;
@@ -208,8 +218,8 @@ public class RelationshipRouter {
             //Generate neighbors of nextNode and insert into openSet (assuming they aren't in the closed set.
             for(Point2D dir : DIRECTIONS)
             {
-                int neighborGridX = nextNode.gridX + (int)dir.getX();
-                int neighborGridY = nextNode.getGridY() + (int)dir.getY();
+                int neighborGridX = curNode.gridX + ((int)dir.getX());
+                int neighborGridY = curNode.getGridY() + ((int)dir.getY());
                 //Check the passability of the neighbor tile:
                 if(!mapper.isPassable(neighborGridX, neighborGridY, target, source)){
                     continue;
@@ -222,8 +232,8 @@ public class RelationshipRouter {
                 if(this.occupiedPathCells.contains(neighborLookup)){
                     additionalGCost += EXISTING_RELATIONSHIP_PENALTY;
                 }
-                double newGCost = nextNode.getGCost() + additionalGCost;
-                AStarSegment neighbor = new AStarSegment(neighborGridX, neighborGridY,newGCost, hCost, nextNode);
+                double newGCost = curNode.getGCost() + additionalGCost;
+                AStarSegment neighbor = new AStarSegment(neighborGridX, neighborGridY,newGCost, hCost, curNode);
 
                 //Check if AStarNode is in the closedSet. Note that contains() relies on the hashCode function
                 //of AstarNode class to determine the right bucket, and equals() is used for actual comparison.
@@ -237,7 +247,7 @@ public class RelationshipRouter {
                     //If new GCost is shorter, we need to update the existingNode's value.
                     if(existingNode.getGCost() > newGCost){
                         existingNode.setGCost(newGCost);
-                        existingNode.setParent(nextNode);
+                        existingNode.setParent(curNode);
                         //re-heapify by removing and then re-adding existingNode.
                         openSet.remove(existingNode);
                         openSet.add(existingNode);
