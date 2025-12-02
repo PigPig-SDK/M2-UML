@@ -72,14 +72,6 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
         //If AStarAlgorithm returns a path that is not empty or null.
             this.setPathPoints(newPath);
 
-        /**
-        else{
-            //fallbackPath is a straight line. May want to modify this later.
-            System.err.println("A* failed to find a path for: " + source.getClassName() + " -> " + target.getClassName());
-            List<Point2D> fallbackPath = List.of(source.getLocation(), target.getLocation());
-            this.setPathPoints(fallbackPath);
-        }
-         */
     }
 
     /**
@@ -145,18 +137,86 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
         }
         //Not sure if placeText will work with the new Polyline
         //placeText(desiredElement);
-        //placeRelationshipMarker(endClass, desiredElement.getRelationshipType());
 
 
         world.getChildren().addAll(lineMain, lineOutline, selectionOutline);
-
+        placeRelationshipMarkerFinal(desiredElement.getRelationshipType());
         //Add clickableness...
         lineMain.setOnMouseClicked(e -> {
             GuiSelect.getInstance().clickUiElement(e, this);
             e.consume(); // Prevent event from propagating to other nodes
         });
         setSelected(isSelected);//Update our selected state
+    }
+    /**
+     * Places the relationship type marker (arrowhead, diamond, etc.) at the target end of the line.
+     * This function handles the visual "snapping" effect by positioning the symbol over the last segment.
+     * @param desiredElement The type of relationship (AGGREGATION, GENERALIZATION, etc.).
+     */
+    void placeRelationshipMarkerFinal(RelationshipType desiredElement)
+    {
+        // 1. Get the necessary data
+        if(this.pathPoints == null || this.pathPoints.size() < 2) return;
 
+        // The symbol is placed relative to the target, which is the destination.
+        UMLClass endClass = relationship.getDestination();
+        if(endClass == null || endClass.getListener() == null) return;
+
+        Point2D P_prev = this.pathPoints.get(this.pathPoints.size() - 2);
+        Point2D P_last = this.pathPoints.get(this.pathPoints.size() - 1);
+
+        // 2. Get the symbol shape and angle
+        Double angleRad = computeLineAngle(); // Angle is calculated from START to END
+        if(angleRad == null) return;
+
+        Node diagramNode = createDiagramNode(desiredElement);
+        this.relationshipDiagramElement = diagramNode;
+
+        if(this.relationshipDiagramElement == null) return; // Cannot apply diagram, NONE EXISTS
+
+        // 3. Position and Rotate the Symbol
+
+        // Use P_last (the grid center inside the box) as the pivot point for the symbol.
+        // This places the symbol in the correct proximity to the target box.
+        this.relationshipDiagramElement.setLayoutX(P_last.getX());
+        this.relationshipDiagramElement.setLayoutY(P_last.getY());
+
+        // The existing computeLineAngle returns the angle from P_END to P_START (due to the subtraction order).
+        // We need to rotate the symbol to point *at* the endClass, which is the opposite direction.
+        // We can add 180 degrees (PI radians) to flip the angle, as symbols are typically drawn pointing left.
+        double adjustedAngleRad = angleRad + Math.PI;
+
+        this.relationshipDiagramElement.setRotate(Math.toDegrees(adjustedAngleRad));
+
+        this.relationshipDiagramElement.setViewOrder(99); // Ensure it's drawn on top of the lines
+
+        // 4. Update the Polyline End Point (Crucial Step)
+
+        // To ensure the symbol doesn't obscure the line behind it, we'll visually
+        // snap the end of the line back by a small amount (e.g., 5-10 pixels).
+        // The Polyline's points list must be modified directly.
+
+        // Calculate the length of the symbol's base/body that will overlap the line.
+        final double SYMBOL_BODY_LENGTH = 15.0;
+
+        // Calculate the new end point (P_last moved back along the vector)
+        double length = P_prev.distance(P_last);
+        if(length > SYMBOL_BODY_LENGTH) {
+            double ratio = (length - SYMBOL_BODY_LENGTH) / length;
+
+            Point2D P_new_end = P_prev.interpolate(P_last, ratio);
+
+            // Replace the final point in the polyline points list
+            List<Double> polylinePoints = this.lineMain.getPoints();
+            if (polylinePoints.size() >= 2) {
+                polylinePoints.set(polylinePoints.size() - 2, P_new_end.getX());
+                polylinePoints.set(polylinePoints.size() - 1, P_new_end.getY());
+            }
+        }
+
+        // 5. Add to World
+        this.world.getChildren().add(this.relationshipDiagramElement);
+    }
 
         /**
          UMLClass startClass = UMLDocument.getInstance().getClass(desiredElement.getSourceName());
@@ -211,7 +271,7 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
          });
          setSelected(isSelected);//Update our selected state
          */
-    }
+
 
     double getLineDistance(Line line)
     {
@@ -385,10 +445,10 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
         if(this.pathPoints == null || this.pathPoints.size() < 2){
             return null;
         }
-        Point2D start = this.pathPoints.get(this.pathPoints.size() - 2);
-        Point2D end = this.pathPoints.get(this.pathPoints.size() -1);
-        double deltaX = start.getX() - end.getX();
-        double deltaY = start.getY() - end.getY();
+        Point2D finalSegmentStart = this.pathPoints.get(this.pathPoints.size() - 2);
+        Point2D finalSegmentEnd = this.pathPoints.get(this.pathPoints.size() -1);
+        double deltaX = finalSegmentEnd.getX() - finalSegmentStart.getX();
+        double deltaY = finalSegmentEnd.getY() - finalSegmentStart.getY();
         return Math.atan2(deltaY, deltaX);
     }
 
