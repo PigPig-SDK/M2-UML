@@ -20,6 +20,7 @@ import java.util.List;
 import javafx.scene.layout.Pane;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
  * Unit tests for the GuiClass class.
@@ -35,6 +36,7 @@ public class GuiClassTest {
     @BeforeEach
     public void setUp() {
         // Initialize JavaFX runtime (needed even in headless mode)
+        assumeTrue(!"true".equals(System.getenv("CLI")), "Skipping GUI test in CLI");
         new JFXPanel();
         world = new Pane();
         parentClass = new UMLClass("TestClass");
