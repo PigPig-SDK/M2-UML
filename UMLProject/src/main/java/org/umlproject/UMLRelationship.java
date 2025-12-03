@@ -158,7 +158,6 @@ public class UMLRelationship  extends UMLDiagramElement implements Cloneable
             UMLRelationship relationship = this.relationshipType == RelationshipType.OTHER ?
                     new UMLRelationship(sourceName, destinationName, relationshipType, customNameType) :
                     new UMLRelationship(sourceName, destinationName, relationshipType);
-            relationship.setListener(this.listener);
             relationship.networkId = this.networkId;
             return relationship;
         });

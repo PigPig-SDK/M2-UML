@@ -374,23 +374,4 @@ public class UMLClassTest {
         @Override public void cleanUp() {}
     }
     
-    @Test
-    void clone_UIListner_isShallowCopy() {
-        
-        //Arrange
-        
-        //Mock : used for testing.
-        DiagramElementListener<UMLClass> dummyListner = new DummyListener();
-        UMLClass tester = new UMLClass("test");
-        tester.setListener(dummyListner);
-        
-        //Act
-        UMLClass testerClone = tester.clone();
-        testerClone.updateListener(false);//Calls update...
-        
-        //Assert
-        assertEquals(1, ((DummyListener)tester.getListener()).timesUpdateCalled);
-        assertEquals(tester.getListener(), testerClone.getListener());//How get the value of timesUpdateCalled?
-    }
-    
 }

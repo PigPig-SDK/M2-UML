@@ -1,5 +1,6 @@
 package org.umlproject.UI;
 
+import java.awt.Desktop.Action;
 import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
 import javafx.scene.control.*;
@@ -9,14 +10,15 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 import org.umlproject.*;
 
 
 import java.util.*;
 import java.util.Set;
-import javafx.application.Platform;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import javafx.geometry.Bounds;
+import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
@@ -32,6 +34,7 @@ import javafx.scene.shape.StrokeType;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
+import javafx.util.Duration;
 import org.umlproject.UMLClass;
 
 public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable, UIPositional {
@@ -52,7 +55,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     Point2D dragStartLocation = Point2D.ZERO;
     
     List<Button> guiButtons = new LinkedList<>();//No random access is required. Using linked list.
-    
+    private boolean isDragging = false;
     private boolean isSelected = false;
     /**
      * Constructor for GuiClass responsible for building the initial class box and setting all the proper
@@ -67,17 +70,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         this.world = world;
         world.setFocusTraversable(true);//lets world request focus.
         this.parentClass = parentClass;
-        this.world.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
-            // Only request focus if the click is NOT on the GuiClass element itself.
-            // This prevents interference with dragging and selecting the class box.
-            if (e.getTarget() == this.world) {
-                this.world.requestFocus();
-                e.consume();
-            }
-        });
         // --- END OF BLOCK ---
-
-
         update(parentClass);
     }
 
@@ -92,9 +85,11 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
       */
     private void makeDraggable(StackPane nodeBackground) {
 
+        //Mouse down.
         nodeBackground.setOnMousePressed(e -> {
             if(e.getButton() == MouseButton.PRIMARY) {
                 GuiCamera.setDragging(true);
+                GuiSelect.getInstance().clickUiElement(e, this, isDragging);
                 mouseWorldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
                 Point2D paneWorldSpace = new Point2D(nodeBackground.getLayoutX(), nodeBackground.getLayoutY());
                 this.mouseAnchorX = mouseWorldSpace.getX() - paneWorldSpace.getX();
@@ -111,7 +106,6 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
                         }
                     }
                 }
-
                 nodeBackground.requestFocus();
             }
             e.consume(); // Prevent event from propagating to other nodes
@@ -120,40 +114,42 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         //Mouse up...
         nodeBackground.setOnMouseClicked(e -> {
             if(e.getButton() == MouseButton.PRIMARY) {
-                GuiCamera.setDragging(false);
-                if (GuiCamera.isDragging()) {
+                GuiSelect.getInstance().clickUiElement(e, this, isDragging);
+                if (isDragging) {
                     Point2D worldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
                     Point2D selectionOffset = new Point2D(worldSpace.getX() - this.mouseAnchorX, worldSpace.getY() - this.mouseAnchorY);
                     if (!selectionOffset.equals(dragStartLocation))
                         this.parentClass.setLocation(selectionOffset, true);
                 }
-            }
-            if(e.getButton() == MouseButton.SECONDARY){
-                GuiSelect.getInstance().clickUiElement(e, this);
+                isDragging = false;
+                GuiCamera.setDragging(false);
             }
             e.consume(); // Prevent event from propagating to other nodes
         });
 
         this.nodeBackground.setOnMouseDragged(e -> {
             if(e.getButton() == MouseButton.PRIMARY) {
+                isDragging = true;
                 //I swear if i have to instantiate another immutable point2d im going to create a wrapper class.
                 Point2D worldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
                 Point2D selectionOffset = new Point2D(worldSpace.getX() - this.mouseAnchorX, worldSpace.getY() - this.mouseAnchorY);
                 UMLDocument.executeActionUnderState(DocumentState.SILENT_MOVEMENT, () -> this.parentClass.setLocation(selectionOffset, true));
 
+
                 //Multi-Drag
-                if(!GuiSelect.getInstance().getSelectedObjects().isEmpty() &&
-                        GuiSelect.getInstance().getSelectedObjects().contains(this)){
-                    for(UISelectable selectable : GuiSelect.getInstance().getSelectedObjects()){
-                        if(selectable instanceof org.umlproject.UI.GuiClass guiClass){
-                            if(guiClass == this) continue;
-                            Point2D locationOffset = worldSpace.subtract(mouseWorldSpace);
-                            UMLDocument.executeActionUnderState(DocumentState.SILENT_MOVEMENT, () ->
-                                    guiClass.setLocation(guiClass.dragStartLocation.add(locationOffset)));
+                if(!e.isControlDown()) {
+                    if (!GuiSelect.getInstance().getSelectedObjects().isEmpty() &&
+                            GuiSelect.getInstance().getSelectedObjects().contains(this)) {
+                        for (UISelectable selectable : GuiSelect.getInstance().getSelectedObjects()) {
+                            if (selectable instanceof org.umlproject.UI.GuiClass guiClass) {
+                                if (guiClass == this) continue;
+                                Point2D locationOffset = worldSpace.subtract(mouseWorldSpace);
+                                UMLDocument.executeActionUnderState(DocumentState.SILENT_MOVEMENT, () ->
+                                        guiClass.getParentClass().setLocation(guiClass.dragStartLocation.add(locationOffset),true));
+                            }
                         }
                     }
                 }
-
                 this.nodeBackground.getParent().requestLayout(); // Force layout update
             }
             e.consume(); // Prevent event from propagating to other nodes
@@ -173,7 +169,6 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
                 classNameField.setText(oldName);
             }
             e.consume();
-            world.requestFocus();
         });
     }
 
@@ -226,7 +221,6 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
                 handleMethodUpdate(newMethodTextField, methodRow);
             }
         });
-        world.requestFocus();
     }
 
     /**
@@ -304,9 +298,11 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         for(int i = 0; i < methodKeysArray.length; i++){
             ArrayList<UMLMethod> nextMethods = methods.get(methodKeysArray[i]);
             for(int j = 0; j < nextMethods.size(); j++){
-                HBox methodRow = new HBox(10);
+                HBox methodRow = new HBox(-5);
+                methodRow.setAlignment(Pos.CENTER);
                 //create delete button
                 Button deleteMethod = new Button("-");
+                FXUtility.getInstance().applyIconsToButtons("Remove",deleteMethod,"/org/umlproject/icons/minus_button.png",25,25);
                 deleteMethod.setFocusTraversable(false);
                 deleteMethod.setOnAction(event -> {
                     if(((String[])methodRow.getUserData() != null)) {
@@ -319,6 +315,12 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
                     event.consume();
                 });
                 TextField methodText = new TextField(nextMethods.get(j).toString());
+                methodText.setStyle("-fx-font-size: 16px; "
+                + "-fx-font-weight: bold; "
+                + "-fx-background-radius: 0 10 10 0; "
+                + "-fx-border-radius: 0;" 
+                + "-fx-border-width: 0;");
+                
                 methodText.setPrefWidth(300);
                 methodRow.getChildren().addAll(deleteMethod, methodText);
                 linkTextFieldToMethod(methodRow);
@@ -378,7 +380,6 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
                 handleDataFieldUpdate(newField, fieldRow);
             }
         });
-        world.requestFocus();
 
     }
 
@@ -460,16 +461,24 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         String[] sortedKeys = keyList.toArray(new String[0]);
         //test print
         for (String sortedKey : sortedKeys) {
-            HBox fieldRow = new HBox(10);
+            HBox fieldRow = new HBox(-5);
+            fieldRow.setAlignment(Pos.CENTER);
             UMLDataField nextField = UMLDataFields.get(sortedKey);
             //store the UMLDataField for easy removal with delete button
             fieldRow.setUserData(nextField);
             fieldAsString = String.format("%s %s %s",nextField.getVisibility(), nextField.getTypeAsString(), nextField.getName());
             TextField nextTextField = new TextField(fieldAsString);
-            nextTextField.setPrefWidth(250);
+            nextTextField.setStyle("-fx-font-size: 16px; "
+                + "-fx-font-weight: bold; "
+                + "-fx-background-radius: 0 10 10 0; "
+                + "-fx-border-radius: 0;" 
+                + "-fx-border-width: 0;");
+            
+            nextTextField.setPrefWidth(300);
             //setUserData as the string representing the field so that we can easily delete the field later if need be.
             nextTextField.setUserData(fieldAsString);
             Button deleteField = new Button("-");
+            FXUtility.getInstance().applyIconsToButtons("Remove",deleteField,"/org/umlproject/icons/minus_button.png",25,25);
             deleteField.setFocusTraversable(false);
             deleteField.setOnAction(e -> {
                 parentClass.removeField(((UMLDataField)fieldRow.getUserData()).getName());
@@ -499,7 +508,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         this.parentVBox.setPadding(new Insets(10, 10, 10, 10));
         this.parentVBox.setMinWidth(300);
         this.parentVBox.setPrefWidth(300);
-        
+        this.parentVBox.setAlignment(Pos.CENTER);
         this.nodeBackground = new StackPane();
         this.nodeBackground.setManaged(false);
 
@@ -509,7 +518,11 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
 
         //Create modifiable className and put into VBox
         TextField classNameField = new TextField(parentClass.getClassName());
-        classNameField.setStyle("-fx-font-size: 16px; -fx-font-weight: bold");
+        classNameField.setStyle("-fx-font-size: 16px; "
+                + "-fx-font-weight: bold; "
+                + "-fx-background-radius: 0 0 10 10; "
+                + "-fx-border-radius: 0;" 
+                + "-fx-border-width: 0;");
         classNameField.setMaxWidth(250);
         classNameField.setFocusTraversable(false);
         //Make it so the UMLClass class name updates after modifying classNameField
@@ -526,26 +539,21 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         HashMap<String, UMLDataField> UMLDataFields = desiredElement.getFieldsAll();
         convertDataFieldsToHBoxes(UMLDataFields);
         //create AddField Button, set action to make a new DataField
-        Button addDataField = new Button("Add data field");
-        addDataFieldButtonClickable(addDataField);
-        guiButtons.add(addDataField);
+        HBox addFieldConfiguration = addClassParam("Add Data Field", this::addDataFieldButtonClickable);
         
         //convertDataFieldsToHBoxes filled the dataFIeldTexxtFields VBox with all the delete button
         //TextField combinations. Note that dataFieldTextFields VBox was reset upon calling update().
-        Separator separatorTwo = new Separator();
-        separatorTwo.setMouseTransparent(true);
-        this.parentVBox.getChildren().addAll(dataFieldsLabel, this.dataFieldTextFields, addDataField, separatorTwo);
+        this.parentVBox.getChildren().addAll(dataFieldsLabel, this.dataFieldTextFields, addFieldConfiguration, new Separator());
 
         //-------------------------------------------------------------------------------------------
         //create methods
         Label methodsLabel = new Label("Methods");
         methodsLabel.setFont(DEFAULT_CLASS_FONT);
+        
         HashMap<String, ArrayList<UMLMethod>> umlMethods = desiredElement.getMethodsAll();
         convertMethodsToHBoxes(umlMethods);
-        Button addMethod = new Button("Add method");
-        addMethodButtonClickable(addMethod);
-        guiButtons.add(addMethod);
-        this.parentVBox.getChildren().addAll(methodsLabel, this.methodTextFields, addMethod);
+        HBox addMethodConfiguration = addClassParam("Add method", this::addMethodButtonClickable);
+        this.parentVBox.getChildren().addAll(methodsLabel, this.methodTextFields, addMethodConfiguration);
         //-------------------------------------------------------------------------------------------------
 
         this.nodeBackground.getChildren().add(this.parentVBox);
@@ -561,10 +569,25 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         makeDraggable(this.nodeBackground);
         //add classbox to world to display
         this.world.getChildren().add(this.nodeBackground);
-        this.world.requestFocus();
         updateAllRelationships(desiredElement);
         setSelected(isSelected);//Update our selected state
     }
+    
+    public HBox addClassParam(String title, Consumer<Button> onClicked)
+    {
+        HBox fieldRow = new HBox(1);
+        Button addDataField = new Button(title);
+        FXUtility.getInstance().applyIconsToButtons(title, addDataField,"/org/umlproject/icons/add_button.png",30,30);
+        
+        onClicked.accept(addDataField);
+        
+        guiButtons.add(addDataField);
+
+        fieldRow.getChildren().addAll(addDataField);//Incase we want to add anything else...
+        fieldRow.setAlignment(Pos.CENTER);
+        return fieldRow;
+    }
+    
     private void updateVbox(boolean isSelected, double time)
     {
         if(this.parentVBox == null)
@@ -572,6 +595,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         
         double arc = 30;
         double borderWidth = 5;
+        double radiiSpecial = arc - borderWidth / 2;
         if(isSelected)
         {
             borderWidth = 5 + 2*Math.sin(time * 0.00000001);
@@ -589,7 +613,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
             // Background with adjusted radii for the border
             parentVBox.setBackground(new Background(new BackgroundFill(
                 GuiColor.CLASS_BACKGROUND_COLOR,
-                new CornerRadii(arc - borderWidth / 2),
+                new CornerRadii(0,0,radiiSpecial,radiiSpecial, false),
                 new Insets(-10)
             )));
 
@@ -597,7 +621,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
             parentVBox.setBorder(new Border(new BorderStroke(
                 GuiColor.SELECTION_COLOR,
                 dashedStyle,
-                new CornerRadii(arc),
+                new CornerRadii(0,0,arc,arc, false),
                 new BorderWidths(borderWidth),
                 new Insets(-15)
             )));
@@ -605,10 +629,11 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         else
         {
             Insets borderInsets = new Insets(5);
+            
             // Background with adjusted radii for the border
             parentVBox.setBackground(new Background(new BackgroundFill(
                 GuiColor.CLASS_BACKGROUND_COLOR,
-                new CornerRadii(arc - borderWidth / 2),
+                new CornerRadii(0,0,radiiSpecial,radiiSpecial, false),
                 new Insets(-10)
             )));
 
@@ -616,7 +641,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
             parentVBox.setBorder(new Border(new BorderStroke(
                 Color.BLACK,
                     BorderStrokeStyle.SOLID,
-                new CornerRadii(arc),
+                new CornerRadii(0,0,arc,arc, false),
                 new BorderWidths(borderWidth),
                 new Insets(-15)
             )));
@@ -644,6 +669,8 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         this.nodeBackground.setLayoutY(desiredElement.getLocation().getY());
 
         //System.out.println("stackpane layout is changed to:" + ((UMLClass)(desiredElement)).getLocation());
+        if(this.nodeBackground.getParent() == null) return;
+        
         this.nodeBackground.getParent().requestLayout();
     }
     /**

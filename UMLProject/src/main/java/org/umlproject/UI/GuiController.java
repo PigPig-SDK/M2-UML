@@ -52,7 +52,7 @@ public class GuiController implements DocumentListner {
     }
     
     @FXML
-    private Pane world;//'World' is where all UI objects should live.
+    public Pane world;//'World' is where all UI objects should live.
     @FXML
     public TextField console;
     @FXML
@@ -69,6 +69,8 @@ public class GuiController implements DocumentListner {
     public TextArea consoleOut;
     @FXML
     public CheckMenuItem viewTerminalMenuItem;
+    @FXML
+    public MenuItem viewThemeMenuItem;
 
     final double initialClassBoxWidthOffset = 100;
     final double initialClassBoxHeightOffset = 100;
@@ -117,6 +119,54 @@ public class GuiController implements DocumentListner {
     public void aboutHelpMenuAction() {
         GuiAboutWindow.showAbout();
     }
+    
+    
+    String curTheme = "Dark Mode";
+    
+    @FXML
+    public void resetCameraViewMenuAction() {
+        GuiCamera.resetCameraLocation();
+    }
+    
+    @FXML
+    public void zoomInViewMenuAction() {
+        GuiCamera.setZoom(GuiCamera.getCameraZoom()*1.15, GuiCamera.getScreenCenter());
+    }
+    
+    @FXML
+    public void zoomOutViewMenuAction() {
+        GuiCamera.setZoom(GuiCamera.getCameraZoom()*0.85, GuiCamera.getScreenCenter());
+    }
+    
+    @FXML
+    public void themeViewMenuAction() {
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 150, 10, 10));
+
+        ComboBox<String> ThemeBox = new ComboBox<>();
+		ThemeBox.getItems().add("Dark Mode");
+		ThemeBox.getItems().add("Light Mode");
+		ThemeBox.getItems().add("Mesa");
+		ThemeBox.getItems().add("Shoreline");
+		ThemeBox.getItems().add("Forest");
+		
+                
+                
+		grid.add(new Label("Theme"), 0, 0);
+		grid.add(ThemeBox, 1, 0);
+		Alert alert = FXDialogueFactory.createAlertWindow(Alert.AlertType.INFORMATION, "Change Theme", "Select a theme", null, grid);
+		Optional<ButtonType> result = alert.showAndWait();
+		if (result.isPresent() && result.get() == ButtonType.OK) //User Acceptance
+        {
+			curTheme = ThemeBox.getValue();
+                        //change css file
+                        //probably switch here
+                        //change non css elements
+		}
+
+    }
 
     /**
      * This is called after initialize. 
@@ -142,8 +192,8 @@ public class GuiController implements DocumentListner {
         GuiNetwork.initialize();
         NetworkMouseHandler.initialize();
         //Setup button icons.
-        applyIconsToButtons(addClassButton,"/org/umlproject/icons/new_class.png");
-        applyIconsToButtons(addRelationshipButton,"/org/umlproject/icons/new_relationship.png");
+        FXUtility.getInstance().applyIconsToButtons("Add Class", addClassButton,"/org/umlproject/icons/new_class.png",50,50);
+        FXUtility.getInstance().applyIconsToButtons("Add Relationship", addRelationshipButton,"/org/umlproject/icons/new_relationship.png",50,50);
     }
     //----------------- Menu bar callbacks -----------------
     /**
@@ -377,6 +427,34 @@ public class GuiController implements DocumentListner {
         destinationBox.getItems().addAll(classList);
         destinationBox.setValue("...");
 
+        //Searches for available classes to autfill relationship source/destination
+        String sourceClass = "";
+        String destinationClass = "";
+        boolean setClasses = true;
+        ArrayList<UISelectable> selectedObjects = GuiSelect.getInstance().getSelectedObjects();
+        for(UISelectable selectable : selectedObjects){
+            if(selectable instanceof GuiClass guiClass){
+                if (sourceClass.isEmpty()) {
+                    sourceClass = guiClass.getParentClass().getClassName();
+                    continue;
+                }
+                if(destinationClass.isEmpty()) {
+                    destinationClass = guiClass.getParentClass().getClassName();
+                    continue;
+                }
+                setClasses = false;
+                break;
+            }
+        }
+
+        //If 2 available classes were found, autofill
+        if(!sourceClass.isEmpty() && setClasses){
+            startBox.setValue((sourceClass));
+            if(!destinationClass.isEmpty()){
+                destinationBox.setValue(destinationClass);
+            }
+        }
+
         ComboBox<String> typebox = new ComboBox<>();
         //Populate combo box with types.
         for(RelationshipType rType : RelationshipType.values())
@@ -503,6 +581,10 @@ public class GuiController implements DocumentListner {
         return testLocation;
     }
 
+    public boolean isConsoleFocused(){
+        return this.console.isFocused();
+    }
+
     @Override
     public void onRelationshipAdded(UMLRelationship umlRelationship) {
         GuiRelationship guiRelationship = new GuiRelationship(world, umlRelationship);
@@ -562,23 +644,5 @@ public class GuiController implements DocumentListner {
         umlRelationship.disposeOfListener();
     }
 
-    private void applyIconsToButtons(Button button, String iconDirectory)
-    {
-        Image icon = new Image(getClass().getResource(iconDirectory).toExternalForm());
-        button.setText("");//Clear text...
-        ImageView iconView = new ImageView(icon);
-        iconView.setFitWidth(50);
-        iconView.setFitHeight(50);
-        iconView.setPreserveRatio(true);
-        //Remove background...
-        button.setStyle(
-            "-fx-background-color: transparent;" + "-fx-border-color: transparent;"
-        );
-        //Make the icon dim when mousing over.
-        iconView.setOpacity(0.7);
-        button.setOnMouseEntered(e -> iconView.setOpacity(1.0));
-        button.setOnMouseExited(e -> iconView.setOpacity(0.7));
-        //Set graphic
-        button.setGraphic(iconView);
-    }
+
 }

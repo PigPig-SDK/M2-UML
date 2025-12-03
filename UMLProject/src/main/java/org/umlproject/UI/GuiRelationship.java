@@ -170,7 +170,7 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
         placeRelationshipMarkerFinal(desiredElement.getRelationshipType());
         //Add clickableness...
         lineMain.setOnMouseClicked(e -> {
-            GuiSelect.getInstance().clickUiElement(e, this);
+            GuiSelect.getInstance().clickUiElement(e, this, false);
             e.consume(); // Prevent event from propagating to other nodes
         });
         setSelected(isSelected);//Update our selected state
