@@ -79,9 +79,9 @@ public class GuiSelectDrag {
         selectRectangle = new Rectangle();
         world.getChildren().add(selectRectangle);
         //Transparent blue color for main body
-        selectRectangle.setFill(Color.color(0, 0, 1, 0.2 ));
+        selectRectangle.setFill(Color.color(0.98, 0.83, 0.31, 0.2 ));
         //Full blue for border
-        selectRectangle.setStroke(Color.BLUE);
+        selectRectangle.setStroke(Color.color(0.98, 0.83, 0.0, 0.2 ));
         selectRectangle.setStrokeWidth(1);
         initialMousePosition = world.sceneToLocal(event.getX(), event.getY());
         selectRectangle.setX(initialMousePosition.getX());
