@@ -19,7 +19,7 @@ import javafx.scene.paint.Color;
 public class PathGridMapper {
 
     //Grid cells should be N x N. Use this in conversion calculations.
-    public static final double GRID_SIZE = 20.0;
+    public static final double GRID_SIZE = 40.0;
     private final UMLDocument doc;
     //Padding around a given class box.
     private final double padding;
@@ -70,14 +70,7 @@ public class PathGridMapper {
             }
             Rectangle2D classBounds = nextClass.getRectBounds();
 
-            //Apply padding to classBounds before checking for containment of testX and testY.
-            double margin = GRID_SIZE * Math.sqrt(2)/2;
-            double paddedMinX = classBounds.getMinX() - margin;
-            double paddedMinY = classBounds.getMinY() - margin;
-            double paddedWidth = classBounds.getWidth() + (2 * margin);
-            double paddedHeight = classBounds.getHeight() + (2 * margin);
-            //Perform containment check on padded rectangle.
-            if(new Rectangle2D(paddedMinX, paddedMinY, paddedWidth, paddedHeight).intersects(testTile)){
+            if(nextClass.intersects(testTile)){
 
                 return false;
             }
@@ -104,35 +97,15 @@ public class PathGridMapper {
         double searchMaxX = sourceBounds.getMaxX();
         double searchMinY = sourceBounds.getMinY();
         double searchMaxY = sourceBounds.getMaxY();
-
-        int minI = PathGridMapper.toGridIndex(searchMinX);
-        int maxI = PathGridMapper.toGridIndex(searchMaxX);
-        int minJ = PathGridMapper.toGridIndex(searchMinY);
-        int maxJ = PathGridMapper.toGridIndex(searchMaxY);
-        //rewrite so we grab the perimeter just inside the class bounds:
-        for(int i = minI; i <= maxI; i++){
-            for(int j = minJ; j <= maxJ; j++){
-                if(i == minI || i == maxI){
-                    double hCost = router.calculateHCost(i, j, target);
-                    AStarSegment nextPerimeterTile = new AStarSegment(i, j, 0.0, hCost, null);
-                    perimeterNodes.add(nextPerimeterTile);
-                }
-
-            }
-            if(i > minI && i < maxI){
-                //Include j == minJ and j = maxJ tiles
-                int minimumJ = minJ;
-                int maximumJ = maxJ;
-                double hCostMinJ = router.calculateHCost(i,minimumJ, target);
-                double hCostMaxJ = router.calculateHCost(i, maximumJ, target);
-                AStarSegment minJTile = new AStarSegment(i, minimumJ, 0.0, hCostMinJ, null);
-                AStarSegment maxJTile = new AStarSegment(i, maximumJ, 0.0, hCostMaxJ, null);
-                perimeterNodes.add(minJTile);
-                perimeterNodes.add(maxJTile);
-            }
-
-        }
-        //System.out.println("The size of perimeterNodes is: " + perimeterNodes.size());
+        
+        int xAVG = PathGridMapper.toGridIndex((searchMaxX + searchMinX)/2);
+        int yAVG = PathGridMapper.toGridIndex((searchMaxY + searchMinY)/2);
+        
+        double hCost = router.calculateHCost(xAVG, yAVG, target);
+        AStarSegment centerTile = new AStarSegment(xAVG, yAVG, 0.0, hCost, null);
+        perimeterNodes.add(centerTile);
+        
+//        System.out.println("The size of perimeterNodes is: " + perimeterNodes.size());
 //        for(AStarSegment ass : perimeterNodes)
 //        {
 //            GuiDebugging.drawLocationalDot(new Point2D(toPixelCoordinate(ass.gridX), toPixelCoordinate(ass.gridY)), 2.0, 10, Color.GREEN);

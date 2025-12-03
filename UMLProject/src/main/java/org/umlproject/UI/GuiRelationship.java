@@ -48,7 +48,6 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
     }
 
     /** Calculates a safePath.
-     *
      */
     public void calculateAndSetPath() {
         UMLClass source = relationship.getSource();
@@ -96,9 +95,36 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
     {
         return this.relationship;
     }
-
+    private boolean redrawRequired()
+    {
+        if(pathPoints == null) return true;
+        if(this.lineMain == null) return true;
+        UMLClass source = relationship.getSource();
+        UMLClass target = relationship.getDestination();
+        if(source == null || target == null){
+            return false;
+        }
+        
+        boolean redrawRequired = false;
+        if(source.getListener() instanceof GuiClass sourceUI)
+        {
+            if(!sourceUI.contains(pathPoints.getLast()))
+                redrawRequired = true;
+        }
+        if(target.getListener() instanceof GuiClass targetUI)
+        {
+            if(!targetUI.contains(pathPoints.getFirst()))
+                redrawRequired = true;
+        }
+        
+        return redrawRequired;
+    }
     @Override
     public void update(UMLRelationship desiredElement) {
+        
+        if(!redrawRequired())
+            return;
+        
         cleanUp();
         this.calculateAndSetPath();
         if (this.pathPoints == null || this.pathPoints.size() < 2) {
@@ -219,170 +245,61 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
         this.world.getChildren().add(this.relationshipDiagramElement);
     }
 
-        /**
-         UMLClass startClass = UMLDocument.getInstance().getClass(desiredElement.getSourceName());
-         UMLClass endClass = UMLDocument.getInstance().getClass(desiredElement.getDestinationName());
-
-         //Flip the diagram under these shapes.
-         if(desiredElement.getRelationshipType() == COMPOSITION || desiredElement.getRelationshipType() == AGGREGATION)
-         {
-         UMLClass temp = startClass;
-         startClass = endClass;
-         endClass = temp;
-         }
-
-         //If no start or end... do nothing
-         //THIS IS A POSSIBLE STATE! Think 'non existing' start or end...
-         if(startClass == null || endClass == null) return;
-
-         Point2D startLocation = startClass.getLocation();
-         Point2D endLocation = endClass.getLocation();
-         this.lineMain = new Line(startLocation.getX(), startLocation.getY(), endLocation.getX(), endLocation.getY());
-         this.lineOutline = new Line(startLocation.getX(), startLocation.getY(), endLocation.getX(), endLocation.getY());
-         this.selectionOutline = new Line(startLocation.getX(), startLocation.getY(), endLocation.getX(), endLocation.getY());
-
-         this.selectionOutline.setViewOrder(102);//Behind all
-         this.lineOutline.setViewOrder(101);//Behind of main
-         this.lineMain.setViewOrder(100);//Send to back...
-
-         this.selectionOutline.setStrokeWidth(0);// HIDE THE SELECTION OUTLINE!
-         this.lineOutline.setStrokeWidth(15);
-         this.lineMain.setStrokeWidth(10);
-
-         this.lineMain.setStroke(GuiColor.GENERIC_LINE_COLOR);
-         this.lineOutline.setStroke(Color.BLACK);
-         this.selectionOutline.setStroke(GuiColor.SELECTION_COLOR);
-         this.selectionOutline.getStrokeDashArray().addAll(30.0,30.0);
-
-         if(desiredElement.getRelationshipType() == GENERALIZATION)
-         {
-         this.lineMain.getStrokeDashArray().addAll(30.0,15.0);
-         this.lineOutline.getStrokeDashArray().addAll(30.0,15.0);
-         }
-         placeText(desiredElement);
-         placeRelationshipMarker(endClass, desiredElement.getRelationshipType());
-
-
-         world.getChildren().addAll(lineMain, lineOutline, selectionOutline);
-
-         //Add clickableness...
-         lineMain.setOnMouseClicked(e -> {
-         GuiSelect.getInstance().clickUiElement(e, this);
-         e.consume(); // Prevent event from propagating to other nodes
-         });
-         setSelected(isSelected);//Update our selected state
-         */
-
-
     double getLineDistance(Line line)
     {
         double dx = line.getEndX() - line.getStartX();
         double dy = line.getEndY() - line.getStartY();
         return Math.sqrt(dx * dx + dy * dy);
     }
+    
     private static boolean requiresClamp(double val, double min, double max) {
         double clampEnd = Math.max(min, Math.min(max, val));
         return (clampEnd != val);//if a clamp occurs.
     }
-    /**
-     void placeText(UMLRelationship desiredElement)
-     {
-     double lineDistance = getLineDistance(this.lineMain);
-     if(lineDistance < MIN_LINE_DISTANCE_FOR_TEXT)
-     return;
-
-     Double angle = computeLineAngle();
-     if(angle == null)
-     return;
-
-     //Make textbox 'flip' as desired.
-     if(Math.cos(angle) < 0)
-     {
-     //Hack fix
-     if(Math.sin(angle) > 0)
-     angle -= 2*Math.PI;
-     angle += Math.PI;
-     }
-     //Stops the textbox from becoming completely vertical (Hard to read/modify)
-     if(requiresClamp((double)angle,-0.95,0.95))//so bad...
-     angle = 0.0;//Clamp angle to hard 0.
-
-     //Bias starting towards the endpoint
-     Point2D startPoint = new Point2D(this.lineMain.getStartX(),this.lineMain.getStartY());
-     Point2D endPoint = new Point2D(this.lineMain.getEndX(),this.lineMain.getEndY());
-     Point2D midpoint = startPoint.interpolate(endPoint, 0.45);
-
-     this.relationshipText = new TextField(desiredElement.getRelationshipName());
-     this.relationshipText.setRotate(Math.toDegrees(angle));
-     this.relationshipText.setLayoutX(midpoint.getX() - 75);//Magical number for offsetting correctly
-     this.relationshipText.setLayoutY(midpoint.getY() - 12.5);//Magical number for offsetting correctly
-     this.relationshipText.setViewOrder(40);//Send to back..
-     //Text update
-     //When the user gives our textbox a new value, we push the data and that causes a redraw...
-     this.relationshipText.setOnAction(event -> {
-     String input = relationshipText.getText();
-     RelationshipType relationship = RelationshipType.stringToRelationshipType(input);
-     if(relationship == OTHER)
-     desiredElement.setCustomNameType(input);
-     else
-     desiredElement.setRelationshipType(relationship);
-     });
-
-     this.world.getChildren().add(relationshipText);
-     this.world.requestFocus();
-     }
-     */
 
     /**
      * Places the 'type marker'.
      */
-    /**
-     void placeRelationshipMarker(UMLClass endClass, RelationshipType desiredElement)
-     {
-     if(endClass == null || endClass.getListener() == null)
-     return;
-     // In the future when we untangle the wire of relationships, only this function needs to change.
-     Double angle = computeLineAngle();
-     if(angle == null) return;
-     Rectangle2D targetBounds = ((GuiClass)endClass.getListener()).getRectBounds();
+    void placeRelationshipMarker(UMLClass endClass, RelationshipType desiredElement)
+    {
+        if(endClass == null || endClass.getListener() == null)
+        return;
+        // In the future when we untangle the wire of relationships, only this function needs to change.
+        Double angle = computeLineAngle();
+        if(angle == null) return;
+        Rectangle2D targetBounds = ((GuiClass)endClass.getListener()).getRectBounds();
 
 
-     if(angle == null)
-     return;//Cannot apply shape. Angle DNE
-     Node diagramNode = createDiagramNode(desiredElement);
-     this.relationshipDiagramElement = diagramNode;//this.classDiagramType CAN BE NULL. This is intended
-     if(this.relationshipDiagramElement == null) return;//Cannot apply diagram, NONE EXISTS
-     this.world.getChildren().add(this.relationshipDiagramElement);
+        if(angle == null)
+        return;//Cannot apply shape. Angle DNE
+        Node diagramNode = createDiagramNode(desiredElement);
+        this.relationshipDiagramElement = diagramNode;//this.classDiagramType CAN BE NULL. This is intended
+        if(this.relationshipDiagramElement == null) return;//Cannot apply diagram, NONE EXISTS
+        this.world.getChildren().add(this.relationshipDiagramElement);
 
-     double cos = Math.cos(angle);
-     double sin = Math.sin(angle);
+        double cos = Math.cos(angle);
+        double sin = Math.sin(angle);
 
-     //IMPORTANT NOTE: Realistically this should be distance from center to top/side. Using half because thats currently how the code works.
-     //Simplification might have to be adjusted later.
-     double heightTo = targetBounds.getHeight()/2;
-     double lengthTo = targetBounds.getWidth()/2;
+        //IMPORTANT NOTE: Realistically this should be distance from center to top/side. Using half because thats currently how the code works.
+        //Simplification might have to be adjusted later.
+        double heightTo = targetBounds.getHeight()/2;
+        double lengthTo = targetBounds.getWidth()/2;
 
-     double hypotHeight = Math.abs(heightTo/sin);//height/sin(theta) = Hypotenuse
-     double hypotLength = Math.abs(lengthTo/cos);//width/cos(theta) = Hypotenuse
+        double hypotHeight = Math.abs(heightTo/sin);//height/sin(theta) = Hypotenuse
+        double hypotLength = Math.abs(lengthTo/cos);//width/cos(theta) = Hypotenuse
 
-     //Get smallest 'hypot'. use that for angle.
-     double vectorLength = Math.min(hypotLength, hypotHeight) + SYMBOL_DISTANCE_BUFFER;//Find the smallest sidelength
-     vectorLength = Math.max(vectorLength, SYMBOL_MIN_DISTANCE);
+        //Get smallest 'hypot'. use that for angle.
+        double vectorLength = Math.min(hypotLength, hypotHeight) + SYMBOL_DISTANCE_BUFFER;//Find the smallest sidelength
+        vectorLength = Math.max(vectorLength, SYMBOL_MIN_DISTANCE);
 
 
-     Point2D endPoint = new Point2D(cos * vectorLength, sin * vectorLength).add(endClass.getLocation());
+        Point2D endPoint = new Point2D(cos * vectorLength, sin * vectorLength).add(endClass.getLocation());
 
-     this.relationshipDiagramElement.setLayoutX(endPoint.getX());
-     this.relationshipDiagramElement.setLayoutY(endPoint.getY());
-     this.relationshipDiagramElement.setRotate(Math.toDegrees(angle));
-
-     //Re-route all endlines to conclude at our diagramCenter
-     for (Line line : new Line[]{this.lineMain, this.lineOutline, this.selectionOutline}) {
-     line.setEndX(endPoint.getX());
-     line.setEndY(endPoint.getY());
-     }
-     }
-     */
+        this.relationshipDiagramElement.setLayoutX(endPoint.getX());
+        this.relationshipDiagramElement.setLayoutY(endPoint.getY());
+        this.relationshipDiagramElement.setRotate(Math.toDegrees(angle));
+    }
+     
     private Node createDiagramNode(RelationshipType desiredElement)
     {
         if(desiredElement == null)

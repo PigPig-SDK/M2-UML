@@ -15,16 +15,17 @@ import javafx.scene.paint.Color;
  */
 public class RelationshipRouter {
 
-    private static final double DIAGONAL_COST = PathGridMapper.GRID_SIZE * Math.sqrt(2.0);
+    private static final double DIAGONAL_COST = PathGridMapper.GRID_SIZE * Math.sqrt(2.0) * 10;
     private static final double HORIZONTAL_COST = PathGridMapper.GRID_SIZE;
     private PriorityQueue<AStarSegment> openSet;
     private HashMap<AStarSegment, AStarSegment> openSetFastLookupMap;
     private HashSet<AStarSegment> closedSet;
     private HashSet<AStarSegment> occupiedPathCells;
     private final PathGridMapper mapper;
-    private static final double EXISTING_RELATIONSHIP_PENALTY = 1000.0;
-    
-    
+    private static final double EXISTING_RELATIONSHIP_PENALTY = 40.0;
+    private static final double EXISTING_CLASS_PENALTY = 50.0;
+    private static final double GOAL_DISTANCE = PathGridMapper.GRID_SIZE * 2;
+  
     private static final Point2D[] DIRECTIONS = {
     new Point2D(0, -1),
     new Point2D(1, -1),
@@ -34,7 +35,7 @@ public class RelationshipRouter {
     new Point2D(-1, 1),
     new Point2D(-1, 0),
     new Point2D(-1, -1)
-};
+    };
 
     private static final RelationshipRouter router = new RelationshipRouter();
 
@@ -49,6 +50,7 @@ public class RelationshipRouter {
         //Use padding size of 20 pixels.
         this.mapper = new PathGridMapper(UMLDocument.getInstance(), 15.0);
     }
+    
     public static RelationshipRouter getRouterInstance(){
         return router;
     }
@@ -66,15 +68,12 @@ public class RelationshipRouter {
     private boolean isGoalNode(AStarSegment node, Rectangle2D targetBounds) {
         double x = PathGridMapper.toPixelCoordinate(node.getGridX());
         double y = PathGridMapper.toPixelCoordinate(node.getGridY());
-
-        // Accept any node whose center is within 1.5 grid cells of the target box
-        Rectangle2D expanded = new Rectangle2D(
-                targetBounds.getMinX() - 40,
-                targetBounds.getMinY() - 40,
-                targetBounds.getWidth() + 80,
-                targetBounds.getHeight() + 80
-        );
-        return expanded.contains(x, y);
+        double classCenterX = (targetBounds.getMaxX() + targetBounds.getMinX()) / 2;
+        double classCenterY = (targetBounds.getMaxY() + targetBounds.getMinY()) / 2;
+        double dX = x - classCenterX; 
+        double dY = y - classCenterY;
+        double distanceNoSQRT = (dX * dX) + (dY * dY);//Distance without SQRT for speed.
+        return distanceNoSQRT <=  (GOAL_DISTANCE * GOAL_DISTANCE);//Check against squared value (Optimization)
     }
 
     /**
@@ -152,7 +151,7 @@ public class RelationshipRouter {
      * @param endNode, The node at the end of the shortest path.
      * @return, A List of Point2D objects representing the points along the relationship line.
      */
-    public List<Point2D> recalculatePath(AStarSegment endNode){
+    public List<Point2D> reconstructPath(AStarSegment endNode){
         List<Point2D> path = new ArrayList<>();
         AStarSegment current = endNode;
         int count = 0;
@@ -199,12 +198,12 @@ public class RelationshipRouter {
             closedSet.add(curNode);
             //If nextNode is touching the target class box, generate the path and return it.
             if(isGoalNode(curNode, targetBounds)){
-                List<Point2D> path = recalculatePath(curNode);
+                List<Point2D> path = reconstructPath(curNode);
                 
-                for(Point2D point : path)
-                {
-                    GuiDebugging.drawLocationalDot(point, 1.0,25, Color.CORAL);
-                }
+//                for(Point2D point : path)
+//                {
+//                    GuiDebugging.drawLocationalDot(point, 1.0,25, Color.CORAL);
+//                }
                 
                 Collections.reverse(path);
                 
@@ -214,16 +213,13 @@ public class RelationshipRouter {
                     continue; // fix the bug where class boxes get locked when touching in same relationship
                 }
                 return SmoothPathSolver.smoothPath(path);
+                //return path;
             }
             //Generate neighbors of nextNode and insert into openSet (assuming they aren't in the closed set.
             for(Point2D dir : DIRECTIONS)
             {
                 int neighborGridX = curNode.gridX + ((int)dir.getX());
                 int neighborGridY = curNode.getGridY() + ((int)dir.getY());
-                //Check the passability of the neighbor tile:
-                if(!mapper.isPassable(neighborGridX, neighborGridY, target, source)){
-                    continue;
-                }
                 //Check if neighbor is in open or closed set:
                 double hCost = calculateHCost(neighborGridX, neighborGridY, target);
                 double additionalGCost = (dir.getX() != 0 && dir.getY() != 0) ? DIAGONAL_COST : HORIZONTAL_COST;
@@ -231,6 +227,10 @@ public class RelationshipRouter {
                 AStarSegment neighborLookup = new AStarSegment(neighborGridX, neighborGridY, 0, 0, null);
                 if(this.occupiedPathCells.contains(neighborLookup)){
                     additionalGCost += EXISTING_RELATIONSHIP_PENALTY;
+                }
+                else if(!mapper.isPassable(neighborGridX, neighborGridY, target, source))//Would intersect classbox.
+                {
+                    additionalGCost += EXISTING_CLASS_PENALTY;
                 }
                 double newGCost = curNode.getGCost() + additionalGCost;
                 AStarSegment neighbor = new AStarSegment(neighborGridX, neighborGridY,newGCost, hCost, curNode);
@@ -240,6 +240,7 @@ public class RelationshipRouter {
                 if(closedSet.contains(neighbor)){
                     continue;
                 }
+                
                 //Check if AStarNode is already in openSet. If so, check to see if gCost is lower along current path.
                 //If so update gCost value of existingNode.
                 AStarSegment existingNode = openSetFastLookupMap.get(neighbor);
