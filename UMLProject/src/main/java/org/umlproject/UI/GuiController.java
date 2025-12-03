@@ -69,6 +69,8 @@ public class GuiController implements DocumentListner {
     public TextArea consoleOut;
     @FXML
     public CheckMenuItem viewTerminalMenuItem;
+    @FXML
+    public MenuItem viewThemeMenuItem;
 
     final double initialClassBoxWidthOffset = 100;
     final double initialClassBoxHeightOffset = 100;
@@ -116,6 +118,54 @@ public class GuiController implements DocumentListner {
     @FXML
     public void aboutHelpMenuAction() {
         GuiAboutWindow.showAbout();
+    }
+    
+    
+    String curTheme = "Dark Mode";
+    
+    @FXML
+    public void resetCameraViewMenuAction() {
+        GuiCamera.resetCameraLocation();
+    }
+    
+    @FXML
+    public void zoomInViewMenuAction() {
+        GuiCamera.setZoom(GuiCamera.getCameraZoom()*1.15, GuiCamera.getScreenCenter());
+    }
+    
+    @FXML
+    public void zoomOutViewMenuAction() {
+        GuiCamera.setZoom(GuiCamera.getCameraZoom()*0.85, GuiCamera.getScreenCenter());
+    }
+    
+    @FXML
+    public void themeViewMenuAction() {
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 150, 10, 10));
+
+        ComboBox<String> ThemeBox = new ComboBox<>();
+		ThemeBox.getItems().add("Dark Mode");
+		ThemeBox.getItems().add("Light Mode");
+		ThemeBox.getItems().add("Mesa");
+		ThemeBox.getItems().add("Shoreline");
+		ThemeBox.getItems().add("Forest");
+		
+                
+                
+		grid.add(new Label("Theme"), 0, 0);
+		grid.add(ThemeBox, 1, 0);
+		Alert alert = FXDialogueFactory.createAlertWindow(Alert.AlertType.INFORMATION, "Change Theme", "Select a theme", null, grid);
+		Optional<ButtonType> result = alert.showAndWait();
+		if (result.isPresent() && result.get() == ButtonType.OK) //User Acceptance
+        {
+			curTheme = ThemeBox.getValue();
+                        //change css file
+                        //probably switch here
+                        //change non css elements
+		}
+
     }
 
     /**

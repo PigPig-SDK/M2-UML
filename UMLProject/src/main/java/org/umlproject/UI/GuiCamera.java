@@ -29,6 +29,13 @@ public class GuiCamera {
 
     private static final Pane world = GuiController.getInstance().getWorld();
     
+    public static void resetCameraLocation() {
+        Point2D center = new Point2D(0,0);
+        setZoom(1, center);
+         setCameraLocation(center);
+        
+    }
+    
     public static void setCameraLocation(Point2D location)
     {
         camLocation = location;

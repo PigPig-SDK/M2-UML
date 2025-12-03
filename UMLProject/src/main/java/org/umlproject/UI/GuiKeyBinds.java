@@ -107,6 +107,9 @@ public class GuiKeyBinds {
                     case C -> {
                         GuiController.getInstance().addClassButtonPushed();
                     }
+                    case F -> {
+                        GuiCamera.resetCameraLocation();
+                    }
                 }
                 return;
             }
@@ -159,12 +162,12 @@ public class GuiKeyBinds {
                 //Zoom out
                 case MINUS->
                 {
-                    GuiCamera.setZoom(GuiCamera.getCameraZoom()*0.85, GuiCamera.getScreenCenter());
+                    GuiController.getInstance().zoomOutViewMenuAction();
                 }
                 //Zoom in
                 case EQUALS->
                 {
-                    GuiCamera.setZoom(GuiCamera.getCameraZoom()*1.15, GuiCamera.getScreenCenter());
+                    GuiController.getInstance().zoomInViewMenuAction();
                 }
 
             }
