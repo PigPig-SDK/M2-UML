@@ -122,6 +122,22 @@ public class GuiController implements DocumentListner {
     
     
     String curTheme = "Dark Mode";
+    
+    @FXML
+    public void resetCameraViewMenuAction() {
+        GuiCamera.resetCameraLocation();
+    }
+    
+    @FXML
+    public void zoomInViewMenuAction() {
+        GuiCamera.setZoom(GuiCamera.getCameraZoom()*1.15, GuiCamera.getScreenCenter());
+    }
+    
+    @FXML
+    public void zoomOutViewMenuAction() {
+        GuiCamera.setZoom(GuiCamera.getCameraZoom()*0.85, GuiCamera.getScreenCenter());
+    }
+    
     @FXML
     public void themeViewMenuAction() {
         GridPane grid = new GridPane();

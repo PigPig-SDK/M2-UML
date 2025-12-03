@@ -82,6 +82,9 @@
               <items>
                   <CheckMenuItem fx:id="viewTerminalMenuItem" mnemonicParsing="false" text="Terminal" />
                 <MenuItem fx:id="viewThemeMenuItem" mnemonicParsing="false" onAction="#themeViewMenuAction" text="Theme" />
+                  <MenuItem mnemonicParsing="false" onAction="#resetCameraViewMenuAction" text="Reset Camera" />
+                  <MenuItem mnemonicParsing="false" onAction="#zoomInViewMenuAction" text="Zoom In" />
+                  <MenuItem mnemonicParsing="false" onAction="#zoomOutViewMenuAction" text="Zoom Out" />
               </items>
             </Menu>
             <Menu mnemonicParsing="false" text="Network">
