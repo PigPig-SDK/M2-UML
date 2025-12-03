@@ -20,12 +20,10 @@ public interface DocumentListner {
     void onRelationshipRemove(UMLRelationship umlClass);
     /**
      * @param umlClass that was added
-     * @param isLoading If the addition is due to the document reloading
      */
     void onClassAdded(UMLClass umlClass);
     /**
      * @param umlRelationship that was added
-     * @param isLoading If the addition is due to the document reloading
      */
     void onRelationshipAdded(UMLRelationship umlRelationship);
     /**

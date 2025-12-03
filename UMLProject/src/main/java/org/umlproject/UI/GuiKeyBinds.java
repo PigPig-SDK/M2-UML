@@ -59,6 +59,10 @@ public class GuiKeyBinds {
             //Fires cases regardless of additional keys
             switch(event.getCode())
             {
+                case F3->
+                {
+                    UITilemap.visualizeConsumedTiles();
+                }
                 case F2->
                 {
                     GuiController.getInstance().aboutHelpMenuAction();

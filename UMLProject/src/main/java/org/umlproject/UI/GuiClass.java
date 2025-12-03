@@ -51,6 +51,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     VBox parentVBox;
 
     Point2D mouseWorldSpace;
+    double padding = 20.0;
     Point2D dragStartLocation = Point2D.ZERO;
     
     List<Button> guiButtons = new LinkedList<>();//No random access is required. Using linked list.
@@ -736,7 +737,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
 
     @Override
     public boolean contains(Point2D selectionPoint) {
-        return false;
+        return this.getRectBounds().contains(selectionPoint);
     }
 
     @Override
@@ -745,24 +746,10 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         //Reused getRectBounds code with more accurate to visual bounds.
         if(this.parentVBox == null)
             return false;
-        Bounds bounds = this.parentVBox.getBoundsInLocal();
-
-        Point2D offset = getLocation();
-
-        //Takes border outsets into account when calculating bounds
-        Rectangle2D rect = new Rectangle2D(
-                bounds.getMinX() + offset.getX()
-                        - bounds.getWidth() / 2.0 + this.parentVBox.getBorder().getOutsets().getLeft(),
-                bounds.getMinY() + offset.getY()
-                        - bounds.getHeight() / 2.0 + this.parentVBox.getBorder().getOutsets().getTop(),
-                bounds.getWidth(),
-                bounds.getHeight()
-        );
-
         //debugging lines
         //GuiDebugging.showBounds(selectionRectangle, 5, 5, Color.RED);
         //GuiDebugging.showBounds(rect, 5, 5, Color.GREEN);
-        return selectionRectangle.intersects(rect);
+        return selectionRectangle.intersects(getRectBounds());
     }
 
     @Override
@@ -787,20 +774,23 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
      */
     public Rectangle2D getRectBounds()
     {
-        if(this.parentVBox == null)
+        if(this.nodeBackground == null)
             return null;
         Bounds bounds = this.parentVBox.getBoundsInLocal();
 
         Point2D offset = getLocation();
+
+        //Takes border outsets into account when calculating bounds
         Rectangle2D rect = new Rectangle2D(
-                bounds.getMinX() + offset.getX(),
-                bounds.getMinY() + offset.getY(),
-                bounds.getWidth(), 
+                bounds.getMinX() + offset.getX()
+                        - bounds.getWidth() / 2.0 + this.parentVBox.getBorder().getOutsets().getLeft(),
+                bounds.getMinY() + offset.getY()
+                        - bounds.getHeight() / 2.0 + this.parentVBox.getBorder().getOutsets().getTop(),
+                bounds.getWidth(),
                 bounds.getHeight()
-            );
+        );
         return rect;
     }
-
 
     @Override
     public String toString(){
