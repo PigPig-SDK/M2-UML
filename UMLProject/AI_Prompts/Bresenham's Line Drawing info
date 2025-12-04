@@ -1,0 +1,41 @@
+I accidentally deleted the prompts that led to this result, but I had needed a way to draw a straight line between two points using a minimum number of tiles as quickly as possible and eventually
+I was led to an implementation of Bresenham's line drawing algorithm which you see below:
+
+public List<AStarSegment> getGridCellsCrossed(Point2D p1, Point2D p2) {
+        List<AStarSegment> crossedCells = new ArrayList<>();
+
+        // Convert to grid coordinates
+        int x1 = PathGridMapper.toGridIndex(p1.getX());
+        int y1 = PathGridMapper.toGridIndex(p1.getY());
+        int x2 = PathGridMapper.toGridIndex(p2.getX());
+        int y2 = PathGridMapper.toGridIndex(p2.getY());
+
+        int deltaX = Math.abs(x2 - x1);
+        int deltaY = Math.abs(y2 - y1);
+        int stepX = x1 < x2 ? 1 : -1;
+        int stepY = y1 < y2 ? 1 : -1;
+        int error = deltaX - deltaY;
+
+        int currentX = x1;
+        int currentY = y1;
+
+        while (true) {
+            AStarSegment node = new AStarSegment(currentX, currentY, 0, 0, null);
+            crossedCells.add(node);
+
+            if (currentX == x2 && currentY == y2) {
+                break;
+            }
+
+            int e2 = 2 * error;
+            if (e2 > -deltaY) {
+                error -= deltaY;
+                currentX += stepX;
+            }
+            if (e2 < deltaX) {
+                error += deltaX;
+                currentY += stepY;
+            }
+        }
+        return crossedCells;
+    }
