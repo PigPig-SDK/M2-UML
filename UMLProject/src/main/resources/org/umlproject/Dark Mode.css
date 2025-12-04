@@ -19,6 +19,11 @@
 }
 
 
+.viewpane{
+	-fx-background-color:  #33352d;
+	background-color:  #33352d;
+}
+
 /* Pane */
 .pane-grid{
 	-fx-background-color: #2D2D30;
@@ -724,9 +729,6 @@
     -fx-background-color: #4e4e4e;
     background-color: #4e4e4e;
 }
-
-
-/* Tooltip */
 .tooltip{
     -fx-background-radius: 0;
     -fx-border-radius: 0;
@@ -734,4 +736,23 @@
     -fx-text-fill: #AFB1B3;
     -fx-padding: 5;
     padding: 5;
+}
+#consoleOut {
+    -fx-background-color: transparent;
+	-fx-border-width: 0px;
+}
+#consoleOut .scroll-pane {
+    -fx-background-color: transparent;
+}
+#consoleOut .scroll-pane .viewport {
+    -fx-background-color: transparent;
+}
+#consoleOut .scroll-pane .content {
+    -fx-background-color: transparent;
+}
+#consoleOut .content {
+    -fx-scale-y: -1;
+}
+#consoleOut .text {
+    -fx-scale-y: -1;
 }
