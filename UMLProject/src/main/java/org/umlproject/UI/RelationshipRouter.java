@@ -15,26 +15,26 @@ import javafx.scene.paint.Color;
  */
 public class RelationshipRouter {
 
-    private static final double DIAGONAL_COST = PathGridMapper.GRID_SIZE * Math.sqrt(2.0) * 10;
+    private static final double DIAGONAL_COST = PathGridMapper.GRID_SIZE * Math.sqrt(2.0);
     private static final double HORIZONTAL_COST = PathGridMapper.GRID_SIZE;
     private PriorityQueue<AStarSegment> openSet;
     private HashMap<AStarSegment, AStarSegment> openSetFastLookupMap;
     private HashSet<AStarSegment> closedSet;
     private HashSet<AStarSegment> occupiedPathCells;
     private final PathGridMapper mapper;
-    private static final double EXISTING_RELATIONSHIP_PENALTY = 40.0;
-    private static final double EXISTING_CLASS_PENALTY = 50.0;
+    private static final double EXISTING_RELATIONSHIP_PENALTY = 1000.0;
+    private static final double EXISTING_CLASS_PENALTY = 1000.0;
     private static final double GOAL_DISTANCE = PathGridMapper.GRID_SIZE * 2;
   
     private static final Point2D[] DIRECTIONS = {
-    new Point2D(0, -1),
-    new Point2D(1, -1),
-    new Point2D(1, 0),
-    new Point2D(1, 1),
-    new Point2D(0, 1),
-    new Point2D(-1, 1),
-    new Point2D(-1, 0),
-    new Point2D(-1, -1)
+        new Point2D(0, -1),
+        new Point2D(1, -1),
+        new Point2D(1, 0),
+        new Point2D(1, 1),
+        new Point2D(0, 1),
+        new Point2D(-1, 1),
+        new Point2D(-1, 0),
+        new Point2D(-1, -1)
     };
 
     private static final RelationshipRouter router = new RelationshipRouter();
@@ -167,8 +167,17 @@ public class RelationshipRouter {
         Collections.reverse(path);
         return path;
     }
-
-
+    /**
+     * 
+     */
+    public static void visualizeConsumedTiles()
+    {
+        System.out.println("Printing visual for tilemap");
+        for(AStarSegment ass : RelationshipRouter.getRouterInstance().occupiedPathCells)
+        {
+            ass.drawDebug();
+        }
+    }
 
     /**
      * AStar algorithm used to determine the shortest path from the source class box to the target class box.
@@ -225,13 +234,17 @@ public class RelationshipRouter {
                 double additionalGCost = (dir.getX() != 0 && dir.getY() != 0) ? DIAGONAL_COST : HORIZONTAL_COST;
                 //Check to see if the neighbor intersects an existing relationship line.
                 AStarSegment neighborLookup = new AStarSegment(neighborGridX, neighborGridY, 0, 0, null);
+                
+                //Intersects line
                 if(this.occupiedPathCells.contains(neighborLookup)){
                     additionalGCost += EXISTING_RELATIONSHIP_PENALTY;
                 }
-                else if(!mapper.isPassable(neighborGridX, neighborGridY, target, source))//Would intersect classbox.
+                //Intersects classbox
+                if(!mapper.isPassable(neighborGridX, neighborGridY, target, source))
                 {
                     additionalGCost += EXISTING_CLASS_PENALTY;
                 }
+                
                 double newGCost = curNode.getGCost() + additionalGCost;
                 AStarSegment neighbor = new AStarSegment(neighborGridX, neighborGridY,newGCost, hCost, curNode);
 

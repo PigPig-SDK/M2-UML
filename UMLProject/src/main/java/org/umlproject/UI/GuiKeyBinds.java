@@ -61,7 +61,7 @@ public class GuiKeyBinds {
             {
                 case F3->
                 {
-                    UITilemap.visualizeConsumedTiles();
+                    RelationshipRouter.visualizeConsumedTiles();
                 }
                 case F2->
                 {

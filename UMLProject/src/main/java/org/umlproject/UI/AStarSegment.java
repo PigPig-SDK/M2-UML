@@ -2,6 +2,8 @@ package org.umlproject.UI;
 
 import java.util.List;
 import java.util.Objects;
+import javafx.geometry.Point2D;
+import javafx.scene.paint.Color;
 import org.umlproject.UMLDiagramElement;
 
 /**
@@ -119,5 +121,10 @@ public class AStarSegment implements Comparable<AStarSegment>{
         }
         return false;
     }
-
+    public void drawDebug()
+    {
+        GuiDebugging.drawLocationalDot(
+                new Point2D(PathGridMapper.toPixelCoordinate(gridX),PathGridMapper.toPixelCoordinate(gridY)),
+                2, 10, Color.BISQUE);
+    }
 }
