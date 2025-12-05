@@ -159,6 +159,10 @@ public class GuiKeyBinds {
                     GuiCopyPaste.getInstance().paste();
                     event.consume();
                 }
+                //Search for class (CTRL+F)
+                case F ->{
+                    GuiSearch.GuiSearch();
+                }
                 //Zoom out
                 case MINUS->
                 {
