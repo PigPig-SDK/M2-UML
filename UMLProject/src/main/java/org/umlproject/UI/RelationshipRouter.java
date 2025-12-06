@@ -15,15 +15,16 @@ import javafx.scene.paint.Color;
  */
 public class RelationshipRouter {
 
-    private static final double DIAGONAL_COST = PathGridMapper.GRID_SIZE * Math.sqrt(2.0);
+    private static final double DIAGONAL_COST = PathGridMapper.GRID_SIZE * Math.sqrt(2.0) * 1.1;//If i was president id be like. Fuck diags.. pff chaa, Piece..
     private static final double HORIZONTAL_COST = PathGridMapper.GRID_SIZE;
     private PriorityQueue<AStarSegment> openSet;
     private HashMap<AStarSegment, AStarSegment> openSetFastLookupMap;
     private HashSet<AStarSegment> closedSet;
     private HashSet<AStarSegment> occupiedPathCells;
     private final PathGridMapper mapper;
-    private static final double EXISTING_RELATIONSHIP_PENALTY = 1000.0;
-    private static final double EXISTING_CLASS_PENALTY = 1000.0;
+    private static final double EXISTING_RELATIONSHIP_PENALTY = 500.0;
+    private static final double EXISTING_CLASS_PENALTY = 500.0;
+    private static final double HIGHWAY_BONUS = 0.95;
     private static final double GOAL_DISTANCE = PathGridMapper.GRID_SIZE * 2;
   
     private static final Point2D[] DIRECTIONS = {
@@ -163,7 +164,6 @@ public class RelationshipRouter {
             path.add(new Point2D(x, y));
             current = current.getParent();
         }
-        System.out.println("OUTPUT : " + count);
         Collections.reverse(path);
         return path;
     }
@@ -221,8 +221,7 @@ public class RelationshipRouter {
                     //return null;
                     continue; // fix the bug where class boxes get locked when touching in same relationship
                 }
-                return SmoothPathSolver.smoothPath(path);
-                //return path;
+                return simplifyPath(path);
             }
             //Generate neighbors of nextNode and insert into openSet (assuming they aren't in the closed set.
             for(Point2D dir : DIRECTIONS)
@@ -232,6 +231,8 @@ public class RelationshipRouter {
                 //Check if neighbor is in open or closed set:
                 double hCost = calculateHCost(neighborGridX, neighborGridY, target);
                 double additionalGCost = (dir.getX() != 0 && dir.getY() != 0) ? DIAGONAL_COST : HORIZONTAL_COST;
+                double highwayTax = 1;//Value that biases straight lines.
+                
                 //Check to see if the neighbor intersects an existing relationship line.
                 AStarSegment neighborLookup = new AStarSegment(neighborGridX, neighborGridY, 0, 0, null);
                 
@@ -244,8 +245,19 @@ public class RelationshipRouter {
                 {
                     additionalGCost += EXISTING_CLASS_PENALTY;
                 }
+                //Highway price
+                //This incourages a* to maintain a straight line/highway while solving.
+                if(curNode.previousNode != null)
+                {
+                    Point2D previousNodeDirection = new Point2D(curNode.gridX - curNode.previousNode.gridX, curNode.gridY- curNode.previousNode.gridY);
+                    if(dir.getX() == previousNodeDirection.getX() && dir.getY() == previousNodeDirection.getY())
+                    {
+                        highwayTax = HIGHWAY_BONUS;
+                    }
+                }
                 
-                double newGCost = curNode.getGCost() + additionalGCost;
+                
+                double newGCost = (curNode.getGCost() + additionalGCost)* highwayTax;
                 AStarSegment neighbor = new AStarSegment(neighborGridX, neighborGridY,newGCost, hCost, curNode);
 
                 //Check if AStarNode is in the closedSet. Note that contains() relies on the hashCode function
@@ -277,5 +289,16 @@ public class RelationshipRouter {
         }
         //Otherwise no path could be found so return null
         return null;
+    }
+    /**
+     * This removes redundant nodes in a straight line.
+     * AI generated code because this is super boring code to write.
+     */
+    private static List<Point2D> simplifyPath(List<Point2D> rawPath) {
+
+        if (rawPath == null || rawPath.size() <= 2)
+            return rawPath;
+
+        return rawPath;
     }
 }
