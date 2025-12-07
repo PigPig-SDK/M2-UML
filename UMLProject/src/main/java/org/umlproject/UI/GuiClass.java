@@ -40,6 +40,8 @@ import org.umlproject.UMLClass;
 public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable, UIPositional {
     public static final Font DEFAULT_CLASS_FONT = Font.font("Monospaced", FontWeight.NORMAL, FontPosture.REGULAR, 18);
     
+    private static final double SHOTGUN_DISTANCE_REFIRE = 50;
+    
     private Pane world;
     private UMLClass parentClass;
     double mouseAnchorX;
@@ -49,6 +51,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     VBox methodTextFields;
     //VBox that holds className TextField and VBoxes for data fields and methods.
     VBox parentVBox;
+    Point2D lastShotgunLocation = Point2D.ZERO;
 
     Point2D mouseWorldSpace;
     double padding = 20.0;
@@ -110,6 +113,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
             }
             e.consume(); // Prevent event from propagating to other nodes
         });
+        
         //Used for selection
         //Mouse up...
         nodeBackground.setOnMouseClicked(e -> {
@@ -126,7 +130,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
             }
             e.consume(); // Prevent event from propagating to other nodes
         });
-
+        //On drag...
         this.nodeBackground.setOnMouseDragged(e -> {
             if(e.getButton() == MouseButton.PRIMARY) {
                 isDragging = true;
@@ -134,7 +138,6 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
                 Point2D worldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
                 Point2D selectionOffset = new Point2D(worldSpace.getX() - this.mouseAnchorX, worldSpace.getY() - this.mouseAnchorY);
                 UMLDocument.executeActionUnderState(DocumentState.SILENT_MOVEMENT, () -> this.parentClass.setLocation(selectionOffset, true));
-
 
                 //Multi-Drag
                 if(!e.isControlDown()) {
@@ -151,9 +154,74 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
                     }
                 }
                 this.nodeBackground.getParent().requestLayout(); // Force layout update
+                
             }
             e.consume(); // Prevent event from propagating to other nodes
         });
+    }
+    /**
+     * This 'shotguns' into the 'occupiedPathCells' to see if any relationships might desire a redraw.
+     */
+    void shotgunCheckRelationshipOverlap()
+    {
+        if(lastShotgunLocation.distance(this.getLocation())  <= SHOTGUN_DISTANCE_REFIRE) return;
+        
+        lastShotgunLocation = getLocation();
+        
+        List<AStarSegment> perimeterNodes = new ArrayList<>();
+        Rectangle2D sourceBounds = getRectBounds();
+        Point2D targetCenter = getLocation();
+         //Define padded search area around source bounds.
+        double searchMinX = sourceBounds.getMinX() - 100;
+        double searchMaxX = sourceBounds.getMaxX() + 100;
+        double searchMinY = sourceBounds.getMinY() - 100;
+        double searchMaxY = sourceBounds.getMaxY() + 100;
+
+        int minI = PathGridMapper.toGridIndex(searchMinX);
+        int maxI = PathGridMapper.toGridIndex(searchMaxX);
+        int minJ = PathGridMapper.toGridIndex(searchMinY);
+        int maxJ = PathGridMapper.toGridIndex(searchMaxY);
+        //rewrite so we grab the perimeter just inside the class bounds:
+        for(int i = minI; i <= maxI; i++){
+            for(int j = minJ; j <= maxJ; j++){
+                if(i == minI || i == maxI){
+                    AStarSegment nextPerimeterTile = new AStarSegment(i, j, 0.0, 0.0, null);
+                    perimeterNodes.add(nextPerimeterTile);
+                }
+
+            }
+            if(i > minI && i < maxI){
+                //Include j == minJ and j = maxJ tiles
+                int minimumJ = minJ;
+                int maximumJ = maxJ;
+                AStarSegment minJTile = new AStarSegment(i, minimumJ, 0.0, 0.0, null);
+                AStarSegment maxJTile = new AStarSegment(i, maximumJ, 0.0, 0.0, null);
+                perimeterNodes.add(minJTile);
+                perimeterNodes.add(maxJTile);
+            }
+        }
+        
+        //Find a set list of desired redraws.
+        Set<UMLRelationship> allRedrawCalls = new HashSet<>();
+        for(AStarSegment ass : perimeterNodes)
+        {
+            //ass.drawDebug();
+            List<UMLRelationship> temp = RelationshipRouter.getInstance().shotgunGetNode(ass);
+            if(temp == null) continue;
+            
+            allRedrawCalls.addAll(temp);
+        }
+        for(UMLRelationship relationship : allRedrawCalls)
+        {
+            if(relationship.getSource() == parentClass || relationship.getDestination() == parentClass)
+                continue;
+            
+            if(relationship.getListener() instanceof GuiRelationship guiRelationship)
+            {
+                guiRelationship.queuedRedraw = true;
+                guiRelationship.update(relationship);
+            }
+        }
     }
     /**
      * Helper function that lets the user rename the class name TextField.
@@ -662,6 +730,8 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
      */
      @Override
     public void updateLocation(UMLClass desiredElement) {
+        shotgunCheckRelationshipOverlap();
+        
         if(this.nodeBackground == null)
             return;
         updateAllRelationships(desiredElement);

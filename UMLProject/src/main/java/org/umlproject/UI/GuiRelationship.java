@@ -21,6 +21,7 @@ import org.umlproject.UMLRelationship;
 import org.umlproject.DiagramElementListener;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javafx.scene.shape.Polyline;
 
@@ -33,45 +34,80 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
     private Node relationshipDiagramElement;
     private TextField relationshipText;
     private List<Point2D> pathPoints;
+    private List<AStarSegment> nodeSpacePoints;
+    public boolean queuedRedraw = false;
 
     private static final double SYMBOL_DISTANCE_BUFFER = 50;
     private static final double SYMBOL_MIN_DISTANCE = 100;
-    private static final double MIN_LINE_DISTANCE_FOR_TEXT = 500;
+    private static final double MIN_DISTANCE_FOR_REDRAW = 15;
     private static  RelationshipRouter router;
 
     public GuiRelationship(Pane world, UMLRelationship umlRelationship)
     {
         this.world = world;
         this.relationship = umlRelationship;
-        this.router = RelationshipRouter.getRouterInstance();
+        this.router = RelationshipRouter.getInstance();
         update(umlRelationship);
     }
 
-    /** Calculates a safePath.
+    /** 
+     * Calculates a safePath.
      */
     public void calculateAndSetPath() {
         UMLClass source = relationship.getSource();
         UMLClass target = relationship.getDestination();
+        
+        if(relationship.getRelationshipType() == AGGREGATION || relationship.getRelationshipType() == COMPOSITION)//Flip for these specifically.
+        {
+            source = target;
+            target = relationship.getSource();
+        }
+        
         if(source == null || target == null){
             return;
         }
-        List<Point2D> newPath = router.AStarAlgorithm(relationship, source, target);
+        
+        nodeSpacePoints = router.AStarAlgorithm(relationship, source, target);
+        
+        List<Point2D> newPath = new ArrayList<>();
+        if(nodeSpacePoints != null)
+        {
+            for(AStarSegment ass : nodeSpacePoints)
+            {
+                if(ass == null) continue;
 
+                double x = PathGridMapper.toPixelCoordinate(ass.getGridX());
+                double y = PathGridMapper.toPixelCoordinate(ass.getGridY());
+                newPath.add(new Point2D(x, y));
+            }
+        }
+
+        
         //Check if newPath is empty or null, in which case draw a default straight line.
-        if(newPath == null || newPath.isEmpty()){
-            System.out.println("no path between " + source.getClassName() + " and " + target.getClassName() + " found.");
+        if(newPath == null || newPath.isEmpty() || newPath.size() == 1){
             //return a default straight line
             Point2D sourceCenter = source.getLocation();
             Point2D targetCenter = target.getLocation();
             newPath = new ArrayList<>();
             newPath.add(sourceCenter);
             newPath.add(targetCenter);
-            this.setPathPoints(newPath);
         }
-        System.out.println("The size of the newPath is: " + newPath.size());
-        //If AStarAlgorithm returns a path that is not empty or null.
-            this.setPathPoints(newPath);
-
+        
+        //Merge multiple useless nodes into one.
+        //Cases where multiple nodes are inside a class should be simplified into one node.
+        //This ensures START and END of our newPath is the 'class' center.
+        if(newPath.size() >= 3)
+        {
+            for(int i = newPath.size() - 2; i > 0; i--)
+            {
+                if(target.getListener() instanceof GuiClass guiClass && guiClass.contains(newPath.get(i)))
+                    newPath.remove(i);
+            }
+        }
+        //Update centers.
+        newPath.set(0, target.getLocation());
+        newPath.set(newPath.size()-1, source.getLocation());
+        this.pathPoints = newPath;
     }
 
     /**
@@ -81,43 +117,40 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
     public List<Point2D> getPathPoints(){
         return this.pathPoints;
     }
-
     /**
-     * Setter method used by the AStar algorithm in RelationshipRouter to update the path of a given
-     * relationship.
-     * @param newPathPoints, the new path of points to be stored in a given GuiRelationship object.
+     * Returns the relationship which this element is associated
      */
-    public void setPathPoints(List<Point2D> newPathPoints){
-        this.pathPoints = newPathPoints;
-    }
-
     public UMLRelationship getRelationship()
     {
         return this.relationship;
     }
+    /**
+     * Checks if a redraw is required per class basis
+     */
+    private boolean redrawRequiredForClass(UMLClass checkClass, Point2D point)
+    {
+        if(checkClass.getLocation().distance(point) >= MIN_DISTANCE_FOR_REDRAW)
+            return  true;
+        return false;
+    }
+    /**
+     * Checks if the given point requires a redraw
+     */
     private boolean redrawRequired()
     {
+        if(queuedRedraw)
+        {
+            queuedRedraw = false;
+            return true;
+        }
+        
         if(pathPoints == null) return true;
         if(this.lineMain == null) return true;
         UMLClass source = relationship.getSource();
         UMLClass target = relationship.getDestination();
-        if(source == null || target == null){
-            return false;
-        }
+        if(source == null || target == null) return false;
         
-        boolean redrawRequired = false;
-        if(source.getListener() instanceof GuiClass sourceUI)
-        {
-            if(!sourceUI.contains(pathPoints.getLast()))
-                redrawRequired = true;
-        }
-        if(target.getListener() instanceof GuiClass targetUI)
-        {
-            if(!targetUI.contains(pathPoints.getFirst()))
-                redrawRequired = true;
-        }
-        
-        return redrawRequired;
+        return redrawRequiredForClass(source, pathPoints.getLast()) || redrawRequiredForClass(target, pathPoints.getFirst());
     }
     @Override
     public void update(UMLRelationship desiredElement) {
@@ -127,14 +160,28 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
         
         cleanUp();
         this.calculateAndSetPath();
-        if (this.pathPoints == null || this.pathPoints.size() < 2) {
-            return;
+
+        if (this.pathPoints == null || this.pathPoints.size() < 2) return;
+        
+        
+        if(nodeSpacePoints != null)//Incase failure inside calculateAndSetPath()
+        {
+            for(AStarSegment ass : nodeSpacePoints)
+            {
+                RelationshipRouter.getInstance().addOccupationToCell(relationship, ass);
+            }
         }
+
         List<Double> polylinePoints = new ArrayList<>();
-        for (Point2D p : this.pathPoints) {
+        //Exclude last node.
+        for(int i = 1; i < this.pathPoints.size(); i++)
+        {
+            Point2D p = this.pathPoints.get(i);
             polylinePoints.add(p.getX());
             polylinePoints.add(p.getY());
         }
+        
+        placeRelationshipMarker(relationship.getDestination(), relationship.getRelationshipType(), polylinePoints);
 
         //initialize polyline objects
         this.lineMain = new Polyline();
@@ -167,7 +214,6 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
 
 
         world.getChildren().addAll(lineMain, lineOutline, selectionOutline);
-        placeRelationshipMarkerFinal(desiredElement.getRelationshipType());
         //Add clickableness...
         lineMain.setOnMouseClicked(e -> {
             GuiSelect.getInstance().clickUiElement(e, this, false);
@@ -175,131 +221,33 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
         });
         setSelected(isSelected);//Update our selected state
     }
-    /**
-     * Places the relationship type marker (arrowhead, diamond, etc.) at the target end of the line.
-     * This function handles the visual "snapping" effect by positioning the symbol over the last segment.
-     * @param desiredElement The type of relationship (AGGREGATION, GENERALIZATION, etc.).
-     */
-    void placeRelationshipMarkerFinal(RelationshipType desiredElement)
-    {
-        // 1. Get the necessary data
-        if(this.pathPoints == null || this.pathPoints.size() < 2) return;
 
-        // The symbol is placed relative to the target, which is the destination.
-        UMLClass endClass = relationship.getDestination();
-        if(endClass == null || endClass.getListener() == null) return;
-
-        Point2D P_prev = this.pathPoints.get(this.pathPoints.size() - 2);
-        Point2D P_last = this.pathPoints.get(this.pathPoints.size() - 1);
-
-        // 2. Get the symbol shape and angle
-        Double angleRad = computeLineAngle(); // Angle is calculated from START to END
-        if(angleRad == null) return;
-
-        Node diagramNode = createDiagramNode(desiredElement);
-        this.relationshipDiagramElement = diagramNode;
-
-        if(this.relationshipDiagramElement == null) return; // Cannot apply diagram, NONE EXISTS
-
-        // 3. Position and Rotate the Symbol
-
-        // Use P_last (the grid center inside the box) as the pivot point for the symbol.
-        // This places the symbol in the correct proximity to the target box.
-        this.relationshipDiagramElement.setLayoutX(P_last.getX());
-        this.relationshipDiagramElement.setLayoutY(P_last.getY());
-
-        // The existing computeLineAngle returns the angle from P_END to P_START (due to the subtraction order).
-        // We need to rotate the symbol to point *at* the endClass, which is the opposite direction.
-        // We can add 180 degrees (PI radians) to flip the angle, as symbols are typically drawn pointing left.
-        double adjustedAngleRad = angleRad + Math.PI;
-
-        this.relationshipDiagramElement.setRotate(Math.toDegrees(adjustedAngleRad));
-
-        this.relationshipDiagramElement.setViewOrder(99); // Ensure it's drawn on top of the lines
-
-        // 4. Update the Polyline End Point (Crucial Step)
-
-        // To ensure the symbol doesn't obscure the line behind it, we'll visually
-        // snap the end of the line back by a small amount (e.g., 5-10 pixels).
-        // The Polyline's points list must be modified directly.
-
-        // Calculate the length of the symbol's base/body that will overlap the line.
-        final double SYMBOL_BODY_LENGTH = 15.0;
-
-        // Calculate the new end point (P_last moved back along the vector)
-        double length = P_prev.distance(P_last);
-        if(length > SYMBOL_BODY_LENGTH) {
-            double ratio = (length - SYMBOL_BODY_LENGTH) / length;
-
-            Point2D P_new_end = P_prev.interpolate(P_last, ratio);
-
-            // Replace the final point in the polyline points list
-            List<Double> polylinePoints = this.lineMain.getPoints();
-            if (polylinePoints.size() >= 2) {
-                polylinePoints.set(polylinePoints.size() - 2, P_new_end.getX());
-                polylinePoints.set(polylinePoints.size() - 1, P_new_end.getY());
-            }
-        }
-
-        // 5. Add to World
-        this.world.getChildren().add(this.relationshipDiagramElement);
-    }
-
-    double getLineDistance(Line line)
-    {
-        double dx = line.getEndX() - line.getStartX();
-        double dy = line.getEndY() - line.getStartY();
-        return Math.sqrt(dx * dx + dy * dy);
-    }
-    
-    private static boolean requiresClamp(double val, double min, double max) {
-        double clampEnd = Math.max(min, Math.min(max, val));
-        return (clampEnd != val);//if a clamp occurs.
-    }
 
     /**
      * Places the 'type marker'.
      */
-    void placeRelationshipMarker(UMLClass endClass, RelationshipType desiredElement)
+    void placeRelationshipMarker(UMLClass endClass, RelationshipType desiredElement, List<Double> polylinePoints)
     {
         if(endClass == null || endClass.getListener() == null)
         return;
         // In the future when we untangle the wire of relationships, only this function needs to change.
         Double angle = computeLineAngle();
-        if(angle == null) return;
-        Rectangle2D targetBounds = ((GuiClass)endClass.getListener()).getRectBounds();
 
-
-        if(angle == null)
-        return;//Cannot apply shape. Angle DNE
+        if(angle == null) return;//Cannot apply shape. Angle DNE
+        
         Node diagramNode = createDiagramNode(desiredElement);
+        
         this.relationshipDiagramElement = diagramNode;//this.classDiagramType CAN BE NULL. This is intended
         if(this.relationshipDiagramElement == null) return;//Cannot apply diagram, NONE EXISTS
         this.world.getChildren().add(this.relationshipDiagramElement);
 
-        double cos = Math.cos(angle);
-        double sin = Math.sin(angle);
-
-        //IMPORTANT NOTE: Realistically this should be distance from center to top/side. Using half because thats currently how the code works.
-        //Simplification might have to be adjusted later.
-        double heightTo = targetBounds.getHeight()/2;
-        double lengthTo = targetBounds.getWidth()/2;
-
-        double hypotHeight = Math.abs(heightTo/sin);//height/sin(theta) = Hypotenuse
-        double hypotLength = Math.abs(lengthTo/cos);//width/cos(theta) = Hypotenuse
-
-        //Get smallest 'hypot'. use that for angle.
-        double vectorLength = Math.min(hypotLength, hypotHeight) + SYMBOL_DISTANCE_BUFFER;//Find the smallest sidelength
-        vectorLength = Math.max(vectorLength, SYMBOL_MIN_DISTANCE);
-
-
-        Point2D endPoint = new Point2D(cos * vectorLength, sin * vectorLength).add(endClass.getLocation());
-
-        this.relationshipDiagramElement.setLayoutX(endPoint.getX());
-        this.relationshipDiagramElement.setLayoutY(endPoint.getY());
+        this.relationshipDiagramElement.setLayoutX(pathPoints.get(1).getX());
+        this.relationshipDiagramElement.setLayoutY(pathPoints.get(1).getY());
         this.relationshipDiagramElement.setRotate(Math.toDegrees(angle));
     }
-     
+    /**
+     * Creates a diagram node depending on the RelationshipType
+     */
     private Node createDiagramNode(RelationshipType desiredElement)
     {
         if(desiredElement == null)
@@ -363,16 +311,26 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
         if(this.pathPoints == null || this.pathPoints.size() < 2){
             return null;
         }
-        Point2D finalSegmentStart = this.pathPoints.get(this.pathPoints.size() - 2);
-        Point2D finalSegmentEnd = this.pathPoints.get(this.pathPoints.size() -1);
-        double deltaX = finalSegmentEnd.getX() - finalSegmentStart.getX();
-        double deltaY = finalSegmentEnd.getY() - finalSegmentStart.getY();
+        Point2D startP = this.pathPoints.get(0);
+        Point2D endP = this.pathPoints.get(1);
+        
+        double deltaX = endP.getX() - startP.getX();
+        double deltaY = endP.getY() - startP.getY();
         return Math.atan2(deltaY, deltaX);
     }
 
 
     @Override
     public void cleanUp() {
+        //Stop cell occupation
+        if(nodeSpacePoints != null)
+        {
+            for(AStarSegment ass : nodeSpacePoints)
+            {
+                RelationshipRouter.getInstance().removeOccupationToCell(relationship, ass);
+            }
+        }
+
         if(this.lineMain == null)
             return;
         this.world.getChildren().removeAll(this.lineMain, this.lineOutline, this.selectionOutline, this.relationshipDiagramElement, this.relationshipText);
@@ -410,5 +368,4 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
         this.selectionOutline.setStrokeDashOffset(10*Math.sin(time * 0.000000001));
 
     }
-
 }

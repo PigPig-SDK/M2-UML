@@ -137,7 +137,8 @@ public class UMLRelationship  extends UMLDiagramElement implements Cloneable
         UMLRelationship castedObject = (UMLRelationship)obj;
         //Bare bones implementation.
         //TODO: When you add more to the class, maintain this equals function.
-        return castedObject.sourceName.equals(this.sourceName) && castedObject.destinationName.equals(this.destinationName)
+        return castedObject.sourceName.equals(this.sourceName) 
+                && castedObject.destinationName.equals(this.destinationName)
                 && castedObject.customNameType.equals(this.customNameType);
     }
 

@@ -2,6 +2,8 @@ package org.umlproject.UI;
 
 import java.util.List;
 import java.util.Objects;
+import javafx.geometry.Point2D;
+import javafx.scene.paint.Color;
 import org.umlproject.UMLDiagramElement;
 
 /**
@@ -18,8 +20,7 @@ public class AStarSegment implements Comparable<AStarSegment>{
     double hCost;
 
     //The parent AStarNode to be used for reconstructing the final path.
-    AStarSegment parent;
-    List<UMLDiagramElement> element = null;
+    AStarSegment previousNode;
 
     public AStarSegment(int gridX, int gridY)
     {
@@ -32,7 +33,7 @@ public class AStarSegment implements Comparable<AStarSegment>{
         this.gridY = gridY;
         this.gCost = gCost;
         this.hCost = hCost;
-        this.parent = parent;
+        this.previousNode = parent;
     }
 
     public void setHCost(double hCost){
@@ -42,7 +43,7 @@ public class AStarSegment implements Comparable<AStarSegment>{
         this.gCost = gCost;
     }
     public void setParent(AStarSegment parent){
-        this.parent = parent;
+        this.previousNode = parent;
     }
 
     public double getGCost(){
@@ -61,7 +62,7 @@ public class AStarSegment implements Comparable<AStarSegment>{
     }
 
     public AStarSegment getParent(){
-        return this.parent;
+        return this.previousNode;
     }
 
     /**
@@ -119,5 +120,10 @@ public class AStarSegment implements Comparable<AStarSegment>{
         }
         return false;
     }
-
+    public void drawDebug()
+    {
+        GuiDebugging.drawLocationalDot(
+                new Point2D(PathGridMapper.toPixelCoordinate(gridX),PathGridMapper.toPixelCoordinate(gridY)),
+                2, 10, Color.BISQUE);
+    }
 }
