@@ -622,18 +622,7 @@ public class GuiController implements DocumentListner {
         }
     }
     @Override
-    public void loadFile(UMLDocument umlDocument) {
-        
-        //This is called 0.1 seconds later due to a GUI race condition. Really lame.
-        Timeline timeline = new Timeline(
-            new KeyFrame(Duration.seconds(0.1), e -> {
-                redrawAllRelationships();
-            })
-        );
-        timeline.setCycleCount(1);
-        timeline.play();
-
-    }
+    public void loadFile(UMLDocument umlDocument) {}
     @Override
     public void onClassRemove(UMLClass umlClass) {
         System.out.println("CLeaned up. " + umlClass.getListener());
