@@ -312,21 +312,32 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
      * Helper method for the linkTextFieldToMethod function. It will generate a new UMLMethod object
      * from TextField input after Enter is pressed or the user clicks somewhere else in the UML editor taking
      * focus away from the TextField.
-     * @param textField, TextField containing the Method data.
+     * @param newField, TextField containing the Method data.
      * @param methodRow, HBox used to hold the TextField and a delete button.
      */
-    public void handleMethodUpdate(TextField textField, HBox methodRow){
+    public void handleMethodUpdate(TextField newField, HBox methodRow){
         
-        if (textField.getText().equals(textField.getUserData()))return;
+        if (newField.getText().equals(newField.getUserData()))
+        {
+            update(parentClass);
+            return;
+        }
+        else if(newField.getUserData() instanceof String str)//Check if basically the same.
+        {
+            if(newField.getText().strip().equals(str.strip()))
+            {
+                update(parentClass);
+                return;
+            }
+        }
         
-        String[] newMethodAsStringArray = textField.getText().split(" ");
+        String[] newMethodAsStringArray = newField.getText().split(" ");
         
         if(newMethodAsStringArray.length == 0 || newMethodAsStringArray.length % 2 == 0){
             //Invalid number of arguments.
             errorSet.add("Invalid number of method arguments");
-            textField.setText(textField.getText());
-            redHighlightText(textField);
-            
+            newField.setText(newField.getText());
+            redHighlightText(newField);
             return;
         }
         String newMethodName = newMethodAsStringArray[0];
@@ -355,9 +366,8 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
             //attempt to add method
             boolean methodAddSuccessful = parentClass.addMethod(newMethod);
             if(!methodAddSuccessful){//Duplicate method, or invalid...
-                textField.setText((String)textField.getUserData());
                 errorSet.add("Duplicate");
-                redHighlightText(textField);
+                redHighlightText(newField);
                 return;
             }
             // delete old method if new input can be successfully added to UMLClass, set user data of newMethodTextField
@@ -485,14 +495,29 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
      *                  future deletion.
      */
     public void handleDataFieldUpdate(TextField newField, HBox fieldRow){
-        if (newField.getText().equals(newField.getUserData()))return;
+        
+        //Data we are checking is actually new.
+        if (newField.getText().equals(newField.getUserData()))
+        {
+            update(parentClass);
+            return;
+        }
+        else if(newField.getUserData() instanceof String str)//Check if basically the same.
+        {
+            if(newField.getText().strip().equals(str.strip()))
+            {
+                update(parentClass);
+                return;
+            }
+        }
+
         
         String dataFieldText = newField.getText();
         String[] textAsArray = dataFieldText.split(" ");
         
         //Invalid number of arguments! Should be Visibility DataType Name.
         if(textAsArray.length != 3){
-            newField.setText("Visibility Type Name");
+            newField.setText(newField.getText());
             errorSet.add("Data-Fields should be entered as: Visibility DataType Name");
             redHighlightText(newField);
             return;
@@ -505,7 +530,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         //Invalid visibility type, should be 'Public, Private, Protected, or Package.'
         if(!Visibility.acceptableVisibility(visibilityString)){
             errorSet.add("Invalid visibility type, should be 'Public, Private, Protected, or Package'");
-            newField.setText("Visibility Type Name");
+            newField.setText(newField.getText());
             redHighlightText(newField);
             return;
         }
@@ -528,14 +553,14 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
                 //set newField and fieldRow user data to their new values.
                 newField.setUserData(newField.getText());
                 fieldRow.setUserData(dataField);
-                System.out.println("Field was added and class box will be updated!");
+                //System.out.println("Field was added and class box will be updated!");
                 //update is automatically called by UMLClass to redraw class box.
                 UMLDocument.saveMementoState();
             }
             else{
                 //if addField fails we need to reset the TextField to have its previous text.
                 //System.out.println("Datafield is a duplicate or invalid!");
-                errorSet.add("Duplicate");
+                errorSet.add("Duplicate Data-Field");
                 newField.setText(newField.getText());
                 redHighlightText(newField);
             }
