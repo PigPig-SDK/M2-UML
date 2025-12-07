@@ -20,9 +20,9 @@ public class RelationshipRouter {
     private PriorityQueue<AStarSegment> openSet;
     private HashMap<AStarSegment, AStarSegment> openSetFastLookupMap;
     private HashSet<AStarSegment> closedSet;
-    private HashSet<AStarSegment> occupiedPathCells;
+    private HashMap<AStarSegment, List<UMLRelationship>> occupiedPathCells;
     private final PathGridMapper mapper;
-    private static final double EXISTING_RELATIONSHIP_PENALTY = 500.0;
+    private static final double EXISTING_RELATIONSHIP_PENALTY = 1000.0;
     private static final double EXISTING_CLASS_PENALTY = 500.0;
     private static final double HIGHWAY_BONUS = 0.95;
     private static final double GOAL_DISTANCE = PathGridMapper.GRID_SIZE * 2;
@@ -47,12 +47,11 @@ public class RelationshipRouter {
         this.openSet = new PriorityQueue<>();
         this.closedSet = new HashSet<>();
         this.openSetFastLookupMap = new HashMap<>();
-        occupiedPathCells = new HashSet<>();
-        //Use padding size of 20 pixels.
+        occupiedPathCells = new HashMap<>();
         this.mapper = new PathGridMapper(UMLDocument.getInstance(), 15.0);
     }
     
-    public static RelationshipRouter getRouterInstance(){
+    public static RelationshipRouter getInstance(){
         return router;
     }
 
@@ -74,7 +73,7 @@ public class RelationshipRouter {
         double dX = x - classCenterX; 
         double dY = y - classCenterY;
         double distanceNoSQRT = (dX * dX) + (dY * dY);//Distance without SQRT for speed.
-        return distanceNoSQRT <=  (GOAL_DISTANCE * GOAL_DISTANCE);//Check against squared value (Optimization)
+        return distanceNoSQRT <= (GOAL_DISTANCE * GOAL_DISTANCE);//Check against squared value (Optimization)
     }
 
     /**
@@ -152,16 +151,12 @@ public class RelationshipRouter {
      * @param endNode, The node at the end of the shortest path.
      * @return, A List of Point2D objects representing the points along the relationship line.
      */
-    public List<Point2D> reconstructPath(AStarSegment endNode){
-        List<Point2D> path = new ArrayList<>();
+    public List<AStarSegment> reconstructPath(AStarSegment endNode){
+        List<AStarSegment> path = new ArrayList<>();
         AStarSegment current = endNode;
-        int count = 0;
+        
         while (current != null) {
-            count++;
-            
-            double x = PathGridMapper.toPixelCoordinate(current.getGridX());
-            double y = PathGridMapper.toPixelCoordinate(current.getGridY());
-            path.add(new Point2D(x, y));
+            path.add(current.getParent());
             current = current.getParent();
         }
         Collections.reverse(path);
@@ -173,19 +168,24 @@ public class RelationshipRouter {
     public static void visualizeConsumedTiles()
     {
         System.out.println("Printing visual for tilemap");
-        for(AStarSegment ass : RelationshipRouter.getRouterInstance().occupiedPathCells)
+        for(AStarSegment ass : RelationshipRouter.getInstance().occupiedPathCells.keySet())
         {
-            ass.drawDebug();
+            if(RelationshipRouter.getInstance().isTileOccupied(ass) && ass != null)
+                ass.drawDebug();
         }
     }
-
+    private boolean isTileOccupied(AStarSegment ass)
+    {
+        List<UMLRelationship> occupationElements = RelationshipRouter.getInstance().occupiedPathCells.get(ass);
+        return (occupationElements != null && !occupationElements.isEmpty());
+    }
     /**
      * AStar algorithm used to determine the shortest path from the source class box to the target class box.
      * @param source, class box the path begins from.
      * @param target, class box where the path terminates.
      * @return, a list of points representing the path from the source to the target.
      */
-    public List<Point2D> AStarAlgorithm(UMLRelationship relationshipToExclude,UMLClass source, UMLClass target){
+    public List<AStarSegment> AStarAlgorithm(UMLRelationship relationship,UMLClass source, UMLClass target){
         GuiClass sourceGui = (GuiClass)source.getListener();
         GuiClass targetGui = (GuiClass)target.getListener();
         Rectangle2D targetBounds = targetGui.getRectBounds();
@@ -207,12 +207,8 @@ public class RelationshipRouter {
             closedSet.add(curNode);
             //If nextNode is touching the target class box, generate the path and return it.
             if(isGoalNode(curNode, targetBounds)){
-                List<Point2D> path = reconstructPath(curNode);
                 
-//                for(Point2D point : path)
-//                {
-//                    GuiDebugging.drawLocationalDot(point, 1.0,25, Color.CORAL);
-//                }
+                List<AStarSegment> path = reconstructPath(curNode);
                 
                 Collections.reverse(path);
                 
@@ -221,7 +217,7 @@ public class RelationshipRouter {
                     //return null;
                     continue; // fix the bug where class boxes get locked when touching in same relationship
                 }
-                return simplifyPath(path);
+                return path;
             }
             //Generate neighbors of nextNode and insert into openSet (assuming they aren't in the closed set.
             for(Point2D dir : DIRECTIONS)
@@ -237,7 +233,7 @@ public class RelationshipRouter {
                 AStarSegment neighborLookup = new AStarSegment(neighborGridX, neighborGridY, 0, 0, null);
                 
                 //Intersects line
-                if(this.occupiedPathCells.contains(neighborLookup)){
+                if(isTileOccupied(neighborLookup)){
                     additionalGCost += EXISTING_RELATIONSHIP_PENALTY;
                 }
                 //Intersects classbox
@@ -292,7 +288,7 @@ public class RelationshipRouter {
     }
     /**
      * This removes redundant nodes in a straight line.
-     * AI generated code because this is super boring code to write.
+     * TODO: IMPLEMENT!
      */
     private static List<Point2D> simplifyPath(List<Point2D> rawPath) {
 
@@ -300,5 +296,26 @@ public class RelationshipRouter {
             return rawPath;
 
         return rawPath;
+    }
+    
+    public void addOccupationToCell(UMLRelationship relationship, AStarSegment ass)
+    {
+        if(!occupiedPathCells.containsKey(ass))
+        {
+            occupiedPathCells.put(ass, new ArrayList<UMLRelationship>());
+        }
+        occupiedPathCells.get(ass).add(relationship);
+    }
+    
+    public void removeOccupationToCell(UMLRelationship relationship, AStarSegment ass)
+    {
+        if(!occupiedPathCells.containsKey(ass)) return;
+        
+        occupiedPathCells.get(ass).remove(relationship);
+    }
+    
+    public List<UMLRelationship> shotgunGetNode(AStarSegment ass)
+    {
+        return occupiedPathCells.get(ass);
     }
 }

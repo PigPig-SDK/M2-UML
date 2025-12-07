@@ -126,7 +126,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
             }
             e.consume(); // Prevent event from propagating to other nodes
         });
-
+        //On drag...
         this.nodeBackground.setOnMouseDragged(e -> {
             if(e.getButton() == MouseButton.PRIMARY) {
                 isDragging = true;
@@ -151,9 +151,69 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
                     }
                 }
                 this.nodeBackground.getParent().requestLayout(); // Force layout update
+                shotgunCheckRelationshipOverlap();
             }
             e.consume(); // Prevent event from propagating to other nodes
         });
+    }
+    /**
+     * This 'shotguns' into the 'occupiedPathCells' to see if any relationships might desire a redraw.
+     */
+    void shotgunCheckRelationshipOverlap()
+    {
+        List<AStarSegment> perimeterNodes = new ArrayList<>();
+        Rectangle2D sourceBounds = getRectBounds();
+        Point2D targetCenter = getLocation();
+         //Define padded search area around source bounds.
+        double searchMinX = sourceBounds.getMinX() - 100;
+        double searchMaxX = sourceBounds.getMaxX() + 100;
+        double searchMinY = sourceBounds.getMinY() - 100;
+        double searchMaxY = sourceBounds.getMaxY() + 100;
+
+        int minI = PathGridMapper.toGridIndex(searchMinX);
+        int maxI = PathGridMapper.toGridIndex(searchMaxX);
+        int minJ = PathGridMapper.toGridIndex(searchMinY);
+        int maxJ = PathGridMapper.toGridIndex(searchMaxY);
+        //rewrite so we grab the perimeter just inside the class bounds:
+        for(int i = minI; i <= maxI; i++){
+            for(int j = minJ; j <= maxJ; j++){
+                if(i == minI || i == maxI){
+                    AStarSegment nextPerimeterTile = new AStarSegment(i, j, 0.0, 0.0, null);
+                    perimeterNodes.add(nextPerimeterTile);
+                }
+
+            }
+            if(i > minI && i < maxI){
+                //Include j == minJ and j = maxJ tiles
+                int minimumJ = minJ;
+                int maximumJ = maxJ;
+                AStarSegment minJTile = new AStarSegment(i, minimumJ, 0.0, 0.0, null);
+                AStarSegment maxJTile = new AStarSegment(i, maximumJ, 0.0, 0.0, null);
+                perimeterNodes.add(minJTile);
+                perimeterNodes.add(maxJTile);
+            }
+        }
+        
+        //Find a set list of desired redraws.
+        Set<UMLRelationship> allRedrawCalls = new HashSet<>();
+        for(AStarSegment ass : perimeterNodes)
+        {
+            List<UMLRelationship> temp = RelationshipRouter.getInstance().shotgunGetNode(ass);
+            if(temp == null) continue;
+            
+            allRedrawCalls.addAll(temp);
+        }
+        for(UMLRelationship relationship : allRedrawCalls)
+        {
+            if(relationship.getSource() == parentClass || relationship.getDestination() == parentClass)
+                continue;
+            
+            if(relationship.getListener() instanceof GuiRelationship guiRelationship)
+            {
+                guiRelationship.queuedRedraw = true;
+                guiRelationship.update(relationship);
+            }
+        }
     }
     /**
      * Helper function that lets the user rename the class name TextField.

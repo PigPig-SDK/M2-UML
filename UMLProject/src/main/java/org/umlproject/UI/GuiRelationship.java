@@ -34,6 +34,8 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
     private Node relationshipDiagramElement;
     private TextField relationshipText;
     private List<Point2D> pathPoints;
+    private List<AStarSegment> nodeSpacePoints;
+    public boolean queuedRedraw = false;
 
     private static final double SYMBOL_DISTANCE_BUFFER = 50;
     private static final double SYMBOL_MIN_DISTANCE = 100;
@@ -44,7 +46,7 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
     {
         this.world = world;
         this.relationship = umlRelationship;
-        this.router = RelationshipRouter.getRouterInstance();
+        this.router = RelationshipRouter.getInstance();
         update(umlRelationship);
     }
 
@@ -64,8 +66,20 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
             return;
         }
         
-        List<Point2D> newPath = router.AStarAlgorithm(relationship, source, target);
+        nodeSpacePoints = router.AStarAlgorithm(relationship, source, target);
         
+        List<Point2D> newPath = new ArrayList<>();
+        if(nodeSpacePoints != null)
+        {
+            for(AStarSegment ass : nodeSpacePoints)
+            {
+                if(ass == null) continue;
+
+                double x = PathGridMapper.toPixelCoordinate(ass.getGridX());
+                double y = PathGridMapper.toPixelCoordinate(ass.getGridY());
+                newPath.add(new Point2D(x, y));
+            }
+        }
 
         
         //Check if newPath is empty or null, in which case draw a default straight line.
@@ -121,6 +135,12 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
      */
     private boolean redrawRequired()
     {
+        if(queuedRedraw)
+        {
+            queuedRedraw = false;
+            return true;
+        }
+        
         if(pathPoints == null) return true;
         if(this.lineMain == null) return true;
         UMLClass source = relationship.getSource();
@@ -142,13 +162,14 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
             return;
         }
         
-        //Print path debug
-//        for(Point2D p : pathPoints)
-//        {
-//            GuiDebugging.drawLocationalDot(p, 1, 10, Color.CORAL);
-//        }
-        
-        
+        if(nodeSpacePoints != null)//Incase failure inside calculateAndSetPath()
+        {
+            for(AStarSegment ass : nodeSpacePoints)
+            {
+                RelationshipRouter.getInstance().addOccupationToCell(relationship, ass);
+            }
+        }
+
         List<Double> polylinePoints = new ArrayList<>();
         //Exclude last node.
         for(int i = 1; i < this.pathPoints.size(); i++)
@@ -297,6 +318,15 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
 
     @Override
     public void cleanUp() {
+        //Stop cell occupation
+        if(nodeSpacePoints != null)
+        {
+            for(AStarSegment ass : nodeSpacePoints)
+            {
+                RelationshipRouter.getInstance().removeOccupationToCell(relationship, ass);
+            }
+        }
+
         if(this.lineMain == null)
             return;
         this.world.getChildren().removeAll(this.lineMain, this.lineOutline, this.selectionOutline, this.relationshipDiagramElement, this.relationshipText);
