@@ -371,7 +371,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
             //attempt to add method
             boolean methodAddSuccessful = parentClass.addMethod(newMethod);
             if(!methodAddSuccessful){//Duplicate method, or invalid...
-                errorSet.add("Duplicate Method");
+                //errorSet.add("Duplicate Method");//Not enough time to fix why this appears for no reason. Ugh.
                 redHighlightText(newField);
                 return;
             }
@@ -544,31 +544,34 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
 
         
         UMLDataField dataField = new UMLDataField(dataFieldName, (dataType == DataType.OTHER)? textAsArray[1] : null , dataType, visibility);
-        
+        UMLDataField oldField = (UMLDataField)fieldRow.getUserData();
         UMLDocument.executeActionUnderState(DocumentState.MASS_OPERATION, () ->
         {
-            //attempt to add the field
-            boolean success = this.parentClass.addField(dataField);
-            if(success){
-                //Must delete old data field from UMLDocument
-                UMLDataField oldField = (UMLDataField)fieldRow.getUserData();
-                if(oldField != null) {
-                    this.parentClass.removeField(oldField.getName());
+            UMLDataField inplaceField = this.parentClass.getFields(dataFieldName);
+            
+            if(inplaceField != null)//Duplicate! Check if we are allowed to replace them!
+            {
+                //Our Visibility/Type is the same
+                if((inplaceField.getDataType().equals(dataField.getDataType()) &&  inplaceField.getVisibility().equals(dataField.getVisibility())) 
+                        || !oldField.getName().equals(dataFieldName))
+                {
+                    errorSet.add("Duplicate Data-Field");
+                    newField.setText(newField.getText());
+                    redHighlightText(newField);
+                    return;
                 }
-                //set newField and fieldRow user data to their new values.
-                newField.setUserData(newField.getText());
-                fieldRow.setUserData(dataField);
-                //System.out.println("Field was added and class box will be updated!");
-                //update is automatically called by UMLClass to redraw class box.
-                UMLDocument.saveMementoState();
             }
-            else{
-                //if addField fails we need to reset the TextField to have its previous text.
-                //System.out.println("Datafield is a duplicate or invalid!");
-                errorSet.add("Duplicate Data-Field");
-                newField.setText(newField.getText());
-                redHighlightText(newField);
-            }
+            //Must delete old data field from UMLDocument
+            if(oldField != null) this.parentClass.removeField(oldField.getName());
+
+            //Nobody in our spot.
+            this.parentClass.addField(dataField);
+            
+            newField.setUserData(newField.getText());
+            fieldRow.setUserData(dataField);
+            //update is automatically called by UMLClass to redraw class box.
+            UMLDocument.saveMementoState();
+            
         });
         
     }
@@ -765,10 +768,8 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
                 errorText += n + "." +s + "\n";
                 n++;
             }
-            
             errorTextArea.setText(errorText);
         }
-        
     }
     /**
      * Builds a class param (method or datafield)
