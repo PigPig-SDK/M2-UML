@@ -730,7 +730,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         if(this.cosmetic == null || cosmeticInfo == null) return;
         
         this.cosmetic.setTranslateX(getLocation().getX() - (width/2) - cosmeticInfo.xOffset);
-        this.cosmetic.setTranslateY(getLocation().getY() - height - cosmeticInfo.yOffset);
+        this.cosmetic.setTranslateY(getLocation().getY() - (height/2) - cosmeticInfo.yOffset);
     }
     /**
      * Updates the text areas location and text.
