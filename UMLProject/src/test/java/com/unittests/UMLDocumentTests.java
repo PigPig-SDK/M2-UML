@@ -8,6 +8,7 @@ import javax.swing.event.DocumentListener;
 import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.*;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.umlproject.DiagramElementListener;
 import org.umlproject.DocumentListner;
@@ -21,6 +22,13 @@ import org.umlproject.UMLRelationship;
 
 public class UMLDocumentTests
 {
+
+    @BeforeEach
+    public void resetDocumentSingleton()
+    {
+        // Ensure the Memento/UMLDocument singleton is initialized
+        UMLDocument.resetInstance(true);
+    }
 
     @Test
     public void getFileLocation_constructor_success()
