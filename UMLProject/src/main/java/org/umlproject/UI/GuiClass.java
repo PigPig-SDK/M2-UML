@@ -17,6 +17,7 @@ import java.util.*;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import javafx.application.Platform;
 import javafx.geometry.Bounds;
 import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
@@ -28,6 +29,7 @@ import javafx.scene.layout.BorderStrokeStyle;
 import javafx.scene.layout.BorderWidths;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
 import javafx.scene.shape.StrokeLineCap;
 import javafx.scene.shape.StrokeLineJoin;
 import javafx.scene.shape.StrokeType;
@@ -54,12 +56,19 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     Point2D lastShotgunLocation = Point2D.ZERO;
 
     Point2D mouseWorldSpace;
-    double padding = 20.0;
     Point2D dragStartLocation = Point2D.ZERO;
+    
+    private double width = CLASS_WIDTH;
+    private double height = 0;
     
     List<Button> guiButtons = new LinkedList<>();//No random access is required. Using linked list.
     private boolean isDragging = false;
     private boolean isSelected = false;
+    private static final int CLASS_WIDTH = 350;
+    private static final int CLASS_DEFAULT_HEIGHT = 275;
+    private static final int CLASS_INSETS = 10;
+    private static final int CLASS_TITLE_WIDTH = 300;
+    private static final int CLASS_TEXTBOX_HEIGHT = 34;
     /**
      * Constructor for GuiClass responsible for building the initial class box and setting all the proper
      * actions on its nodes. TextFields will be editable and those edits will be reflected in the underlying
@@ -568,14 +577,16 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     public final void update(UMLClass desiredElement) {
         //Clear out the previous GUI.
         cleanUp();
+        computeSize();
+//        GuiDebugging.showBounds(getRectBounds(), 5, 10, Color.GREEN);
         //--=======================================================Clone start
-        this.dataFieldTextFields = new VBox(10);
-        this.methodTextFields = new VBox(10);
-        this.parentVBox = new VBox(10);
-        this.parentVBox.setSpacing(10);
-        this.parentVBox.setPadding(new Insets(10, 10, 10, 10));
-        this.parentVBox.setMinWidth(300);
-        this.parentVBox.setPrefWidth(300);
+        this.dataFieldTextFields = new VBox(CLASS_INSETS);
+        this.methodTextFields = new VBox(CLASS_INSETS);
+        this.parentVBox = new VBox(CLASS_INSETS);
+        this.parentVBox.setSpacing(CLASS_INSETS);
+        this.parentVBox.setPadding(new Insets(CLASS_INSETS, CLASS_INSETS, CLASS_INSETS, CLASS_INSETS));
+        this.parentVBox.setMinWidth(CLASS_WIDTH);
+        this.parentVBox.setPrefWidth(CLASS_WIDTH);
         this.parentVBox.setAlignment(Pos.CENTER);
         this.nodeBackground = new StackPane();
         this.nodeBackground.setManaged(false);
@@ -591,9 +602,9 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
                 + "-fx-background-radius: 0 0 10 10; "
                 + "-fx-border-radius: 0;" 
                 + "-fx-border-width: 0;");
-        classNameField.setMaxWidth(250);
+        
+        classNameField.setMaxWidth(CLASS_TITLE_WIDTH);
         classNameField.setFocusTraversable(false);
-        //Make it so the UMLClass class name updates after modifying classNameField
         makeClassNameRenamable(classNameField);
         Separator separator = new Separator();
         separator.setMouseTransparent(true);
@@ -639,6 +650,9 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         this.world.getChildren().add(this.nodeBackground);
         updateAllRelationships(desiredElement);
         setSelected(isSelected);//Update our selected state
+        
+        double height = parentVBox.prefHeight(Region.USE_COMPUTED_SIZE);
+        System.out.println("parentVBox : " + height);
     }
     
     public HBox addClassParam(String title, Consumer<Button> onClicked)
@@ -661,14 +675,13 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         if(this.parentVBox == null)
             return;
         
-        double arc = 30;
+        final double arc = 30;
         double borderWidth = 5;
-        double radiiSpecial = arc - borderWidth / 2;
+        final double radiiSpecial = arc - borderWidth / 2;
         if(isSelected)
         {
             borderWidth = 5 + 2*Math.sin(time * 0.00000001);
             //this.parentVBox.setStrokeDashOffset();
-            
             BorderStrokeStyle dashedStyle = new BorderStrokeStyle(
                     StrokeType.INSIDE,                  // stroke type
                     StrokeLineJoin.MITER,               // corner join
@@ -677,7 +690,6 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
                     10*Math.sin(time * 0.000000001),
                 Arrays.asList(30.0, 15.0)
             );
-            Insets borderInsets = new Insets(5);
             // Background with adjusted radii for the border
             parentVBox.setBackground(new Background(new BackgroundFill(
                 GuiColor.CLASS_BACKGROUND_COLOR,
@@ -696,8 +708,6 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         }
         else
         {
-            Insets borderInsets = new Insets(5);
-            
             // Background with adjusted radii for the border
             parentVBox.setBackground(new Background(new BackgroundFill(
                 GuiColor.CLASS_BACKGROUND_COLOR,
@@ -749,7 +759,6 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
      */
     public void updateAllRelationships(UMLClass desiredElement)
     {
-
         if(UMLDocument.getDocumentState() != DocumentState.MEMENTO_STATE_RESET)//select newly added items.
         {
             ArrayList<UMLRelationship> list = UMLDocument.getInstance().getAllRelationshipsInstanceOf(desiredElement.getClassName());
@@ -790,6 +799,8 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     }
     @Override
     public void setSelected(boolean isSelected) {
+        if(this.isSelected != isSelected && isSelected)
+            this.update(parentClass);
         
         this.isSelected = isSelected;
         updateVbox(isSelected, 0);
@@ -816,9 +827,6 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         //Reused getRectBounds code with more accurate to visual bounds.
         if(this.parentVBox == null)
             return false;
-        //debugging lines
-        //GuiDebugging.showBounds(selectionRectangle, 5, 5, Color.RED);
-        //GuiDebugging.showBounds(rect, 5, 5, Color.GREEN);
         return selectionRectangle.intersects(getRectBounds());
     }
 
@@ -844,24 +852,33 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
      */
     public Rectangle2D getRectBounds()
     {
-        if(this.nodeBackground == null)
-            return null;
-        Bounds bounds = this.parentVBox.getBoundsInLocal();
-
         Point2D offset = getLocation();
-
-        //Takes border outsets into account when calculating bounds
-        Rectangle2D rect = new Rectangle2D(
-                bounds.getMinX() + offset.getX()
-                        - bounds.getWidth() / 2.0 + this.parentVBox.getBorder().getOutsets().getLeft(),
-                bounds.getMinY() + offset.getY()
-                        - bounds.getHeight() / 2.0 + this.parentVBox.getBorder().getOutsets().getTop(),
-                bounds.getWidth(),
-                bounds.getHeight()
+        return new Rectangle2D(
+            offset.getX() - width / 2,
+            offset.getY() - height / 2,
+            width,
+            height
         );
-        return rect;
     }
-
+    /**
+     * This has to be pre-calculated due to how the A* relationships read class bounds.
+     */
+    private void computeSize()
+    {
+        /*
+        HEGHT IS MANUALLY CALCULATED BECAUSE READING FROM THE 'nodeBackground' IS ALWAYS ONE CYCLE LATE.
+        
+        USING THE nodeBackground BOUNDS IS UNACCEPTABLE!
+        */
+        
+        int expectedNumberOfElements = 0;
+        if(parentClass != null) expectedNumberOfElements = parentClass.countNumberOfElements();
+        
+        height = CLASS_DEFAULT_HEIGHT;
+        double spacing = CLASS_INSETS * expectedNumberOfElements - 1;
+        
+        height += (expectedNumberOfElements * (CLASS_TEXTBOX_HEIGHT)) + spacing;
+    }
     @Override
     public String toString(){
         return this.getParentClass().toString();

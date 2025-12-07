@@ -64,6 +64,7 @@ public class GuiDebugging {
         for (Line line : new Line[]{top, bottom, left, right}) {
             line.setStrokeWidth(strokeWidth);
             line.setStroke(color);
+            line.setViewOrder(-100000);//Very top.
             GuiController.getInstance().getWorld().getChildren().add(line);
             destroyNodeAfterTime(line, lifetime);
         }
