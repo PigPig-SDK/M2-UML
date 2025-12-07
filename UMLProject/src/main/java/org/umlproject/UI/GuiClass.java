@@ -154,7 +154,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
                     }
                 }
                 this.nodeBackground.getParent().requestLayout(); // Force layout update
-                shotgunCheckRelationshipOverlap();
+                
             }
             e.consume(); // Prevent event from propagating to other nodes
         });
@@ -205,7 +205,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         Set<UMLRelationship> allRedrawCalls = new HashSet<>();
         for(AStarSegment ass : perimeterNodes)
         {
-            ass.drawDebug();
+            //ass.drawDebug();
             List<UMLRelationship> temp = RelationshipRouter.getInstance().shotgunGetNode(ass);
             if(temp == null) continue;
             
@@ -730,6 +730,8 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
      */
      @Override
     public void updateLocation(UMLClass desiredElement) {
+        shotgunCheckRelationshipOverlap();
+        
         if(this.nodeBackground == null)
             return;
         updateAllRelationships(desiredElement);
