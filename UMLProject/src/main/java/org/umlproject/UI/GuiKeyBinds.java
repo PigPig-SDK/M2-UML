@@ -10,6 +10,7 @@ import static javafx.scene.input.KeyCode.C;
 import static javafx.scene.input.KeyCode.DOWN;
 import static javafx.scene.input.KeyCode.MINUS;
 import static javafx.scene.input.KeyCode.DELETE;
+import static javafx.scene.input.KeyCode.F1;
 import static javafx.scene.input.KeyCode.N;
 import static javafx.scene.input.KeyCode.UP;
 import static javafx.scene.input.KeyCode.Z;
@@ -59,17 +60,13 @@ public class GuiKeyBinds {
             //Fires cases regardless of additional keys
             switch(event.getCode())
             {
-                case F3->
+                case F1->
                 {
-                    RelationshipRouter.visualizeConsumedTiles();
+                    GuiController.getInstance().infoHelpMenuAction();
                 }
                 case F2->
                 {
                     GuiController.getInstance().aboutHelpMenuAction();
-                }
-                case F1->
-                {
-                    GuiController.getInstance().infoHelpMenuAction();
                 }
                 case F12->
                 {
