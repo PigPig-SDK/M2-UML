@@ -1,5 +1,6 @@
 package org.umlproject.UI;
 
+import javafx.application.Platform;
 import javafx.geometry.Point2D;
 import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
@@ -21,6 +22,10 @@ public class GuiSearch {
         }
 
         TextField inputText = new TextField();
+        Platform.runLater(() -> {
+            inputText.requestFocus();
+            inputText.selectAll();
+        });
         TitledPane inputTextWrap = new TitledPane("Class Name:", inputText);
 
         ComboBox<String> inputDropdown = new ComboBox<>();
