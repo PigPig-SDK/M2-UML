@@ -110,6 +110,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
             }
             e.consume(); // Prevent event from propagating to other nodes
         });
+        
         //Used for selection
         //Mouse up...
         nodeBackground.setOnMouseClicked(e -> {
@@ -134,7 +135,6 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
                 Point2D worldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
                 Point2D selectionOffset = new Point2D(worldSpace.getX() - this.mouseAnchorX, worldSpace.getY() - this.mouseAnchorY);
                 UMLDocument.executeActionUnderState(DocumentState.SILENT_MOVEMENT, () -> this.parentClass.setLocation(selectionOffset, true));
-
 
                 //Multi-Drag
                 if(!e.isControlDown()) {

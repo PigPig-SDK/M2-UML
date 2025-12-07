@@ -15,16 +15,16 @@ import javafx.scene.paint.Color;
  */
 public class RelationshipRouter {
 
-    private static final double DIAGONAL_COST = PathGridMapper.GRID_SIZE * Math.sqrt(2.0) * 1.1;//If i was president id be like. Fuck diags.. pff chaa, Piece..
+    private static final double DIAGONAL_COST = PathGridMapper.GRID_SIZE * Math.sqrt(2.0) * 1.15;
     private static final double HORIZONTAL_COST = PathGridMapper.GRID_SIZE;
     private PriorityQueue<AStarSegment> openSet;
     private HashMap<AStarSegment, AStarSegment> openSetFastLookupMap;
     private HashSet<AStarSegment> closedSet;
     private HashMap<AStarSegment, List<UMLRelationship>> occupiedPathCells;
     private final PathGridMapper mapper;
-    private static final double EXISTING_RELATIONSHIP_PENALTY = 1000.0;
+    private static final double EXISTING_RELATIONSHIP_PENALTY = 500.0;
     private static final double EXISTING_CLASS_PENALTY = 500.0;
-    private static final double HIGHWAY_BONUS = 0.95;
+    private static final double HIGHWAY_BONUS = 0.99;
     private static final double GOAL_DISTANCE = PathGridMapper.GRID_SIZE * 2;
   
     private static final Point2D[] DIRECTIONS = {
@@ -179,6 +179,16 @@ public class RelationshipRouter {
         List<UMLRelationship> occupationElements = RelationshipRouter.getInstance().occupiedPathCells.get(ass);
         return (occupationElements != null && !occupationElements.isEmpty());
     }
+    private boolean areTileNeighborsOccupied(AStarSegment ass)
+    {
+        for(Point2D dir : DIRECTIONS)
+        {
+            AStarSegment testerSegment = new AStarSegment(ass.getGridX() + (int)dir.getX(), ass.getGridY() + (int)dir.getY());
+            List<UMLRelationship> occupationElements = RelationshipRouter.getInstance().occupiedPathCells.get(testerSegment);
+            if(occupationElements != null && !occupationElements.isEmpty()) return true;
+        }
+        return false;
+    }
     /**
      * AStar algorithm used to determine the shortest path from the source class box to the target class box.
      * @param source, class box the path begins from.
@@ -233,7 +243,7 @@ public class RelationshipRouter {
                 AStarSegment neighborLookup = new AStarSegment(neighborGridX, neighborGridY, 0, 0, null);
                 
                 //Intersects line
-                if(isTileOccupied(neighborLookup)){
+                if(isTileOccupied(neighborLookup) || areTileNeighborsOccupied(neighborLookup)){
                     additionalGCost += EXISTING_RELATIONSHIP_PENALTY;
                 }
                 //Intersects classbox
