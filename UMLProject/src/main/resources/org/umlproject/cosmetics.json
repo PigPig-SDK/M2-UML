@@ -1,0 +1,17 @@
+{
+	"cosmetics":
+	{
+		"dog":{
+			"imageLocation":"/org/umlproject/icons/cosmetics/dog.png",
+			"xOffset":25.0,
+			"yOffset":260.0,
+			"scale":0.25
+		},
+		"hamburger":{
+			"imageLocation":"/org/umlproject/icons/cosmetics/hamburger.png",
+			"xOffset":0.0,
+			"yOffset":200.5,
+			"scale":0.5
+		}
+	}
+}

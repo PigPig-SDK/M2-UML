@@ -1,6 +1,8 @@
 package org.umlproject.UI;
 
+import javafx.application.Platform;
 import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -42,5 +44,16 @@ public class FXUtility {
         button.setTooltip(tip);
         //Set graphic
         button.setGraphic(iconView);
+    }
+    public static void selectTextFieldCarrotAtEnd(TextField field)
+    {
+        Platform.runLater(() -> {
+            
+            if (field == null) return;
+            
+            field.requestFocus();
+            field.selectAll();
+            field.positionCaret(field.getText().length());
+        });
     }
 }

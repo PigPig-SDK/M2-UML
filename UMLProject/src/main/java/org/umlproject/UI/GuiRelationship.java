@@ -23,6 +23,8 @@ import org.umlproject.DiagramElementListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javafx.geometry.Pos;
+import javafx.scene.input.MouseButton;
 import javafx.scene.shape.Polyline;
 
 public final class GuiRelationship implements DiagramElementListener<UMLRelationship>, UISelectable{
@@ -36,10 +38,11 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
     private List<Point2D> pathPoints;
     private List<AStarSegment> nodeSpacePoints;
     public boolean queuedRedraw = false;
+    private RelationshipType lastKnownRelationship = OTHER;
 
-    private static final double SYMBOL_DISTANCE_BUFFER = 50;
-    private static final double SYMBOL_MIN_DISTANCE = 100;
     private static final double MIN_DISTANCE_FOR_REDRAW = 15;
+    private static final double TEXT_LENGTH = 200.0;
+    private static final double MIN_LINE_DISTANCE_FOR_TEXT = 5;
     private static  RelationshipRouter router;
 
     public GuiRelationship(Pane world, UMLRelationship umlRelationship)
@@ -144,6 +147,8 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
             return true;
         }
         
+        if(lastKnownRelationship != this.relationship.getRelationshipType()) return true;
+        
         if(pathPoints == null) return true;
         if(this.lineMain == null) return true;
         UMLClass source = relationship.getSource();
@@ -157,6 +162,9 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
         
         if(!redrawRequired())
             return;
+        
+        //Update.
+        lastKnownRelationship = desiredElement.getRelationshipType();
         
         cleanUp();
         this.calculateAndSetPath();
@@ -216,12 +224,42 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
         world.getChildren().addAll(lineMain, lineOutline, selectionOutline);
         //Add clickableness...
         lineMain.setOnMouseClicked(e -> {
+            if(e.getButton() != MouseButton.PRIMARY) return;
+            
             GuiSelect.getInstance().clickUiElement(e, this, false);
             e.consume(); // Prevent event from propagating to other nodes
         });
+        placeText(relationship);
+        
         setSelected(isSelected);//Update our selected state
     }
-
+    void placeText(UMLRelationship desiredElement)
+    {
+        if(nodeSpacePoints.size() < MIN_LINE_DISTANCE_FOR_TEXT)
+            return;
+        //Bias starting towards the endpoint
+        Point2D midpoint = pathPoints.get(pathPoints.size()/2);
+        
+        this.relationshipText = new TextField(desiredElement.getRelationshipName());
+        this.relationshipText.setAlignment(Pos.CENTER);
+        this.relationshipText.setMinWidth(TEXT_LENGTH);
+        this.relationshipText.setLayoutX(midpoint.getX() - (TEXT_LENGTH/2));//Magical number for offsetting correctly
+        this.relationshipText.setLayoutY(midpoint.getY() - 12.5);//Magical number for offsetting correctly
+        this.relationshipText.setViewOrder(40);//Send to back..
+        //Text update
+        //When the user gives our textbox a new value, we push the data and that causes a redraw...
+        this.relationshipText.setOnAction(event -> {
+            String input = relationshipText.getText();
+            RelationshipType relationship = RelationshipType.stringToRelationshipType(input);
+            if(relationship == OTHER)
+                desiredElement.setCustomNameType(input);
+            else
+                desiredElement.setRelationshipType(relationship);
+        });
+        
+        this.world.getChildren().add(relationshipText);
+        this.world.requestFocus();
+    }
 
     /**
      * Places the 'type marker'.
