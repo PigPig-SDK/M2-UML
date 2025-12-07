@@ -26,7 +26,7 @@ public class RelationshipRouter {
     private static final double EXISTING_CLASS_PENALTY = 500.0;
     private static final double HIGHWAY_BONUS = 0.99;
     private static final double GOAL_DISTANCE = PathGridMapper.GRID_SIZE * 2;
-  
+    //The directions used in A*
     private static final Point2D[] DIRECTIONS = {
         new Point2D(0, -1),
         new Point2D(1, -1),
@@ -81,9 +81,6 @@ public class RelationshipRouter {
      * segment between two points. This method is necessary because the smoothPath() method can reduce the actually number
      * of points on a polyLine path down to 2, just the points in contact with the source and target class boxes. This means
      * The entire drawn line would be completely open and passable to any other relationship line that wanted to cross it.
-     * Besenthal's algorithm generates a rough, impenetrable skeleton we can use to prevent these crossings. Tiles would
-     * still be able to cross at their corners though, so we need to apply further padding to this skeletal line to block
-     * this crossable holes. This padding is done at the bottom of extractRelationshipPathPoints.
      * @param p1, point 1 of a given line segment.
      * @param p2, point 2 of a given line segment.
      * @return, a list of the minimum number of points needed to draw a straight line between p1 and p2.
@@ -170,16 +167,22 @@ public class RelationshipRouter {
         System.out.println("Printing visual for tilemap");
         for(AStarSegment ass : RelationshipRouter.getInstance().occupiedPathCells.keySet())
         {
-            if(RelationshipRouter.getInstance().isTileOccupied(ass) && ass != null)
+            if(RelationshipRouter.getInstance().isFreeRelationshipTile(ass) && ass != null)
                 ass.drawDebug();
         }
     }
-    private boolean isTileOccupied(AStarSegment ass)
+    /**
+     * Returns true if a relationship occupies a given ASTARSEGMENT
+     */
+    private boolean isFreeRelationshipTile(AStarSegment ass)
     {
         List<UMLRelationship> occupationElements = RelationshipRouter.getInstance().occupiedPathCells.get(ass);
         return (occupationElements != null && !occupationElements.isEmpty());
     }
-    private boolean areTileNeighborsOccupied(AStarSegment ass)
+    /**
+     * Checks all neighbors for isFreeRelationshipTile of a given A.S.S
+     */
+    private boolean areRelationshipTileNeighborsFree(AStarSegment ass)
     {
         for(Point2D dir : DIRECTIONS)
         {
@@ -243,7 +246,7 @@ public class RelationshipRouter {
                 AStarSegment neighborLookup = new AStarSegment(neighborGridX, neighborGridY, 0, 0, null);
                 
                 //Intersects line
-                if(isTileOccupied(neighborLookup) || areTileNeighborsOccupied(neighborLookup)){
+                if(isFreeRelationshipTile(neighborLookup) || areRelationshipTileNeighborsFree(neighborLookup)){
                     additionalGCost += EXISTING_RELATIONSHIP_PENALTY;
                 }
                 //Intersects classbox
@@ -299,15 +302,20 @@ public class RelationshipRouter {
     /**
      * This removes redundant nodes in a straight line.
      * TODO: IMPLEMENT!
+     * 
+     * NOTE! THIS IS MORE THAN A STRAIGHTFORWARD IMPLEMENTATION OF 'REMOVING REDUNDANT NODES'
+     * The relationship identifier uses the 2nd to last node, which is expected to be outside of the UMLClass!
      */
     private static List<Point2D> simplifyPath(List<Point2D> rawPath) {
-
-        if (rawPath == null || rawPath.size() <= 2)
-            return rawPath;
-
+        
         return rawPath;
     }
-    
+    /**
+     * Enforces that a UMLRelationship occupies a given A.S.S node inside the occupiedPathCells grid
+     * 
+     * Basically, if you want a location in the tilemap to be avoided by the pathfinding, add it here.
+     * NOTE: Avoiding is never a guarantee in this algorithm!!
+     */
     public void addOccupationToCell(UMLRelationship relationship, AStarSegment ass)
     {
         if(!occupiedPathCells.containsKey(ass))
@@ -316,14 +324,25 @@ public class RelationshipRouter {
         }
         occupiedPathCells.get(ass).add(relationship);
     }
-    
+    /**
+     * Releve ownership of a given A.S.S node inside the occupiedPathCells grid.
+     * 
+     * Basically, If you want a node to be unblocked, call this.
+     * @param relationship The relationship you want to free from a tiles ownership
+     * @param ass the ASTARSEGMENT which represents the location of the tile.
+     */
     public void removeOccupationToCell(UMLRelationship relationship, AStarSegment ass)
     {
         if(!occupiedPathCells.containsKey(ass)) return;
         
         occupiedPathCells.get(ass).remove(relationship);
     }
-    
+    /**
+     * Finds all relationships which consume the A.S.S tilespace.
+     * 
+     * @param ass The segment to test for
+     * @return A list of relationships within the node.
+     */
     public List<UMLRelationship> shotgunGetNode(AStarSegment ass)
     {
         return occupiedPathCells.get(ass);

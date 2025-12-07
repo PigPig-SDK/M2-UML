@@ -50,7 +50,8 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
         update(umlRelationship);
     }
 
-    /** Calculates a safePath.
+    /** 
+     * Calculates a safePath.
      */
     public void calculateAndSetPath() {
         UMLClass source = relationship.getSource();
@@ -116,13 +117,15 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
     public List<Point2D> getPathPoints(){
         return this.pathPoints;
     }
-    
+    /**
+     * Returns the relationship which this element is associated
+     */
     public UMLRelationship getRelationship()
     {
         return this.relationship;
     }
     /**
-     * 
+     * Checks if a redraw is required per class basis
      */
     private boolean redrawRequiredForClass(UMLClass checkClass, Point2D point)
     {
@@ -158,9 +161,8 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
         cleanUp();
         this.calculateAndSetPath();
 
-        if (this.pathPoints == null || this.pathPoints.size() < 2) {
-            return;
-        }
+        if (this.pathPoints == null || this.pathPoints.size() < 2) return;
+        
         
         if(nodeSpacePoints != null)//Incase failure inside calculateAndSetPath()
         {
@@ -243,7 +245,9 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
         this.relationshipDiagramElement.setLayoutY(pathPoints.get(1).getY());
         this.relationshipDiagramElement.setRotate(Math.toDegrees(angle));
     }
-     
+    /**
+     * Creates a diagram node depending on the RelationshipType
+     */
     private Node createDiagramNode(RelationshipType desiredElement)
     {
         if(desiredElement == null)
@@ -364,5 +368,4 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
         this.selectionOutline.setStrokeDashOffset(10*Math.sin(time * 0.000000001));
 
     }
-
 }
