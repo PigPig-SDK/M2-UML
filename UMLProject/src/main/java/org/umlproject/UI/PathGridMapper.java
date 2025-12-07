@@ -105,11 +105,6 @@ public class PathGridMapper {
         AStarSegment centerTile = new AStarSegment(xAVG, yAVG, 0.0, hCost, null);
         perimeterNodes.add(centerTile);
         
-//        System.out.println("The size of perimeterNodes is: " + perimeterNodes.size());
-//        for(AStarSegment ass : perimeterNodes)
-//        {
-//            GuiDebugging.drawLocationalDot(new Point2D(toPixelCoordinate(ass.gridX), toPixelCoordinate(ass.gridY)), 2.0, 10, Color.GREEN);
-//        }
         return perimeterNodes;
  }
 

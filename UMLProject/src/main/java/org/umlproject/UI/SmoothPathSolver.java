@@ -5,6 +5,11 @@ import java.util.List;
 import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
 
+/**
+ * NOTE: THIS CODE IS UNUSED!
+ * 
+ * DUE TO THE LIEKLYHOOD IF IT BEING IMPORTANT LATER, IT REMAINS.
+ */
 public class SmoothPathSolver {
      
     /**

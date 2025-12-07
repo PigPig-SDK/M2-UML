@@ -18,7 +18,13 @@ public class RelationshipRouter {
     private static final double DIAGONAL_COST = PathGridMapper.GRID_SIZE * Math.sqrt(2.0) * 1.15;
     private static final double HORIZONTAL_COST = PathGridMapper.GRID_SIZE;
     private PriorityQueue<AStarSegment> openSet;
+    /**
+     * KEY: a dummy AStarSegment.
+     * -Note: AStarSegment with only the location set will generate the same hashcode as a fully populated node.
+     * VALUE: the AStarSegment with proper data.
+     */
     private HashMap<AStarSegment, AStarSegment> openSetFastLookupMap;
+    
     private HashSet<AStarSegment> closedSet;
     private HashMap<AStarSegment, List<UMLRelationship>> occupiedPathCells;
     private final PathGridMapper mapper;
