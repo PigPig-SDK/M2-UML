@@ -366,7 +366,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
             //attempt to add method
             boolean methodAddSuccessful = parentClass.addMethod(newMethod);
             if(!methodAddSuccessful){//Duplicate method, or invalid...
-                errorSet.add("Duplicate");
+                errorSet.add("Duplicate Method");
                 redHighlightText(newField);
                 return;
             }
@@ -703,11 +703,6 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         //Attach error window
         this.errorTextArea = new Label("");
         this.errorTextArea.setViewOrder(-50);
-        this.errorTextArea.setStyle(
-            "-fx-text-fill: red;" +
-            "-fx-font-weight: bold;" +
-            "-fx-font-size: 24px;"
-        );
         this.world.getChildren().add(this.errorTextArea);
         updateErrorText();
     }
@@ -717,17 +712,32 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     private void updateErrorText()
     {
         if(this.errorTextArea == null) return;
-        
+
         this.errorTextArea.setTranslateX(getLocation().getX() + (CLASS_WIDTH/2) + 25);
         this.errorTextArea.setTranslateY(getLocation().getY() - ((height/2) - 10));
         
         if(!errorSet.isEmpty())
         {
-            String errorText = "ERRORS:\n";
-            
+            //Only appear if there is text to display
+            this.errorTextArea.setStyle(
+                "-fx-text-fill: red;" +
+                "-fx-font-weight: bold;" +
+                "-fx-font-size: 24px;"+    
+                "-fx-background-color: #ffc4c4;" +
+                "-fx-background-radius: 10;" +
+                "-fx-border-color: white;" +
+                "-fx-border-width: 5;" +
+                "-fx-border-radius: 10;" +
+                "-fx-border-style: dashed;"+
+                "-fx-border-style: segments(15, 30)"+
+                "-fx-padding: 12 12 12 12;"
+            );
+            String errorText = "Issues:\n";
+            int n = 1;
             for(String s : errorSet)
             {
-                errorText += s + "\n";
+                errorText += n + "." +s + "\n";
+                n++;
             }
             
             errorTextArea.setText(errorText);
