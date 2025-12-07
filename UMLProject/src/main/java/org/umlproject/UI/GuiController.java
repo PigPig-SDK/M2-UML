@@ -275,10 +275,14 @@ public class GuiController implements DocumentListner {
     }
     
     @FXML 
-    private void copyEditMenuAction() { System.out.println("Copy"); }
+    private void copyEditMenuAction() {
+        GuiCopyPaste.getInstance().copy();
+    }
     
     @FXML 
-    private void pasteEditMenuAction() { System.out.println("Paste"); }
+    private void pasteEditMenuAction() {
+        GuiCopyPaste.getInstance().paste();
+    }
     
     @FXML 
     private void hostNetworkMenuAction() { 
