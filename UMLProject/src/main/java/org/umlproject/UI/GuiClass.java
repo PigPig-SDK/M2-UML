@@ -40,6 +40,8 @@ import org.umlproject.UMLClass;
 public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable, UIPositional {
     public static final Font DEFAULT_CLASS_FONT = Font.font("Monospaced", FontWeight.NORMAL, FontPosture.REGULAR, 18);
     
+    private static final double SHOTGUN_DISTANCE_REFIRE = 50;
+    
     private Pane world;
     private UMLClass parentClass;
     double mouseAnchorX;
@@ -49,6 +51,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     VBox methodTextFields;
     //VBox that holds className TextField and VBoxes for data fields and methods.
     VBox parentVBox;
+    Point2D lastShotgunLocation = Point2D.ZERO;
 
     Point2D mouseWorldSpace;
     double padding = 20.0;
@@ -161,6 +164,10 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
      */
     void shotgunCheckRelationshipOverlap()
     {
+        if(lastShotgunLocation.distance(this.getLocation())  <= SHOTGUN_DISTANCE_REFIRE) return;
+        
+        lastShotgunLocation = getLocation();
+        
         List<AStarSegment> perimeterNodes = new ArrayList<>();
         Rectangle2D sourceBounds = getRectBounds();
         Point2D targetCenter = getLocation();
@@ -198,6 +205,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         Set<UMLRelationship> allRedrawCalls = new HashSet<>();
         for(AStarSegment ass : perimeterNodes)
         {
+            ass.drawDebug();
             List<UMLRelationship> temp = RelationshipRouter.getInstance().shotgunGetNode(ass);
             if(temp == null) continue;
             
