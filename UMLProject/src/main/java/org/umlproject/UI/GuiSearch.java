@@ -13,7 +13,7 @@ import java.util.Optional;
 
 public class GuiSearch {
 
-    public static void GuiSearchSetup(){
+    public static void OpenSearchBox(){
 
         if(UMLDocument.getInstance().getClassSet().isEmpty()){
             FXDialogueFactory.createAlertWindow(Alert.AlertType.ERROR, "Class Search",
@@ -36,7 +36,7 @@ public class GuiSearch {
         inputContainer.getChildren().addAll(inputTextWrap, new Label("or"), inputDropdown);
 
         Alert popup = FXDialogueFactory.createAlertWindow(Alert.AlertType.INFORMATION, "Class Search",
-                "Enter class name or select from dropdown", null, inputContainer);
+"Enter class name or select from dropdown", null, inputContainer);
 
         Optional<ButtonType> result = popup.showAndWait();
         if(!result.isPresent()){
