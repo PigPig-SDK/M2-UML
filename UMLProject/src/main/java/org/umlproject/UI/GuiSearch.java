@@ -1,8 +1,10 @@
 package org.umlproject.UI;
 
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.TextField;
+import javafx.geometry.Point2D;
+import javafx.scene.control.*;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import org.umlproject.UMLClass;
 import org.umlproject.UMLDocument;
 
@@ -10,25 +12,57 @@ import java.util.Optional;
 
 public class GuiSearch {
 
-    public static void GuiSearch(){
+    public static void GuiSearchSetup(){
 
-        TextField input = new TextField();
+        if(UMLDocument.getInstance().getClassSet().isEmpty()){
+            FXDialogueFactory.createAlertWindow(Alert.AlertType.ERROR, "Class Search",
+                    "Your project requires at least 1 class", null, null).show();
+            return;
+        }
+
+        TextField inputText = new TextField();
+        TitledPane inputTextWrap = new TitledPane("Class Name:", inputText);
+
+        ComboBox<String> inputDropdown = new ComboBox<>();
+        inputDropdown.getItems().addAll(UMLDocument.getInstance().getClassSet().keySet());
+        inputDropdown.setPromptText("...");
+
+        VBox inputContainer = new VBox(10);
+        inputContainer.getChildren().addAll(inputTextWrap, new Label("or"), inputDropdown);
+
         Alert popup = FXDialogueFactory.createAlertWindow(Alert.AlertType.INFORMATION, "Class Search",
-                "Search for a Class", null, input);
+                "Enter class name or select from dropdown", null, inputContainer);
+
         Optional<ButtonType> result = popup.showAndWait();
-        UMLClass umlClass = UMLDocument.getInstance().getClass(input.getText());
+        if(!result.isPresent()){
+            return;
+        }
+
+        UMLClass umlClass = UMLDocument.getInstance().getClass(inputText.getText());
         if(umlClass != null){
-            if(umlClass.getListener() instanceof GuiClass guiClass && guiClass != null){
-                GuiCamera.setCameraLocation(GuiController.getInstance().getWorld().sceneToLocal(umlClass.getLocation()));
-                GuiSelect.getInstance().selectUiElement(guiClass);
-            }
+            GuiSearchAct(umlClass);
         }
         else{
-            Alert error = FXDialogueFactory.createAlertWindow(Alert.AlertType.ERROR, "Error",
-                    "Class does not exist!", "", null);
-            error.showAndWait();
-        }
 
+            umlClass = UMLDocument.getInstance().getClass(inputDropdown.getValue());
+            if(umlClass != null){
+                GuiSearchAct(umlClass);
+            }
+            else{
+                Alert error = FXDialogueFactory.createAlertWindow(Alert.AlertType.ERROR, "Error",
+                        "Class does not exist!", "", null);
+                error.showAndWait();
+            }
+        }
     }
 
+    public static void GuiSearchAct(UMLClass inputClass){
+            if(inputClass.getListener() instanceof GuiClass guiClass && guiClass != null){
+
+                GuiCamera.resetCameraLocation();
+                GuiCamera.setCameraLocation(GuiCamera.getScreenCenter().subtract(guiClass.getLocation()));
+                GuiSelect.getInstance().selectUiElement(guiClass);
+
+            }
+        }
 }

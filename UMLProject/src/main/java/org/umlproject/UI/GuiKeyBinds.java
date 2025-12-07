@@ -161,7 +161,7 @@ public class GuiKeyBinds {
                 }
                 //Search for class (CTRL+F)
                 case F ->{
-                    GuiSearch.GuiSearch();
+                    GuiSearch.GuiSearchSetup();
                 }
                 //Zoom out
                 case MINUS->
