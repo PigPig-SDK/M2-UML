@@ -42,7 +42,7 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
 
     private static final double MIN_DISTANCE_FOR_REDRAW = 15;
     private static final double TEXT_LENGTH = 200.0;
-    private static final double MIN_LINE_DISTANCE_FOR_TEXT = 5;
+    private static final double MIN_LINE_DISTANCE_FOR_TEXT = 12;
     private static  RelationshipRouter router;
 
     public GuiRelationship(Pane world, UMLRelationship umlRelationship)
@@ -235,6 +235,9 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
     }
     void placeText(UMLRelationship desiredElement)
     {
+        if(nodeSpacePoints == null)
+            return;
+        
         if(nodeSpacePoints.size() < MIN_LINE_DISTANCE_FOR_TEXT)
             return;
         //Bias starting towards the endpoint
