@@ -1,5 +1,6 @@
 package org.umlproject.UI;
 
+import java.net.URL;
 import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
 import javafx.scene.control.*;
@@ -16,6 +17,8 @@ import java.util.Set;
 import java.util.function.Consumer;
 import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.Border;
@@ -66,6 +69,8 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     private static final int CLASS_TITLE_WIDTH = 300;
     private static final int CLASS_TEXTBOX_HEIGHT = 34;
     private Label errorTextArea;
+    private ImageView cosmetic = null;
+    private GuiClassCosmetic cosmeticInfo = null;
     /**
      * Constructor for GuiClass responsible for building the initial class box and setting all the proper
      * actions on its nodes. TextFields will be editable and those edits will be reflected in the underlying
@@ -705,6 +710,27 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         this.errorTextArea.setViewOrder(-50);
         this.world.getChildren().add(this.errorTextArea);
         updateErrorText();
+        
+        initializeCosmetic();
+        updateCosmetic();
+    }
+    private void initializeCosmetic()
+    {
+        cosmeticInfo = GuiClassCosmeticTable.getInstance().cosmetics.get(this.parentClass.getClassName().toLowerCase().strip());
+        if(cosmeticInfo == null) return;
+        
+        this.cosmetic = new ImageView(new Image(getClass().getResource(cosmeticInfo.imageLocation).toExternalForm()));
+        this.cosmetic.setScaleX(cosmeticInfo.scale);
+        this.cosmetic.setScaleY(cosmeticInfo.scale);
+        this.cosmetic.setMouseTransparent(true);
+        this.world.getChildren().add(this.cosmetic);
+    }
+    private void updateCosmetic()
+    {
+        if(this.cosmetic == null || cosmeticInfo == null) return;
+        
+        this.cosmetic.setTranslateX(getLocation().getX() - (width/2) - cosmeticInfo.xOffset);
+        this.cosmetic.setTranslateY(getLocation().getY() - height - cosmeticInfo.yOffset);
     }
     /**
      * Updates the text areas location and text.
@@ -833,6 +859,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
      @Override
     public void updateLocation(UMLClass desiredElement) {
         updateErrorText();
+        updateCosmetic();
         shotgunCheckRelationshipOverlap();
         
         if(this.nodeBackground == null)
@@ -872,6 +899,10 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
      * @param oldName,newName - The name to be replaced and do the replacing
      */
     public boolean updateRename(String oldName, String newName){
+        
+        if(newName.trim().isEmpty())
+            return false;
+        
         boolean checkClass = UMLDocument.getInstance().renameClass(oldName, newName);
         if(!checkClass){
             Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -889,7 +920,11 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         if(this.nodeBackground == null)
             return;
         this.world.getChildren().remove(this.nodeBackground);
-        this.world.getChildren().remove(this.errorTextArea);
+        
+        if(this.errorTextArea != null) this.world.getChildren().remove(this.errorTextArea);
+        
+        if(this.cosmetic != null) this.world.getChildren().remove(this.cosmetic);
+
     }
     @Override
     public void setSelected(boolean isSelected) {

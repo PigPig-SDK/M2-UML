@@ -1,0 +1,11 @@
+{
+	"cosmetics":
+	{
+		"dog":{
+			"imageLocation":"/org/umlproject/icons/cosmetics/dog.png",
+			"xOffset":25.0,
+			"yOffset":135.0,
+			"scale":0.25
+		}
+	}
+}
