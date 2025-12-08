@@ -5,7 +5,7 @@
 1. **Install Java Development Kit (JDK) (Specifically Java 25)**  
    Download and install the latest JDK from [Oracle Java Downloads](https://www.oracle.com/java/technologies/downloads/).
 2. **Download the executable**  
-   [Gui 2.0 Release](https://github.com/jprichard1ewu/microsoft-2/releases/tag/Sprint3)
+   [Gui 3.0 Release](https://github.com/jprichard1ewu/microsoft-2/releases/tag/Sprint4)
 
    Enjoy!
 
@@ -35,6 +35,5 @@ Execute `compilenrun.sh`
 | `undo` | Revert the last change you made |
 | `redo` | Reapply a change you previously undid |
 | `quit` | Exits the UML editor application. |
-| **EXPERIMENTAL** |  |
 | `net <host <port>, connect <ip:port>, say, list, disconnect>` | Network commands for connecting to a server, disconnecting, hosting, talking, ect... |
 
