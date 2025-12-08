@@ -134,7 +134,15 @@ public class CommandNetwork extends BaseCommand {
 
     @Override
     public String description() {
-        return "host, connect, say, list";
+
+        return """
+                    Possible parameters for 'net':
+                             host <port> : Hosts a server under your specified port
+                             refresh : Requests a fresh view of the UMLDocument (Can be denied if your local Document is the latest version)
+                             say <message with spaces> : Sends your message to everyone else on your server
+                             disconnect : Closes all connections (Incoming and outgoing)
+                             list : Prints the IP and usernames of all connected users (Only for host)
+                             connect <ip:port> : Connects to a server""";
     }
     
 }
