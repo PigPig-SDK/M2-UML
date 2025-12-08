@@ -439,8 +439,6 @@
     padding: 0 5 0 5;
     -fx-cursor: HAND;
     cursor: HAND;
-	-fx-border-width: 0;
-    border-width: 0;
 }
 .menu-item{
     -fx-background-radius: 0;
@@ -762,24 +760,32 @@
 }
 #consoleOut {
     -fx-background-color: transparent;
-    -fx-border-width: 0;
-    -fx-text-fill: black;
+	-fx-border-width: 0px;
+	-fx-text-fill: #333333;
+}
+#consoleOut .scroll-pane {
+    -fx-background-color: transparent;
+	-fx-text-fill: #333333;
+}
+#consoleOut:info {
+	-fx-text-fill: #333333;
 }
 
-#consoleOut .scroll-pane,
-#consoleOut .scroll-pane .viewport,
+#consoleOut .scroll-pane .viewport {
+    -fx-background-color: transparent;
+	-fx-text-fill: #333333;
+}
 #consoleOut .scroll-pane .content {
     -fx-background-color: transparent;
+	-fx-text-fill: #333333;
 }
-
 #consoleOut .content {
     -fx-scale-y: -1;
+	-fx-text-fill: #333333;
 }
-
 #consoleOut .text {
     -fx-scale-y: -1;
-    -fx-fill: black;      /* sets actual text color */
-    -fx-text-fill: black; /* fallback */
+	-fx-text-fill: #333333;
 }
 #console {
 	-fx-background-color: #E6E6E6;
@@ -790,4 +796,3 @@
 #console .text {
 	-fx-text-fill: #333333;
 }
-

@@ -52,6 +52,7 @@ public class GuiConsole extends OutputStream {
     public void write(int b) {
         messageFuel = MESSAGE_APPEAR_TIME;
         transparency = 1.0;
+        updateTransparency();
         char c = (char) b;
         if (c == '\n') {
             String line = buffer.toString();
@@ -125,7 +126,7 @@ public class GuiConsole extends OutputStream {
                 //message time expired
                 if(messageFuel <= 0 && transparency > 0)
                 {
-                    
+                    updateTransparency();
                     
                     transparency -= deltaTime * 0.9;
                     //Message fade timer has ran out. 
@@ -139,7 +140,12 @@ public class GuiConsole extends OutputStream {
             }
         }.start();
     }
-
+    private static void updateTransparency()
+    {
+        GuiController.getInstance().consoleOut.setStyle("-fx-text-fill: rgba(255, 255, 255," +  
+                Math.max(transparency, 0.005)//Failsafe, as transparency approaches zero, a crash will occur. Javafx error!
+                +");");
+    }
     public static void updateSize() {
         TextArea consoleOut = GuiController.getInstance().consoleOut;
         consoleOut.setPrefHeight(App.mainStage.getHeight() - 80);//Allow space for console at bottom...
