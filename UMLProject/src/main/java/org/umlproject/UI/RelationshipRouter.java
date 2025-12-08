@@ -154,7 +154,7 @@ public class RelationshipRouter {
      * @param endNode, The node at the end of the shortest path.
      * @return, A List of Point2D objects representing the points along the relationship line.
      */
-    public List<AStarSegment> reconstructPath(AStarSegment endNode){
+    private List<AStarSegment> reconstructPath(AStarSegment endNode){
         List<AStarSegment> path = new ArrayList<>();
         AStarSegment current = endNode;
         
@@ -166,7 +166,7 @@ public class RelationshipRouter {
         return path;
     }
     /**
-     * 
+     * DEBUG CODE! VISUALIZING THE CONSUMED TILES!
      */
     public static void visualizeConsumedTiles()
     {

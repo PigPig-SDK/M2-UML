@@ -184,7 +184,7 @@ public class GuiKeyBinds {
      * @param keyAccelerator The key accelerator to add to the specified menu
      * @param menuItemName The menu item name, be very specific when calling this. Look this up with SceneBuilder inside the .FXML
      */
-    public static void addAccelerator(KeyCodeCombination keyAccelerator, String menuItemName)
+    private static void addAccelerator(KeyCodeCombination keyAccelerator, String menuItemName)
     {
         if(GuiController.getInstance() == null)//Ensure not some odd case.
             return;
@@ -203,7 +203,7 @@ public class GuiKeyBinds {
      * @param keyAccelerator The key accelerator to add to the specified menu
      * @param menuItem A MenuItem which the accelerator be applied.
      */
-    public static void addAccelerator(KeyCodeCombination keyAccelerator, MenuItem menuItem)
+    private static void addAccelerator(KeyCodeCombination keyAccelerator, MenuItem menuItem)
     {
         KeyCombination saveKeybind = keyAccelerator;
         menuItem.setAccelerator(saveKeybind);

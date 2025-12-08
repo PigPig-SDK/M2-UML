@@ -56,7 +56,7 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
     /** 
      * Calculates a safePath.
      */
-    public void calculateAndSetPath() {
+    private void calculateAndSetPath() {
         UMLClass source = relationship.getSource();
         UMLClass target = relationship.getDestination();
         
@@ -111,14 +111,6 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
         newPath.set(0, target.getLocation());
         newPath.set(newPath.size()-1, source.getLocation());
         this.pathPoints = newPath;
-    }
-
-    /**
-     * Getter method for pathPoints. Used by RelationshipRouter class for the AStar algorithm.
-     * @return a List of points representing the relationship path.
-     */
-    public List<Point2D> getPathPoints(){
-        return this.pathPoints;
     }
     /**
      * Returns the relationship which this element is associated
@@ -233,7 +225,7 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
         
         setSelected(isSelected);//Update our selected state
     }
-    void placeText(UMLRelationship desiredElement)
+    private void placeText(UMLRelationship desiredElement)
     {
         if(nodeSpacePoints == null)
             return;
@@ -267,7 +259,7 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
     /**
      * Places the 'type marker'.
      */
-    void placeRelationshipMarker(UMLClass endClass, RelationshipType desiredElement, List<Double> polylinePoints)
+    private void placeRelationshipMarker(UMLClass endClass, RelationshipType desiredElement, List<Double> polylinePoints)
     {
         if(endClass == null || endClass.getListener() == null)
         return;

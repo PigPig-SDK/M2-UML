@@ -99,7 +99,7 @@ public class GuiSelect {
             } 
         }
     }
-    public void deselectUiElement(UISelectable selectable)
+    private void deselectUiElement(UISelectable selectable)
     {
         selectedObjects.remove(selectable);
         selectable.setSelected(false);
@@ -115,7 +115,7 @@ public class GuiSelect {
      *
      * @param e - Event to check for ctrl.
      */
-    public void checkResetSelect(MouseEvent e){
+    private void checkResetSelect(MouseEvent e){
         if(!e.isControlDown()){
             resetSelect();
         }

@@ -173,7 +173,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     /**
      * This 'shotguns' into the 'occupiedPathCells' to see if any relationships might desire a redraw.
      */
-    void shotgunCheckRelationshipOverlap()
+    private void shotgunCheckRelationshipOverlap()
     {
         if(lastShotgunLocation.distance(this.getLocation())  <= SHOTGUN_DISTANCE_REFIRE) return;
         
@@ -257,7 +257,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
      * and then insert it into the UMLDocument singleton.
      * @param addMethod, button to set an action on.
      */
-    public void addMethodButtonClickable(Button addMethod){
+    private void addMethodButtonClickable(Button addMethod){
         addMethod.setOnAction(e -> {
             //Create new uniquely named dummy method and add to parent class.
             TextField newDummyMethod = new TextField(parentClass.findValidMethodDummySignature());
@@ -282,7 +282,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
      * value.
      * @param methodRow, HBox containing a delete button and a TextField representing a method signature.
      */
-    public void linkTextFieldToMethod(HBox methodRow){
+    private void linkTextFieldToMethod(HBox methodRow){
         if(methodRow == null || methodRow.getChildren().isEmpty()){
             throw new IllegalArgumentException("provided method row HBox is null or empty!");
         }
@@ -320,7 +320,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
      * @param newField, TextField containing the Method data.
      * @param methodRow, HBox used to hold the TextField and a delete button.
      */
-    public void handleMethodUpdate(TextField newField, HBox methodRow){
+    private void handleMethodUpdate(TextField newField, HBox methodRow){
         
         if (newField.getText().equals(newField.getUserData()))
         {
@@ -398,7 +398,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
      * methodTextFields VBox and the method returns.
      * @param methods, hashmap of UMLMethod array lists.
      */
-    public void convertMethodsToHBoxes(HashMap<String, ArrayList<UMLMethod>> methods){
+    private void convertMethodsToHBoxes(HashMap<String, ArrayList<UMLMethod>> methods){
 
         List<String> methodKeys = new ArrayList<String>(methods.keySet());
         Collections.sort(methodKeys);
@@ -446,7 +446,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
      * user can add a new datafield to both the UMLClass and a new TextField to the class box.
      * @param addDataField, button to be modified.
      */
-    public void addDataFieldButtonClickable(Button addDataField){
+    private void addDataFieldButtonClickable(Button addDataField){
         addDataField.setOnAction(e -> {
             String dummyFieldSignature = parentClass.findValidFieldDummySignature();
 
@@ -468,7 +468,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
      * text box, i.e. taking focus away.
      * @param fieldRow, the HBox containing the old DataField attributes as a string.
      */
-    public void linkTextFieldToDataField(HBox fieldRow){
+    private void linkTextFieldToDataField(HBox fieldRow){
 
         if(fieldRow == null || fieldRow.getChildren().isEmpty()){
             throw new IllegalArgumentException("provided field row HBox is null");
@@ -499,7 +499,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
      * @param fieldRow, Hbox which will hold the newField and delete button aswell as a copy of the UMLDataField for
      *                  future deletion.
      */
-    public void handleDataFieldUpdate(TextField newField, HBox fieldRow){
+    private void handleDataFieldUpdate(TextField newField, HBox fieldRow){
         
         //Data we are checking is actually new.
         if (newField.getText().equals(newField.getUserData()))
@@ -878,7 +878,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
      * Updates the GUI element of all my associated relationships.
      * Note: this bypasses global listener updates.
      */
-    public void updateAllRelationships(UMLClass desiredElement)
+    private void updateAllRelationships(UMLClass desiredElement)
     {
         if(UMLDocument.getDocumentState() != DocumentState.MEMENTO_STATE_RESET)//select newly added items.
         {
@@ -899,7 +899,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
      *
      * @param oldName,newName - The name to be replaced and do the replacing
      */
-    public boolean updateRename(String oldName, String newName){
+    private boolean updateRename(String oldName, String newName){
         
         if(newName.trim().isEmpty())
             return false;

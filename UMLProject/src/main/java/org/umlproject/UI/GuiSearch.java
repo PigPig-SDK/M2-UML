@@ -61,13 +61,13 @@ public class GuiSearch {
         }
     }
 
-    public static void GuiSearchAct(UMLClass inputClass){
-            if(inputClass.getListener() instanceof GuiClass guiClass && guiClass != null){
+    private static void GuiSearchAct(UMLClass inputClass){
+        if(inputClass.getListener() instanceof GuiClass guiClass && guiClass != null){
 
-                GuiCamera.resetCameraLocation();
-                GuiCamera.setCameraLocation(GuiCamera.getScreenCenter().subtract(guiClass.getLocation()));
-                GuiSelect.getInstance().selectUiElement(guiClass);
+            GuiCamera.resetCameraLocation();
+            GuiCamera.setCameraLocation(GuiCamera.getScreenCenter().subtract(guiClass.getLocation()));
+            GuiSelect.getInstance().selectUiElement(guiClass);
 
-            }
         }
+    }
 }
