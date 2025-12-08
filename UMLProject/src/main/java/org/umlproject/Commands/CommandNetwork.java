@@ -7,6 +7,7 @@ import org.networking.ClientHandler;
 import org.networking.NetworkManager;
 import org.networking.NetworkPacket;
 import org.networking.PacketType;
+import org.networking.PayloadRequestDocument;
 
 public class CommandNetwork extends BaseCommand {
 
@@ -27,6 +28,21 @@ public class CommandNetwork extends BaseCommand {
         
         switch(subcommand)
         {
+            case "refresh" ->
+            {
+                if(!NetworkManager.isConnected())
+                {
+                    System.out.println("Not connected to a server. Cannot refresh");    
+                    return;
+                }
+                if(NetworkManager.isHosting())
+                {
+                    System.out.println("Cannot refresh document. You are hosting a server.");    
+                    return;
+                }
+                System.out.println("Asking server for a document refresh...");
+                NetworkManager.getClientInstance().sendNetworkPacket(PayloadRequestDocument.generatePacket());
+            }
             case "connect" ->
             {
                 if(args.length != 2)
@@ -47,6 +63,11 @@ public class CommandNetwork extends BaseCommand {
                     portTry = Integer.parseInt(split[1]);
                 }
                 catch(NumberFormatException ex)
+                {
+                    System.out.println("Port was not valid.");
+                    return;
+                }
+                if(portTry < 1)
                 {
                     System.out.println("Port was not valid.");
                     return;
@@ -92,23 +113,20 @@ public class CommandNetwork extends BaseCommand {
                     System.out.println("Port was not valid.");
                     return;
                 }
-
+                if(portTry < 1)
+                {
+                    System.out.println("Port was not valid.");
+                    return;
+                }
                 NetworkManager.startHost(portTry, true);
             }
             case "say" ->
             {
-                try
-                {
-                    String message = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
-                    if(NetworkManager.getClientInstance() == null)
-                        return;
-                    
-                    NetworkManager.getClientInstance().sendNetworkPacket(new NetworkPacket(0, PacketType.MESSAGE, message));
-                }
-                catch(IOException ex)
-                {
-                    System.out.println("Send message failure:  " + ex.getMessage());
-                }
+                String message = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
+                if(NetworkManager.getClientInstance() == null)
+                    return;
+
+                NetworkManager.getClientInstance().sendNetworkPacket(new NetworkPacket(NetworkManager.getTick(), PacketType.MESSAGE, message));
             }
         }
         
@@ -116,7 +134,15 @@ public class CommandNetwork extends BaseCommand {
 
     @Override
     public String description() {
-        return "host, connect, say, list";
+
+        return """
+                    Possible parameters for 'net':
+                             host <port> : Hosts a server under your specified port
+                             refresh : Requests a fresh view of the UMLDocument (Can be denied if your local Document is the latest version)
+                             say <message with spaces> : Sends your message to everyone else on your server
+                             disconnect : Closes all connections (Incoming and outgoing)
+                             list : Prints the IP and usernames of all connected users (Only for host)
+                             connect <ip:port> : Connects to a server""";
     }
     
 }

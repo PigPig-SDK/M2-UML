@@ -1,0 +1,356 @@
+package org.umlproject.UI;
+
+import javafx.geometry.Point2D;
+import javafx.geometry.Rectangle2D;
+import org.umlproject.UMLClass;
+import org.umlproject.UMLDocument;
+import org.umlproject.UMLRelationship;
+
+import java.util.*;
+import javafx.scene.paint.Color;
+
+
+/**
+ * AStar path finding logic goes here.
+ */
+public class RelationshipRouter {
+
+    private static final double DIAGONAL_COST = PathGridMapper.GRID_SIZE * Math.sqrt(2.0) * 1.15;
+    private static final double HORIZONTAL_COST = PathGridMapper.GRID_SIZE;
+    private PriorityQueue<AStarSegment> openSet;
+    /**
+     * KEY: a dummy AStarSegment.
+     * -Note: AStarSegment with only the location set will generate the same hashcode as a fully populated node.
+     * VALUE: the AStarSegment with proper data.
+     */
+    private HashMap<AStarSegment, AStarSegment> openSetFastLookupMap;
+    
+    private HashSet<AStarSegment> closedSet;
+    private HashMap<AStarSegment, List<UMLRelationship>> occupiedPathCells;
+    private final PathGridMapper mapper;
+    private static final double EXISTING_RELATIONSHIP_PENALTY = 500.0;
+    private static final double EXISTING_CLASS_PENALTY = 500.0;
+    private static final double HIGHWAY_BONUS = 0.99;
+    private static final double GOAL_DISTANCE = PathGridMapper.GRID_SIZE * 2;
+    //The directions used in A*
+    private static final Point2D[] DIRECTIONS = {
+        new Point2D(0, -1),
+        new Point2D(1, -1),
+        new Point2D(1, 0),
+        new Point2D(1, 1),
+        new Point2D(0, 1),
+        new Point2D(-1, 1),
+        new Point2D(-1, 0),
+        new Point2D(-1, -1)
+    };
+
+    private static final RelationshipRouter router = new RelationshipRouter();
+
+    /**
+     * Constructor.
+     */
+    private RelationshipRouter(){
+        this.openSet = new PriorityQueue<>();
+        this.closedSet = new HashSet<>();
+        this.openSetFastLookupMap = new HashMap<>();
+        occupiedPathCells = new HashMap<>();
+        this.mapper = new PathGridMapper(UMLDocument.getInstance(), 15.0);
+    }
+    
+    public static RelationshipRouter getInstance(){
+        return router;
+    }
+
+    public HashSet<AStarSegment> getClosedSet(){
+        return this.closedSet;
+    }
+
+    /**
+     * Helper method to determine if an AStarNode is within the bounds of the target class box.
+     * @param node, The AStarNode to be checked.
+     * @param targetBounds, The bounds to be checked.
+     * @return, a boolean representing whether or not the AStarNode is within the target bounds.
+     */
+    private boolean isGoalNode(AStarSegment node, Rectangle2D targetBounds) {
+        double x = PathGridMapper.toPixelCoordinate(node.getGridX());
+        double y = PathGridMapper.toPixelCoordinate(node.getGridY());
+        double classCenterX = (targetBounds.getMaxX() + targetBounds.getMinX()) / 2;
+        double classCenterY = (targetBounds.getMaxY() + targetBounds.getMinY()) / 2;
+        double dX = x - classCenterX; 
+        double dY = y - classCenterY;
+        double distanceNoSQRT = (dX * dX) + (dY * dY);//Distance without SQRT for speed.
+        return distanceNoSQRT <= (GOAL_DISTANCE * GOAL_DISTANCE);//Check against squared value (Optimization)
+    }
+
+    /**
+     * This method uses Besenthal's algorithm to generate the minimum number of tiles needed to draw a straight line
+     * segment between two points. This method is necessary because the smoothPath() method can reduce the actually number
+     * of points on a polyLine path down to 2, just the points in contact with the source and target class boxes. This means
+     * The entire drawn line would be completely open and passable to any other relationship line that wanted to cross it.
+     * @param p1, point 1 of a given line segment.
+     * @param p2, point 2 of a given line segment.
+     * @return, a list of the minimum number of points needed to draw a straight line between p1 and p2.
+     */
+    public List<AStarSegment> getGridCellsCrossed(Point2D p1, Point2D p2) {
+        List<AStarSegment> crossedCells = new ArrayList<>();
+
+        // Convert to grid coordinates
+        int x1 = PathGridMapper.toGridIndex(p1.getX());
+        int y1 = PathGridMapper.toGridIndex(p1.getY());
+        int x2 = PathGridMapper.toGridIndex(p2.getX());
+        int y2 = PathGridMapper.toGridIndex(p2.getY());
+
+        int dx = Math.abs(x2 - x1);
+        int dy = Math.abs(y2 - y1);
+        int sx = x1 < x2 ? 1 : -1;
+        int sy = y1 < y2 ? 1 : -1;
+        int err = dx - dy;
+
+        int currentX = x1;
+        int currentY = y1;
+
+        while (true) {
+            AStarSegment node = new AStarSegment(currentX, currentY, 0, 0, null);
+            // We can just add it, as the HashSet in the next step will handle duplicates.
+            crossedCells.add(node);
+
+            if (currentX == x2 && currentY == y2) {
+                break;
+            }
+
+            int e2 = 2 * err;
+            if (e2 > -dy) {
+                err -= dy;
+                currentX += sx;
+            }
+            if (e2 < dx) {
+                err += dx;
+                currentY += sy;
+            }
+        }
+        return crossedCells;
+    }
+
+    /**
+     * Helper method to calculate the hCost of an AStarNode.
+     * @param neighborGridX, X index of the AStar grid tile.
+     * @param neighborGridY, Y index of the AStar grid tile.
+     * @param target, target class
+     * @return hCost
+     */
+    public double calculateHCost(int neighborGridX, int neighborGridY, UMLClass target){
+        //Convert to continous coordinates:
+        double continuousCoordX = PathGridMapper.toPixelCoordinate(neighborGridX);
+        double continuousCoordY = PathGridMapper.toPixelCoordinate(neighborGridY);
+        double targetX = target.getLocation().getX();
+        double targetY = target.getLocation().getY();
+        double hCost = Math.sqrt(Math.pow(continuousCoordX - targetX, 2) + Math.pow(continuousCoordY - targetY, 2));
+        return hCost;
+    }
+
+    /**
+     * Helper method used to reconstruct the shortest path starting from the endNode, i.e. the node that is in contact
+     * with the target class box.
+     * @param endNode, The node at the end of the shortest path.
+     * @return, A List of Point2D objects representing the points along the relationship line.
+     */
+    private List<AStarSegment> reconstructPath(AStarSegment endNode){
+        List<AStarSegment> path = new ArrayList<>();
+        AStarSegment current = endNode;
+        
+        while (current != null) {
+            path.add(current.getParent());
+            current = current.getParent();
+        }
+        Collections.reverse(path);
+        return path;
+    }
+    /**
+     * DEBUG CODE! VISUALIZING THE CONSUMED TILES!
+     */
+    public static void visualizeConsumedTiles()
+    {
+        System.out.println("Printing visual for tilemap");
+        for(AStarSegment ass : RelationshipRouter.getInstance().occupiedPathCells.keySet())
+        {
+            if(RelationshipRouter.getInstance().isFreeRelationshipTile(ass) && ass != null)
+                ass.drawDebug();
+        }
+    }
+    /**
+     * Returns true if a relationship occupies a given ASTARSEGMENT
+     */
+    private boolean isFreeRelationshipTile(AStarSegment ass)
+    {
+        List<UMLRelationship> occupationElements = RelationshipRouter.getInstance().occupiedPathCells.get(ass);
+        return (occupationElements != null && !occupationElements.isEmpty());
+    }
+    /**
+     * Checks all neighbors for isFreeRelationshipTile of a given A.S.S
+     */
+    private boolean areRelationshipTileNeighborsFree(AStarSegment ass)
+    {
+        for(Point2D dir : DIRECTIONS)
+        {
+            AStarSegment testerSegment = new AStarSegment(ass.getGridX() + (int)dir.getX(), ass.getGridY() + (int)dir.getY());
+            List<UMLRelationship> occupationElements = RelationshipRouter.getInstance().occupiedPathCells.get(testerSegment);
+            if(occupationElements != null && !occupationElements.isEmpty()) return true;
+        }
+        return false;
+    }
+    /**
+     * AStar algorithm used to determine the shortest path from the source class box to the target class box.
+     * @param source, class box the path begins from.
+     * @param target, class box where the path terminates.
+     * @return, a list of points representing the path from the source to the target.
+     */
+    public List<AStarSegment> AStarAlgorithm(UMLRelationship relationship,UMLClass source, UMLClass target){
+        GuiClass sourceGui = (GuiClass)source.getListener();
+        GuiClass targetGui = (GuiClass)target.getListener();
+        Rectangle2D targetBounds = targetGui.getRectBounds();
+
+        openSet.clear();
+        closedSet.clear();
+        openSetFastLookupMap.clear();
+
+        List<AStarSegment> nodes = mapper.getInitialPerimeterNodes(sourceGui, target, this);
+        //initialize the openSet with the perimeter.
+        openSet.addAll(nodes);
+        for(AStarSegment node : nodes){
+            openSetFastLookupMap.put(node, node);
+        }
+        while(!openSet.isEmpty()){
+            //While nextNode is not contained in target class box bounds, continue building path:
+            AStarSegment curNode = openSet.poll();
+            openSetFastLookupMap.remove(curNode);
+            closedSet.add(curNode);
+            //If nextNode is touching the target class box, generate the path and return it.
+            if(isGoalNode(curNode, targetBounds)){
+                
+                List<AStarSegment> path = reconstructPath(curNode);
+                
+                Collections.reverse(path);
+                
+                if(path == null || path.size() < 2){
+                    System.err.println("A* reached target, but path reconstruction failed. Likely source and target are right next to each other");
+                    //return null;
+                    continue; // fix the bug where class boxes get locked when touching in same relationship
+                }
+                return path;
+            }
+            //Generate neighbors of nextNode and insert into openSet (assuming they aren't in the closed set.
+            for(Point2D dir : DIRECTIONS)
+            {
+                int neighborGridX = curNode.gridX + ((int)dir.getX());
+                int neighborGridY = curNode.getGridY() + ((int)dir.getY());
+                //Check if neighbor is in open or closed set:
+                double hCost = calculateHCost(neighborGridX, neighborGridY, target);
+                double additionalGCost = (dir.getX() != 0 && dir.getY() != 0) ? DIAGONAL_COST : HORIZONTAL_COST;
+                double highwayTax = 1;//Value that biases straight lines.
+                
+                //Check to see if the neighbor intersects an existing relationship line.
+                AStarSegment neighborLookup = new AStarSegment(neighborGridX, neighborGridY, 0, 0, null);
+                
+                //Intersects line
+                if(isFreeRelationshipTile(neighborLookup) || areRelationshipTileNeighborsFree(neighborLookup)){
+                    additionalGCost += EXISTING_RELATIONSHIP_PENALTY;
+                }
+                //Intersects classbox
+                if(!mapper.isPassable(neighborGridX, neighborGridY, target, source))
+                {
+                    additionalGCost += EXISTING_CLASS_PENALTY;
+                }
+                //Highway price
+                //This incourages a* to maintain a straight line/highway while solving.
+                if(curNode.previousNode != null)
+                {
+                    Point2D previousNodeDirection = new Point2D(curNode.gridX - curNode.previousNode.gridX, curNode.gridY- curNode.previousNode.gridY);
+                    if(dir.getX() == previousNodeDirection.getX() && dir.getY() == previousNodeDirection.getY())
+                    {
+                        highwayTax = HIGHWAY_BONUS;
+                    }
+                }
+                
+                
+                double newGCost = (curNode.getGCost() + additionalGCost)* highwayTax;
+                AStarSegment neighbor = new AStarSegment(neighborGridX, neighborGridY,newGCost, hCost, curNode);
+
+                //Check if AStarNode is in the closedSet. Note that contains() relies on the hashCode function
+                //of AstarNode class to determine the right bucket, and equals() is used for actual comparison.
+                if(closedSet.contains(neighbor)){
+                    continue;
+                }
+                
+                //Check if AStarNode is already in openSet. If so, check to see if gCost is lower along current path.
+                //If so update gCost value of existingNode.
+                AStarSegment existingNode = openSetFastLookupMap.get(neighbor);
+                if(existingNode != null){
+                    //If new GCost is shorter, we need to update the existingNode's value.
+                    if(existingNode.getGCost() > newGCost){
+                        existingNode.setGCost(newGCost);
+                        existingNode.setParent(curNode);
+                        //re-heapify by removing and then re-adding existingNode.
+                        openSet.remove(existingNode);
+                        openSet.add(existingNode);
+                    }
+                    //We don't want to add the neighbor again if it is already in the openSet.
+                    continue;
+                }
+                //Neighbor can be placed in openSet and openSetFastLookupMap HashMap:
+                openSet.add(neighbor);
+                openSetFastLookupMap.put(neighbor, neighbor);
+
+            }
+        }
+        //Otherwise no path could be found so return null
+        return null;
+    }
+    /**
+     * This removes redundant nodes in a straight line.
+     * TODO: IMPLEMENT!
+     * 
+     * NOTE! THIS IS MORE THAN A STRAIGHTFORWARD IMPLEMENTATION OF 'REMOVING REDUNDANT NODES'
+     * The relationship identifier uses the 2nd to last node, which is expected to be outside of the UMLClass!
+     */
+    private static List<Point2D> simplifyPath(List<Point2D> rawPath) {
+        
+        return rawPath;
+    }
+    /**
+     * Enforces that a UMLRelationship occupies a given A.S.S node inside the occupiedPathCells grid
+     * 
+     * Basically, if you want a location in the tilemap to be avoided by the pathfinding, add it here.
+     * NOTE: Avoiding is never a guarantee in this algorithm!!
+     */
+    public void addOccupationToCell(UMLRelationship relationship, AStarSegment ass)
+    {
+        if(!occupiedPathCells.containsKey(ass))
+        {
+            occupiedPathCells.put(ass, new ArrayList<UMLRelationship>());
+        }
+        occupiedPathCells.get(ass).add(relationship);
+    }
+    /**
+     * Releve ownership of a given A.S.S node inside the occupiedPathCells grid.
+     * 
+     * Basically, If you want a node to be unblocked, call this.
+     * @param relationship The relationship you want to free from a tiles ownership
+     * @param ass the ASTARSEGMENT which represents the location of the tile.
+     */
+    public void removeOccupationToCell(UMLRelationship relationship, AStarSegment ass)
+    {
+        if(!occupiedPathCells.containsKey(ass)) return;
+        
+        occupiedPathCells.get(ass).remove(relationship);
+    }
+    /**
+     * Finds all relationships which consume the A.S.S tilespace.
+     * 
+     * @param ass The segment to test for
+     * @return A list of relationships within the node.
+     */
+    public List<UMLRelationship> shotgunGetNode(AStarSegment ass)
+    {
+        return occupiedPathCells.get(ass);
+    }
+}

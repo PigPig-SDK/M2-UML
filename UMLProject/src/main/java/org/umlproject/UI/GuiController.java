@@ -26,6 +26,8 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
+import org.networking.NetworkManager;
+import org.networking.NetworkMouseHandler;
 import org.umlproject.RelationshipType;
 import org.umlproject.TerminalHandler;
 import org.umlproject.UMLClass;
@@ -50,7 +52,7 @@ public class GuiController implements DocumentListner {
     }
     
     @FXML
-    private Pane world;//'World' is where all UI objects should live.
+    public Pane world;//'World' is where all UI objects should live.
     @FXML
     public TextField console;
     @FXML
@@ -67,6 +69,8 @@ public class GuiController implements DocumentListner {
     public TextArea consoleOut;
     @FXML
     public CheckMenuItem viewTerminalMenuItem;
+    @FXML
+    public MenuItem viewThemeMenuItem;
 
     final double initialClassBoxWidthOffset = 100;
     final double initialClassBoxHeightOffset = 100;
@@ -115,6 +119,54 @@ public class GuiController implements DocumentListner {
     public void aboutHelpMenuAction() {
         GuiAboutWindow.showAbout();
     }
+    
+    
+    String curTheme = "Dark Mode";
+    
+    @FXML
+    public void resetCameraViewMenuAction() {
+        GuiCamera.resetCameraLocation();
+    }
+    
+    @FXML
+    public void zoomInViewMenuAction() {
+        GuiCamera.setZoom(GuiCamera.getCameraZoom()*1.15, GuiCamera.getScreenCenter());
+    }
+    
+    @FXML
+    public void zoomOutViewMenuAction() {
+        GuiCamera.setZoom(GuiCamera.getCameraZoom()*0.85, GuiCamera.getScreenCenter());
+    }
+    
+    @FXML
+    public void themeViewMenuAction() {
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 150, 10, 10));
+
+        ComboBox<String> ThemeBox = new ComboBox<>();
+		ThemeBox.getItems().add("Dark Mode");
+		ThemeBox.getItems().add("Light Mode");
+		ThemeBox.getItems().add("Mesa");
+		ThemeBox.getItems().add("Shoreline");
+		ThemeBox.getItems().add("Forest");
+		
+                
+                
+		grid.add(new Label("Theme"), 0, 0);
+		grid.add(ThemeBox, 1, 0);
+		Alert alert = FXDialogueFactory.createAlertWindow(Alert.AlertType.INFORMATION, "Change Theme", "Select a theme", null, grid);
+		Optional<ButtonType> result = alert.showAndWait();
+		if (result.isPresent() && result.get() == ButtonType.OK) //User Acceptance
+        {
+			curTheme = ThemeBox.getValue();
+                        //change css file
+                        //probably switch here
+                        //change non css elements
+		}
+
+    }
 
     /**
      * This is called after initialize. 
@@ -137,9 +189,11 @@ public class GuiController implements DocumentListner {
         GuiCamera.setupCamera();
         GuiKeyBinds.setupKeyBinds();
         GuiConsole.setupConsole();
+        GuiNetwork.initialize();
+        NetworkMouseHandler.initialize();
         //Setup button icons.
-        applyIconsToButtons(addClassButton,"/org/umlproject/icons/new_class.png");
-        applyIconsToButtons(addRelationshipButton,"/org/umlproject/icons/new_relationship.png");
+        FXUtility.getInstance().applyIconsToButtons("Add Class", addClassButton,"/org/umlproject/icons/new_class.png",50,50);
+        FXUtility.getInstance().applyIconsToButtons("Add Relationship", addRelationshipButton,"/org/umlproject/icons/new_relationship.png",50,50);
     }
     //----------------- Menu bar callbacks -----------------
     /**
@@ -219,6 +273,32 @@ public class GuiController implements DocumentListner {
         if(UMLDocument.getInstance().save())
             saveLocationSet = true;
     }
+    
+    @FXML 
+    private void copyEditMenuAction() {
+        GuiCopyPaste.getInstance().copy();
+    }
+    
+    @FXML 
+    private void pasteEditMenuAction() {
+        GuiCopyPaste.getInstance().paste();
+    }
+    
+    @FXML 
+    private void hostNetworkMenuAction() { 
+        GuiNetwork.promptHostScreen();
+    }
+    
+    @FXML 
+    private void connectNetworkMenuAction() {
+        GuiNetwork.promptConnectScreen();
+    }
+    
+    @FXML 
+    private void disconnectNetworkMenuAction() { 
+        NetworkManager.shutdown();
+    }
+    
     @FXML
     private void quitFileMenuAction()
     {
@@ -243,13 +323,14 @@ public class GuiController implements DocumentListner {
     @FXML
     public void infoHelpMenuAction()
     {
-        GuiHelp.showHelp();
+        GuiHelpWindow.showHelp();
     }
     @FXML
     private void consoleSubmit()
     {
         GuiConsole.terminalOverrideOut(true);
         String cmd = console.getText();
+        GuiConsole.addToHistory(cmd);
         List<String> restrictedCommands = GuiConsole.restrictedCommands;
         
         for (String SearchValue : restrictedCommands) {
@@ -274,15 +355,17 @@ public class GuiController implements DocumentListner {
     @FXML
     private void exportScreenshotMenuAction() throws IOException {
         //Generate an alert in case the file path is invalid and the screenshot cannot be saved.
-        Alert alert = new Alert(Alert.AlertType.WARNING);
-        alert.setTitle("Failed To Export Image");
-        alert.setHeaderText("Screenshot cannot be saved in this location.");
-        alert.setContentText("Ensure a valid file path and then retry exporting.");
+        Alert alert = FXDialogueFactory.
+                        createAlertWindow(
+                        Alert.AlertType.WARNING, 
+                        "Failed To Export Image", 
+                        "Screenshot cannot be saved in this location.", 
+                        "Ensure a valid file path and then retry exporting.", null);
 
         //Retrieve the location where the image should be exported.
         File exportLocation = GuiFileBrowser.promptForScreenshotExportDirectory();
         if(exportLocation == null){
-            alert.showAndWait();
+            alert.show();
             return;
         }
         //Create a ScreenshotCommand instance to call execute() on.
@@ -293,7 +376,7 @@ public class GuiController implements DocumentListner {
             invoker.invoke();
         }
         catch(IOException e){
-            alert.showAndWait();
+            alert.show();
             return;
         }
     }
@@ -311,9 +394,7 @@ public class GuiController implements DocumentListner {
         UMLDocument doc = UMLDocument.getInstance();
         UMLClass checkClass = doc.addClass(doc.findValidDummyName());
         if(checkClass == null) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Class Creation Error");
-            alert.showAndWait();
+            FXDialogueFactory.createAlertWindow(Alert.AlertType.ERROR, "Class Creation Error", null, null, null).show();
         }
     }
     /**
@@ -324,67 +405,88 @@ public class GuiController implements DocumentListner {
         UMLDocument doc = UMLDocument.getInstance();
         //This scope contains the 'window creation' for uml relationships..
         //The scope exists for additional functionality.
-        {
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle("Create Relationship");
-            alert.setContentText("");
-            
-            Set<String> classSet = doc.getClassSet().keySet();
-            
-            if(classSet.size() < 2)
-            {
-                alert.setAlertType(Alert.AlertType.ERROR);
-                alert.setHeaderText("Your project requires at least 2 classes");
-                alert.showAndWait();
-                return;
-            }
-            
-            //Convert to a sortable type.
-            ArrayList<String> classList = new ArrayList(classSet);
-            Collections.sort(classList);
-            
-            alert.setHeaderText("Create a relationship between two classes");
-            
-            GridPane grid = new GridPane();
-            grid.setHgap(10);
-            grid.setVgap(10);
-            grid.setPadding(new Insets(20, 150, 10, 10));
-            
-            ComboBox<String> startBox = new ComboBox<>();
-            startBox.getItems().addAll(classList);
-            startBox.setValue("...");
-            
-            ComboBox<String> destinationBox = new ComboBox<>();
-            destinationBox.getItems().addAll(classList);
-            destinationBox.setValue("...");
-            
-            ComboBox<String> typebox = new ComboBox<>();
-            //Populate combo box with types.
-            for(RelationshipType rType : RelationshipType.values())
-            {
-                if(rType != RelationshipType.OTHER)
-                    typebox.getItems().add(rType.name());
-            }
-            typebox.setValue(RelationshipType.AGGREGATION.name());
-            
-            grid.add(new Label("Source"), 0, 0);
-            grid.add(startBox, 1, 0);
-            grid.add(new Label("Destination"), 0, 1);
-            grid.add(destinationBox, 1, 1);
-            grid.add(new Label("Type"), 0, 2);
-            grid.add(typebox, 1, 2);
-            
-            alert.getDialogPane().setContent(grid);
-            Optional<ButtonType> result = alert.showAndWait();
-            if (result.isPresent() && result.get() == ButtonType.OK) //User Acceptance
-            {
-                String source = startBox.getValue();
-                String destination = destinationBox.getValue();
-                String rType = typebox.getValue();
+        
+        Set<String> classSet = doc.getClassSet().keySet();
 
-                boolean success = doc.addRelationship(source, destination, rType);
+        if(classSet.size() < 2)
+        {
+            FXDialogueFactory.createAlertWindow(Alert.AlertType.ERROR, "Create Relationship", "Your project requires at least 2 classes", null, null).show();
+            return;
+        }
+
+        //Convert to a sortable type.
+        ArrayList<String> classList = new ArrayList(classSet);
+        Collections.sort(classList);
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 150, 10, 10));
+
+        ComboBox<String> startBox = new ComboBox<>();
+        startBox.getItems().addAll(classList);
+        startBox.setValue("...");
+
+        ComboBox<String> destinationBox = new ComboBox<>();
+        destinationBox.getItems().addAll(classList);
+        destinationBox.setValue("...");
+
+        //Searches for available classes to autfill relationship source/destination
+        String sourceClass = "";
+        String destinationClass = "";
+        boolean setClasses = true;
+        ArrayList<UISelectable> selectedObjects = GuiSelect.getInstance().getSelectedObjects();
+        for(UISelectable selectable : selectedObjects){
+            if(selectable instanceof GuiClass guiClass){
+                if (sourceClass.isEmpty()) {
+                    sourceClass = guiClass.getParentClass().getClassName();
+                    continue;
+                }
+                if(destinationClass.isEmpty()) {
+                    destinationClass = guiClass.getParentClass().getClassName();
+                    continue;
+                }
+                setClasses = false;
+                break;
             }
         }
+
+        //If 2 available classes were found, autofill
+        if(!sourceClass.isEmpty() && setClasses){
+            startBox.setValue((sourceClass));
+            if(!destinationClass.isEmpty()){
+                destinationBox.setValue(destinationClass);
+            }
+        }
+
+        ComboBox<String> typebox = new ComboBox<>();
+        //Populate combo box with types.
+        for(RelationshipType rType : RelationshipType.values())
+        {
+            if(rType != RelationshipType.OTHER)
+                typebox.getItems().add(rType.name());
+        }
+        typebox.setValue(RelationshipType.AGGREGATION.name());
+
+        grid.add(new Label("Source"), 0, 0);
+        grid.add(startBox, 1, 0);
+        grid.add(new Label("Destination"), 0, 1);
+        grid.add(destinationBox, 1, 1);
+        grid.add(new Label("Type"), 0, 2);
+        grid.add(typebox, 1, 2);
+
+        Alert alert = FXDialogueFactory.createAlertWindow(Alert.AlertType.INFORMATION, "Create Relationship", "Create a relationship between two classes", null, grid);
+        
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) //User Acceptance
+        {
+            String source = startBox.getValue();
+            String destination = destinationBox.getValue();
+            String rType = typebox.getValue();
+
+            boolean success = doc.addRelationship(source, destination, rType);
+        }
+        
     }
     //This method will bind a guiClass listener to the new umlClass
     @Override
@@ -393,7 +495,8 @@ public class GuiController implements DocumentListner {
         umlClass.setListener(guiClass);
         
         if(UMLDocument.getDocumentState() != DocumentState.FILE_LOADING &&
-           UMLDocument.getDocumentState() != DocumentState.MEMENTO_STATE_RESET)//select newly added items.
+           UMLDocument.getDocumentState() != DocumentState.MEMENTO_STATE_RESET &&
+           UMLDocument.getDocumentState() != DocumentState.NETWORK_OPERATION)//select newly added items on our client.
         {
             GuiSelect.getInstance().resetSelect();//Clear our selection...
             GuiSelect.getInstance().selectUiElement(guiClass);
@@ -482,6 +585,10 @@ public class GuiController implements DocumentListner {
         return testLocation;
     }
 
+    public boolean isConsoleFocused(){
+        return this.console.isFocused();
+    }
+
     @Override
     public void onRelationshipAdded(UMLRelationship umlRelationship) {
         GuiRelationship guiRelationship = new GuiRelationship(world, umlRelationship);
@@ -501,19 +608,25 @@ public class GuiController implements DocumentListner {
             }
         }
     }
-    @Override
-    public void loadFile(UMLDocument umlDocument) {
-        
-        //This is called 0.1 seconds later due to a GUI race condition. Really lame.
-        Timeline timeline = new Timeline(
-            new KeyFrame(Duration.seconds(0.1), e -> {
-                redrawAllRelationships();
-            })
-        );
-        timeline.setCycleCount(1);
-        timeline.play();
-
+    public void redrawAllElements()
+    {
+        for(DiagramElementListener uIListener : UMLDocument.getInstance().getUIListeners())
+        {
+            if(uIListener instanceof GuiRelationship rgui)
+            {
+                UMLRelationship relationship = rgui.getRelationship();
+                if(relationship != null) rgui.update(relationship);
+            }
+            else if(uIListener instanceof GuiClass cgui)
+            {
+                UMLClass c = cgui.getParentClass();
+                if(c != null)
+                    cgui.update(c);
+            }
+        }
     }
+    @Override
+    public void loadFile(UMLDocument umlDocument) {}
     @Override
     public void onClassRemove(UMLClass umlClass) {
         System.out.println("CLeaned up. " + umlClass.getListener());
@@ -524,23 +637,5 @@ public class GuiController implements DocumentListner {
         umlRelationship.disposeOfListener();
     }
 
-    private void applyIconsToButtons(Button button, String iconDirectory)
-    {
-        Image icon = new Image(getClass().getResource(iconDirectory).toExternalForm());
-        button.setText("");//Clear text...
-        ImageView iconView = new ImageView(icon);
-        iconView.setFitWidth(50);
-        iconView.setFitHeight(50);
-        iconView.setPreserveRatio(true);
-        //Remove background...
-        button.setStyle(
-            "-fx-background-color: transparent;" + "-fx-border-color: transparent;"
-        );
-        //Make the icon dim when mousing over.
-        iconView.setOpacity(0.7);
-        button.setOnMouseEntered(e -> iconView.setOpacity(1.0));
-        button.setOnMouseExited(e -> iconView.setOpacity(0.7));
-        //Set graphic
-        button.setGraphic(iconView);
-    }
+
 }

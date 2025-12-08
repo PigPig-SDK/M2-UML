@@ -527,7 +527,17 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
             increment++;
         }
     }
-
+    public int countNumberOfElements()
+    {
+        int count = 0;
+        for(ArrayList<UMLMethod> list : methods.values())
+        {
+            if(!list.isEmpty())
+                count++;
+        }
+        return fields.size() + count;
+    }
+    
     /**
      * Returns the first available spot for a new method when added through GUI
      *
@@ -542,7 +552,6 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
         {
             String testName = dummyName + increment;
             if(!methods.containsKey(testName)) {//Name is not taken
-                System.out.println("the signature being returned is: " + testName + dummySignature);
                 return testName + dummySignature;
             }
             increment++;
@@ -597,7 +606,8 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
                    }
                }
            }
-           umlc.listener = this.listener;//NOTE THIS IS THE ONLY THING THAT SHOULDNT BE A DEEP COPY!
+           umlc.lastNetworkEditTime = this.lastNetworkEditTime;
+           umlc.networkId = this.networkId;//Network id should remain the same while cloning.
            return umlc;
        });
     }

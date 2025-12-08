@@ -20,16 +20,13 @@ public class GuiSelect {
     private static GuiSelect instance;
 
     private static ArrayList<UISelectable> selectedObjects;
+    private static UISelectable latestSelection = null;
 
     /**
      * Singleton GuiSelect constructor. Creates three relevant ArrayLists and sets a condition on clicking the scene.
      */
     private GuiSelect(){
         selectedObjects = new ArrayList<>();
-        App.currentScene.setOnMouseClicked(e -> {
-            GuiSelect.getInstance().checkResetSelect(e);
-            e.consume();
-        });
         AnimationTimer selectionAnimationTimer = new AnimationTimer() {
             @Override
             public void handle(long now){
@@ -62,23 +59,50 @@ public class GuiSelect {
      * @param e - Event checked for ctrl being held
      * @param selectable - Class being selected/deselected
      */
-    public void clickUiElement(MouseEvent e, UISelectable selectable) {
-        //Checks if control is being held. If not, returns.
-        if (!e.isControlDown()) {
-            return;
+    public void clickUiElement(MouseEvent e, UISelectable selectable, boolean isDragging) {
+        
+        //Mouse UP  
+        if(e.getEventType() == MouseEvent.MOUSE_CLICKED)
+        {
+            if(!isDragging)
+            {
+                if(e.isControlDown())
+                {
+                    if(latestSelection != selectable)
+                    {
+                        deselectUiElement(selectable);
+                        selectedObjects.remove(selectable);
+                    }
+                }
+                else
+                {
+                    resetSelect();
+                    selectUiElement(selectable);
+                }
+            }
+            latestSelection = null;
         }
-        //Checks if class is already selected. If so, deselects it.
-        if(selectedObjects.contains(selectable)){
-            deselectUiElement(selectable);
-            return;
+        else//Mouse down
+        {
+            if(!selectedObjects.contains(selectable))
+            {
+                if(e.isControlDown())
+                {
+                    latestSelection = selectable;
+                    selectUiElement(selectable);
+                }
+                else
+                {
+                    resetSelect();
+                    selectUiElement(selectable);
+                }
+            } 
         }
-        //Selects class if not already selected.
-        selectUiElement(selectable);
     }
-    public void deselectUiElement(UISelectable selectable)
+    private void deselectUiElement(UISelectable selectable)
     {
-        selectable.setSelected(false);
         selectedObjects.remove(selectable);
+        selectable.setSelected(false);
     }
     public void selectUiElement(UISelectable selectable)
     {
@@ -91,7 +115,7 @@ public class GuiSelect {
      *
      * @param e - Event to check for ctrl.
      */
-    public void checkResetSelect(MouseEvent e){
+    private void checkResetSelect(MouseEvent e){
         if(!e.isControlDown()){
             resetSelect();
         }
@@ -103,7 +127,7 @@ public class GuiSelect {
     {
         for(UISelectable selectable : selectedObjects){
                 selectable.setSelected(false);
-            }
+        }
         selectedObjects.clear();
     }
     /**
@@ -161,5 +185,9 @@ public class GuiSelect {
                 selectedObjects.add(selectable);
             }
         }
+    }
+
+    public ArrayList<UISelectable> getSelectedObjects(){
+        return selectedObjects;
     }
 }

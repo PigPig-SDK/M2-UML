@@ -1,22 +1,24 @@
 package org.umlproject.UI;
 
+import java.net.URL;
 import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
 import javafx.scene.control.*;
-import javafx.scene.input.MouseEvent;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 import org.umlproject.*;
 
 
 import java.util.*;
 import java.util.Set;
-import javafx.application.Platform;
-import javafx.geometry.Bounds;
+import java.util.function.Consumer;
+import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.Border;
@@ -25,6 +27,7 @@ import javafx.scene.layout.BorderStrokeStyle;
 import javafx.scene.layout.BorderWidths;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
 import javafx.scene.shape.StrokeLineCap;
 import javafx.scene.shape.StrokeLineJoin;
 import javafx.scene.shape.StrokeType;
@@ -36,6 +39,8 @@ import org.umlproject.UMLClass;
 public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable, UIPositional {
     public static final Font DEFAULT_CLASS_FONT = Font.font("Monospaced", FontWeight.NORMAL, FontPosture.REGULAR, 18);
     
+    private static final double SHOTGUN_DISTANCE_REFIRE = 50;
+    
     private Pane world;
     private UMLClass parentClass;
     double mouseAnchorX;
@@ -45,10 +50,27 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     VBox methodTextFields;
     //VBox that holds className TextField and VBoxes for data fields and methods.
     VBox parentVBox;
-    
+    Point2D lastShotgunLocation = Point2D.ZERO;
+
+    Point2D mouseWorldSpace;
     Point2D dragStartLocation = Point2D.ZERO;
     
+    private double width = CLASS_WIDTH;
+    private double height = 0;
+    
+    Set<String> errorSet = new HashSet<>();
+    
+    List<Button> guiButtons = new LinkedList<>();//No random access is required. Using linked list.
+    private boolean isDragging = false;
     private boolean isSelected = false;
+    private static final int CLASS_WIDTH = 350;
+    private static final int CLASS_DEFAULT_HEIGHT = 275;
+    private static final int CLASS_INSETS = 10;
+    private static final int CLASS_TITLE_WIDTH = 300;
+    private static final int CLASS_TEXTBOX_HEIGHT = 34;
+    private Label errorTextArea;
+    private ImageView cosmetic = null;
+    private GuiClassCosmetic cosmeticInfo = null;
     /**
      * Constructor for GuiClass responsible for building the initial class box and setting all the proper
      * actions on its nodes. TextFields will be editable and those edits will be reflected in the underlying
@@ -62,17 +84,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         this.world = world;
         world.setFocusTraversable(true);//lets world request focus.
         this.parentClass = parentClass;
-        this.world.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
-            // Only request focus if the click is NOT on the GuiClass element itself.
-            // This prevents interference with dragging and selecting the class box.
-            if (e.getTarget() == this.world) {
-                this.world.requestFocus();
-                e.consume();
-            }
-        });
         // --- END OF BLOCK ---
-
-
         update(parentClass);
     }
 
@@ -86,37 +98,141 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
       * @param nodeBackground, a StackPane representing the container for the class box contents.
       */
     private void makeDraggable(StackPane nodeBackground) {
-        
+
+        //Mouse down.
         nodeBackground.setOnMousePressed(e -> {
-            Point2D mouseWorldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
-            Point2D paneWorldSpace = new Point2D(nodeBackground.getLayoutX(), nodeBackground.getLayoutY());     
-            this.mouseAnchorX = mouseWorldSpace.getX() - paneWorldSpace.getX();
-            this.mouseAnchorY = mouseWorldSpace.getY() - paneWorldSpace.getY();
-            dragStartLocation = this.parentClass.getLocation();
-            nodeBackground.requestFocus();
+            if(e.getButton() == MouseButton.PRIMARY) {
+                GuiCamera.setDragging(true);
+                GuiSelect.getInstance().clickUiElement(e, this, isDragging);
+                mouseWorldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
+                Point2D paneWorldSpace = new Point2D(nodeBackground.getLayoutX(), nodeBackground.getLayoutY());
+                this.mouseAnchorX = mouseWorldSpace.getX() - paneWorldSpace.getX();
+                this.mouseAnchorY = mouseWorldSpace.getY() - paneWorldSpace.getY();
+
+                dragStartLocation = this.parentClass.getLocation();
+
+                //Setup dragStartLocation for multi-drag
+                if(!GuiSelect.getInstance().getSelectedObjects().isEmpty() &&
+                        GuiSelect.getInstance().getSelectedObjects().contains(this)){
+                    for(UISelectable selectable : GuiSelect.getInstance().getSelectedObjects()){
+                        if(selectable instanceof org.umlproject.UI.GuiClass guiClass) {
+                            guiClass.dragStartLocation = guiClass.parentClass.getLocation();
+                        }
+                    }
+                }
+                nodeBackground.requestFocus();
+            }
             e.consume(); // Prevent event from propagating to other nodes
         });
+        
         //Used for selection
         //Mouse up...
         nodeBackground.setOnMouseClicked(e -> {
-            Point2D worldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
-            Point2D selectionOffset = new Point2D(worldSpace.getX() - this.mouseAnchorX, worldSpace.getY() - this.mouseAnchorY);
-            
-            if(!selectionOffset.equals(dragStartLocation))
-                this.parentClass.setLocation(selectionOffset, true);
-            
-            GuiSelect.getInstance().clickUiElement(e, this);
+            if(e.getButton() == MouseButton.PRIMARY) {
+                GuiSelect.getInstance().clickUiElement(e, this, isDragging);
+                if (isDragging) {
+                    Point2D worldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
+                    Point2D selectionOffset = new Point2D(worldSpace.getX() - this.mouseAnchorX, worldSpace.getY() - this.mouseAnchorY);
+                    if (!selectionOffset.equals(dragStartLocation))
+                        this.parentClass.setLocation(selectionOffset, true);
+                }
+                isDragging = false;
+                GuiCamera.setDragging(false);
+            }
             e.consume(); // Prevent event from propagating to other nodes
         });
-
+        //On drag...
         this.nodeBackground.setOnMouseDragged(e -> {
-            //I swear if i have to instantiate another immutable point2d im going to create a wrapper class.
-            Point2D worldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
-            Point2D selectionOffset = new Point2D(worldSpace.getX() - this.mouseAnchorX, worldSpace.getY() - this.mouseAnchorY);
-            UMLDocument.executeActionUnderState(DocumentState.SILENT_MOVEMENT, () -> this.parentClass.setLocation(selectionOffset, true));
-            this.nodeBackground.getParent().requestLayout(); // Force layout update
+            if(e.getButton() == MouseButton.PRIMARY) {
+                isDragging = true;
+                //I swear if i have to instantiate another immutable point2d im going to create a wrapper class.
+                Point2D worldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
+                Point2D selectionOffset = new Point2D(worldSpace.getX() - this.mouseAnchorX, worldSpace.getY() - this.mouseAnchorY);
+                UMLDocument.executeActionUnderState(DocumentState.SILENT_MOVEMENT, () -> this.parentClass.setLocation(selectionOffset, true));
+
+                //Multi-Drag
+                if(!e.isControlDown()) {
+                    if (!GuiSelect.getInstance().getSelectedObjects().isEmpty() &&
+                            GuiSelect.getInstance().getSelectedObjects().contains(this)) {
+                        for (UISelectable selectable : GuiSelect.getInstance().getSelectedObjects()) {
+                            if (selectable instanceof org.umlproject.UI.GuiClass guiClass) {
+                                if (guiClass == this) continue;
+                                Point2D locationOffset = worldSpace.subtract(mouseWorldSpace);
+                                UMLDocument.executeActionUnderState(DocumentState.SILENT_MOVEMENT, () ->
+                                        guiClass.getParentClass().setLocation(guiClass.dragStartLocation.add(locationOffset),true));
+                            }
+                        }
+                    }
+                }
+                this.nodeBackground.getParent().requestLayout(); // Force layout update
+                
+            }
             e.consume(); // Prevent event from propagating to other nodes
         });
+    }
+    /**
+     * This 'shotguns' into the 'occupiedPathCells' to see if any relationships might desire a redraw.
+     */
+    private void shotgunCheckRelationshipOverlap()
+    {
+        if(lastShotgunLocation.distance(this.getLocation())  <= SHOTGUN_DISTANCE_REFIRE) return;
+        
+        lastShotgunLocation = getLocation();
+        
+        List<AStarSegment> perimeterNodes = new ArrayList<>();
+        Rectangle2D sourceBounds = getRectBounds();
+        Point2D targetCenter = getLocation();
+         //Define padded search area around source bounds.
+        double searchMinX = sourceBounds.getMinX() - 100;
+        double searchMaxX = sourceBounds.getMaxX() + 100;
+        double searchMinY = sourceBounds.getMinY() - 100;
+        double searchMaxY = sourceBounds.getMaxY() + 100;
+
+        int minI = PathGridMapper.toGridIndex(searchMinX);
+        int maxI = PathGridMapper.toGridIndex(searchMaxX);
+        int minJ = PathGridMapper.toGridIndex(searchMinY);
+        int maxJ = PathGridMapper.toGridIndex(searchMaxY);
+        //rewrite so we grab the perimeter just inside the class bounds:
+        for(int i = minI; i <= maxI; i++){
+            for(int j = minJ; j <= maxJ; j++){
+                if(i == minI || i == maxI){
+                    AStarSegment nextPerimeterTile = new AStarSegment(i, j, 0.0, 0.0, null);
+                    perimeterNodes.add(nextPerimeterTile);
+                }
+
+            }
+            if(i > minI && i < maxI){
+                //Include j == minJ and j = maxJ tiles
+                int minimumJ = minJ;
+                int maximumJ = maxJ;
+                AStarSegment minJTile = new AStarSegment(i, minimumJ, 0.0, 0.0, null);
+                AStarSegment maxJTile = new AStarSegment(i, maximumJ, 0.0, 0.0, null);
+                perimeterNodes.add(minJTile);
+                perimeterNodes.add(maxJTile);
+            }
+        }
+        
+        //Find a set list of desired redraws.
+        Set<UMLRelationship> allRedrawCalls = new HashSet<>();
+        for(AStarSegment ass : perimeterNodes)
+        {
+            //ass.drawDebug();
+            List<UMLRelationship> temp = RelationshipRouter.getInstance().shotgunGetNode(ass);
+            if(temp == null) continue;
+            
+            allRedrawCalls.addAll(temp);
+        }
+        for(UMLRelationship relationship : allRedrawCalls)
+        {
+            if(relationship.getSource() == parentClass || relationship.getDestination() == parentClass)
+                continue;
+            
+            if(relationship.getListener() instanceof GuiRelationship guiRelationship)
+            {
+                guiRelationship.queuedRedraw = true;
+                guiRelationship.update(relationship);
+            }
+        }
     }
     /**
      * Helper function that lets the user rename the class name TextField.
@@ -132,7 +248,6 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
                 classNameField.setText(oldName);
             }
             e.consume();
-            world.requestFocus();
         });
     }
 
@@ -142,7 +257,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
      * and then insert it into the UMLDocument singleton.
      * @param addMethod, button to set an action on.
      */
-    public void addMethodButtonClickable(Button addMethod){
+    private void addMethodButtonClickable(Button addMethod){
         addMethod.setOnAction(e -> {
             //Create new uniquely named dummy method and add to parent class.
             TextField newDummyMethod = new TextField(parentClass.findValidMethodDummySignature());
@@ -167,7 +282,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
      * value.
      * @param methodRow, HBox containing a delete button and a TextField representing a method signature.
      */
-    public void linkTextFieldToMethod(HBox methodRow){
+    private void linkTextFieldToMethod(HBox methodRow){
         if(methodRow == null || methodRow.getChildren().isEmpty()){
             throw new IllegalArgumentException("provided method row HBox is null or empty!");
         }
@@ -182,28 +297,58 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         });
         newMethodTextField.focusedProperty().addListener((obs, oldVal, newVal) ->{
             if(!newVal) {
+                if (newMethodTextField.getText().equals(newMethodTextField.getUserData()))return;
                 handleMethodUpdate(newMethodTextField, methodRow);
             }
         });
-        world.requestFocus();
     }
-
+    private void redHighlightText(TextField text)
+    {
+        text.setStyle("-fx-font-size: 16px; "
+            + "-fx-font-weight: bold; "
+            + "-fx-background-radius: 0 10 10 0; "
+            + "-fx-border-radius: 0;" 
+            + "-fx-border-width: 0;"
+            + "-fx-text-fill: red;"
+            + "-fx-strikethrough: true;");
+        updateErrorText();
+    }
     /**
      * Helper method for the linkTextFieldToMethod function. It will generate a new UMLMethod object
      * from TextField input after Enter is pressed or the user clicks somewhere else in the UML editor taking
      * focus away from the TextField.
-     * @param newMethodTextField, TextField containing the Method data.
+     * @param newField, TextField containing the Method data.
      * @param methodRow, HBox used to hold the TextField and a delete button.
      */
-    public void handleMethodUpdate(TextField newMethodTextField, HBox methodRow){
-        String[] newMethodAsStringArray = newMethodTextField.getText().split(" ");
-        if(newMethodAsStringArray.length % 2 == 0){
-            System.out.println("Invalid number of arguments!");
-            //reset text
-            newMethodTextField.setText(newMethodTextField.getText());
+    private void handleMethodUpdate(TextField newField, HBox methodRow){
+        
+        if (newField.getText().equals(newField.getUserData()))
+        {
+            update(parentClass);
+            return;
+        }
+        else if(newField.getUserData() instanceof String str)//Check if basically the same.
+        {
+            if(newField.getText().strip().equals(str.strip()))
+            {
+                update(parentClass);
+                return;
+            }
+        }
+        
+        String[] newMethodAsStringArray = newField.getText().split(" ");
+        
+        if(newMethodAsStringArray.length == 0 || newMethodAsStringArray.length % 2 == 0){
+            //Invalid number of arguments.
+            errorSet.add("Invalid number of method arguments");
+            newField.setText(newField.getText());
+            redHighlightText(newField);
             return;
         }
         String newMethodName = newMethodAsStringArray[0];
+        
+        if(newMethodName == null || newMethodName.isEmpty()) return;
+        
         //if there is a list of parameters, construct an arrayList of UMLParameter objects
         ArrayList<UMLParameter> params = new ArrayList<>();
         for(int i = 1; i < newMethodAsStringArray.length; i+=2){
@@ -225,9 +370,9 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         {
             //attempt to add method
             boolean methodAddSuccessful = parentClass.addMethod(newMethod);
-            if(!methodAddSuccessful){
-                System.out.println("Method is a duplicate or invalid!");
-                newMethodTextField.setText((String)newMethodTextField.getUserData());
+            if(!methodAddSuccessful){//Duplicate method, or invalid...
+                //errorSet.add("Duplicate Method");//Not enough time to fix why this appears for no reason. Ugh.
+                redHighlightText(newField);
                 return;
             }
             // delete old method if new input can be successfully added to UMLClass, set user data of newMethodTextField
@@ -236,13 +381,11 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
             String oldName;
             int oldIndex;
             String[] oldUserDataAsString = (String[])methodRow.getUserData();
-            System.out.println("length of old data " + oldUserDataAsString.length);
             if(oldUserDataAsString != null && oldUserDataAsString.length == 2 && !(oldUserDataAsString[0].isEmpty() ||
                     oldUserDataAsString[1].isEmpty())) {
                 //old method name is 0th index, index of old method to remove is 1st index.
                 oldName = oldUserDataAsString[0];
                 oldIndex = Integer.parseInt(oldUserDataAsString[1]);
-                System.out.println("the old user data is: " + oldName + ", " + oldIndex);
                 parentClass.removeMethod(oldName, oldIndex);
             }
             UMLDocument.saveMementoState();
@@ -255,7 +398,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
      * methodTextFields VBox and the method returns.
      * @param methods, hashmap of UMLMethod array lists.
      */
-    public void convertMethodsToHBoxes(HashMap<String, ArrayList<UMLMethod>> methods){
+    private void convertMethodsToHBoxes(HashMap<String, ArrayList<UMLMethod>> methods){
 
         List<String> methodKeys = new ArrayList<String>(methods.keySet());
         Collections.sort(methodKeys);
@@ -263,9 +406,11 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         for(int i = 0; i < methodKeysArray.length; i++){
             ArrayList<UMLMethod> nextMethods = methods.get(methodKeysArray[i]);
             for(int j = 0; j < nextMethods.size(); j++){
-                HBox methodRow = new HBox(10);
+                HBox methodRow = new HBox(-5);
+                methodRow.setAlignment(Pos.CENTER);
                 //create delete button
                 Button deleteMethod = new Button("-");
+                FXUtility.getInstance().applyIconsToButtons("Remove",deleteMethod,"/org/umlproject/icons/minus_button.png",25,25);
                 deleteMethod.setFocusTraversable(false);
                 deleteMethod.setOnAction(event -> {
                     if(((String[])methodRow.getUserData() != null)) {
@@ -278,6 +423,12 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
                     event.consume();
                 });
                 TextField methodText = new TextField(nextMethods.get(j).toString());
+                methodText.setStyle("-fx-font-size: 16px; "
+                + "-fx-font-weight: bold; "
+                + "-fx-background-radius: 0 10 10 0; "
+                + "-fx-border-radius: 0;" 
+                + "-fx-border-width: 0;");
+                
                 methodText.setPrefWidth(300);
                 methodRow.getChildren().addAll(deleteMethod, methodText);
                 linkTextFieldToMethod(methodRow);
@@ -295,10 +446,9 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
      * user can add a new datafield to both the UMLClass and a new TextField to the class box.
      * @param addDataField, button to be modified.
      */
-    public void addDataFieldButtonClickable(Button addDataField){
+    private void addDataFieldButtonClickable(Button addDataField){
         addDataField.setOnAction(e -> {
             String dummyFieldSignature = parentClass.findValidFieldDummySignature();
-            System.out.println("the dummyFieldSignature is: " + dummyFieldSignature);
 
             //create a new UMLDataFIeld object and insert into parent class
             String[] dummyFieldAsArray = dummyFieldSignature.split(" ");
@@ -318,7 +468,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
      * text box, i.e. taking focus away.
      * @param fieldRow, the HBox containing the old DataField attributes as a string.
      */
-    public void linkTextFieldToDataField(HBox fieldRow){
+    private void linkTextFieldToDataField(HBox fieldRow){
 
         if(fieldRow == null || fieldRow.getChildren().isEmpty()){
             throw new IllegalArgumentException("provided field row HBox is null");
@@ -338,7 +488,6 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
                 handleDataFieldUpdate(newField, fieldRow);
             }
         });
-        world.requestFocus();
 
     }
 
@@ -350,13 +499,32 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
      * @param fieldRow, Hbox which will hold the newField and delete button aswell as a copy of the UMLDataField for
      *                  future deletion.
      */
-    public void handleDataFieldUpdate(TextField newField, HBox fieldRow){
+    private void handleDataFieldUpdate(TextField newField, HBox fieldRow){
+        
+        //Data we are checking is actually new.
+        if (newField.getText().equals(newField.getUserData()))
+        {
+            update(parentClass);
+            return;
+        }
+        else if(newField.getUserData() instanceof String str)//Check if basically the same.
+        {
+            if(newField.getText().strip().equals(str.strip()))
+            {
+                update(parentClass);
+                return;
+            }
+        }
+
+        
         String dataFieldText = newField.getText();
         String[] textAsArray = dataFieldText.split(" ");
+        
+        //Invalid number of arguments! Should be Visibility DataType Name.
         if(textAsArray.length != 3){
-
-            System.out.println("Invalid number of arguments! Enter Visibility DataType Name.");
-            newField.setText("Visibility Type Name");
+            newField.setText(newField.getText());
+            errorSet.add("Data-Fields should be entered as: Visibility DataType Name");
+            redHighlightText(newField);
             return;
         }
 
@@ -364,10 +532,11 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         String typeString = textAsArray[1];
         String dataFieldName = textAsArray[2];
 
-        //make sure the user entered a valid Visibility value.
+        //Invalid visibility type, should be 'Public, Private, Protected, or Package.'
         if(!Visibility.acceptableVisibility(visibilityString)){
-            System.out.println("Invalid visibility type! Enter: Public, Private, Protected, or Package.");
-            newField.setText("Visibility Type Name");
+            errorSet.add("Invalid visibility type, should be 'Public, Private, Protected, or Package'");
+            newField.setText(newField.getText());
+            redHighlightText(newField);
             return;
         }
         Visibility visibility = Visibility.stringVisibility(visibilityString);
@@ -375,29 +544,34 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
 
         
         UMLDataField dataField = new UMLDataField(dataFieldName, (dataType == DataType.OTHER)? textAsArray[1] : null , dataType, visibility);
-        
+        UMLDataField oldField = (UMLDataField)fieldRow.getUserData();
         UMLDocument.executeActionUnderState(DocumentState.MASS_OPERATION, () ->
         {
-            //attempt to add the field
-            boolean success = this.parentClass.addField(dataField);
-            if(success){
-                //Must delete old data field from UMLDocument
-                UMLDataField oldField = (UMLDataField)fieldRow.getUserData();
-                if(oldField != null) {
-                    this.parentClass.removeField(oldField.getName());
+            UMLDataField inplaceField = this.parentClass.getFields(dataFieldName);
+            
+            if(inplaceField != null)//Duplicate! Check if we are allowed to replace them!
+            {
+                //Our Visibility/Type is the same
+                if((inplaceField.getDataType().equals(dataField.getDataType()) &&  inplaceField.getVisibility().equals(dataField.getVisibility())) 
+                        || !oldField.getName().equals(dataFieldName))
+                {
+                    errorSet.add("Duplicate Data-Field");
+                    newField.setText(newField.getText());
+                    redHighlightText(newField);
+                    return;
                 }
-                //set newField and fieldRow user data to their new values.
-                newField.setUserData(newField.getText());
-                fieldRow.setUserData(dataField);
-                System.out.println("Field was added and class box will be updated!");
-                //update is automatically called by UMLClass to redraw class box.
-                UMLDocument.saveMementoState();
             }
-            else{
-                //if addField fails we need to reset the TextField to have its previous text.
-                System.out.println("Datafield is a duplicate or invalid!");
-                newField.setText(newField.getText());
-            }
+            //Must delete old data field from UMLDocument
+            if(oldField != null) this.parentClass.removeField(oldField.getName());
+
+            //Nobody in our spot.
+            this.parentClass.addField(dataField);
+            
+            newField.setUserData(newField.getText());
+            fieldRow.setUserData(dataField);
+            //update is automatically called by UMLClass to redraw class box.
+            UMLDocument.saveMementoState();
+            
         });
         
     }
@@ -420,16 +594,24 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         String[] sortedKeys = keyList.toArray(new String[0]);
         //test print
         for (String sortedKey : sortedKeys) {
-            HBox fieldRow = new HBox(10);
+            HBox fieldRow = new HBox(-5);
+            fieldRow.setAlignment(Pos.CENTER);
             UMLDataField nextField = UMLDataFields.get(sortedKey);
             //store the UMLDataField for easy removal with delete button
             fieldRow.setUserData(nextField);
             fieldAsString = String.format("%s %s %s",nextField.getVisibility(), nextField.getTypeAsString(), nextField.getName());
             TextField nextTextField = new TextField(fieldAsString);
-            nextTextField.setPrefWidth(250);
+            nextTextField.setStyle("-fx-font-size: 16px; "
+                + "-fx-font-weight: bold; "
+                + "-fx-background-radius: 0 10 10 0; "
+                + "-fx-border-radius: 0;" 
+                + "-fx-border-width: 0;");
+            
+            nextTextField.setPrefWidth(300);
             //setUserData as the string representing the field so that we can easily delete the field later if need be.
             nextTextField.setUserData(fieldAsString);
             Button deleteField = new Button("-");
+            FXUtility.getInstance().applyIconsToButtons("Remove",deleteField,"/org/umlproject/icons/minus_button.png",25,25);
             deleteField.setFocusTraversable(false);
             deleteField.setOnAction(e -> {
                 parentClass.removeField(((UMLDataField)fieldRow.getUserData()).getName());
@@ -451,15 +633,18 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     public final void update(UMLClass desiredElement) {
         //Clear out the previous GUI.
         cleanUp();
+        computeSize();
+        errorSet.clear();
+//        GuiDebugging.showBounds(getRectBounds(), 5, 10, Color.GREEN);
         //--=======================================================Clone start
-        this.dataFieldTextFields = new VBox(10);
-        this.methodTextFields = new VBox(10);
-        this.parentVBox = new VBox(10);
-        this.parentVBox.setSpacing(10);
-        this.parentVBox.setPadding(new Insets(10, 10, 10, 10));
-        this.parentVBox.setMinWidth(300);
-        this.parentVBox.setPrefWidth(300);
-        
+        this.dataFieldTextFields = new VBox(CLASS_INSETS);
+        this.methodTextFields = new VBox(CLASS_INSETS);
+        this.parentVBox = new VBox(CLASS_INSETS);
+        this.parentVBox.setSpacing(CLASS_INSETS);
+        this.parentVBox.setPadding(new Insets(CLASS_INSETS, CLASS_INSETS, CLASS_INSETS, CLASS_INSETS));
+        this.parentVBox.setMinWidth(CLASS_WIDTH);
+        this.parentVBox.setPrefWidth(CLASS_WIDTH);
+        this.parentVBox.setAlignment(Pos.CENTER);
         this.nodeBackground = new StackPane();
         this.nodeBackground.setManaged(false);
 
@@ -469,12 +654,18 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
 
         //Create modifiable className and put into VBox
         TextField classNameField = new TextField(parentClass.getClassName());
-        classNameField.setStyle("-fx-font-size: 16px; -fx-font-weight: bold");
-        classNameField.setMaxWidth(250);
+        classNameField.setStyle("-fx-font-size: 16px; "
+                + "-fx-font-weight: bold; "
+                + "-fx-background-radius: 0 0 10 10; "
+                + "-fx-border-radius: 0;" 
+                + "-fx-border-width: 0;");
+        
+        classNameField.setMaxWidth(CLASS_TITLE_WIDTH);
         classNameField.setFocusTraversable(false);
-        //Make it so the UMLClass class name updates after modifying classNameField
         makeClassNameRenamable(classNameField);
-        this.parentVBox.getChildren().addAll(classNameField, new Separator());
+        Separator separator = new Separator();
+        separator.setMouseTransparent(true);
+        this.parentVBox.getChildren().addAll(classNameField, separator);
 
         //set up dataFields
         //retrieve dataFields hashMap, retrieve keySet, convert into an array, then cycle through each
@@ -484,22 +675,21 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         HashMap<String, UMLDataField> UMLDataFields = desiredElement.getFieldsAll();
         convertDataFieldsToHBoxes(UMLDataFields);
         //create AddField Button, set action to make a new DataField
-        Button addDataField = new Button("Add data field");
-        addDataFieldButtonClickable(addDataField);
-
+        HBox addFieldConfiguration = addClassParam("Add Data Field", this::addDataFieldButtonClickable);
+        
         //convertDataFieldsToHBoxes filled the dataFIeldTexxtFields VBox with all the delete button
         //TextField combinations. Note that dataFieldTextFields VBox was reset upon calling update().
-        this.parentVBox.getChildren().addAll(dataFieldsLabel, this.dataFieldTextFields, addDataField, new Separator());
+        this.parentVBox.getChildren().addAll(dataFieldsLabel, this.dataFieldTextFields, addFieldConfiguration, new Separator());
 
         //-------------------------------------------------------------------------------------------
         //create methods
         Label methodsLabel = new Label("Methods");
         methodsLabel.setFont(DEFAULT_CLASS_FONT);
+        
         HashMap<String, ArrayList<UMLMethod>> umlMethods = desiredElement.getMethodsAll();
         convertMethodsToHBoxes(umlMethods);
-        Button addMethod = new Button("Add method");
-        addMethodButtonClickable(addMethod);
-        this.parentVBox.getChildren().addAll(methodsLabel, this.methodTextFields, addMethod);
+        HBox addMethodConfiguration = addClassParam("Add method", this::addMethodButtonClickable);
+        this.parentVBox.getChildren().addAll(methodsLabel, this.methodTextFields, addMethodConfiguration);
         //-------------------------------------------------------------------------------------------------
 
         this.nodeBackground.getChildren().add(this.parentVBox);
@@ -515,22 +705,102 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         makeDraggable(this.nodeBackground);
         //add classbox to world to display
         this.world.getChildren().add(this.nodeBackground);
-        this.world.requestFocus();
         updateAllRelationships(desiredElement);
         setSelected(isSelected);//Update our selected state
+
+        //Attach error window
+        this.errorTextArea = new Label("");
+        this.errorTextArea.setViewOrder(-50);
+        this.world.getChildren().add(this.errorTextArea);
+        updateErrorText();
+        
+        initializeCosmetic();
+        updateCosmetic();
     }
+    private void initializeCosmetic()
+    {
+        cosmeticInfo = GuiClassCosmeticTable.getInstance().cosmetics.get(this.parentClass.getClassName().toLowerCase().strip());
+        if(cosmeticInfo == null) return;
+        
+        this.cosmetic = new ImageView(new Image(getClass().getResource(cosmeticInfo.imageLocation).toExternalForm()));
+        this.cosmetic.setScaleX(cosmeticInfo.scale);
+        this.cosmetic.setScaleY(cosmeticInfo.scale);
+        this.cosmetic.setMouseTransparent(true);
+        this.world.getChildren().add(this.cosmetic);
+    }
+    private void updateCosmetic()
+    {
+        if(this.cosmetic == null || cosmeticInfo == null) return;
+        
+        this.cosmetic.setTranslateX(getLocation().getX() - (width/2) - cosmeticInfo.xOffset);
+        this.cosmetic.setTranslateY(getLocation().getY() - (height/2) - cosmeticInfo.yOffset);
+    }
+    /**
+     * Updates the text areas location and text.
+     */
+    private void updateErrorText()
+    {
+        if(this.errorTextArea == null) return;
+
+        this.errorTextArea.setTranslateX(getLocation().getX() + (CLASS_WIDTH/2) + 25);
+        this.errorTextArea.setTranslateY(getLocation().getY() - ((height/2) - 10));
+        
+        if(!errorSet.isEmpty())
+        {
+            //Only appear if there is text to display
+            this.errorTextArea.setStyle(
+                "-fx-text-fill: red;" +
+                "-fx-font-weight: bold;" +
+                "-fx-font-size: 24px;"+    
+                "-fx-background-color: #ffc4c4;" +
+                "-fx-background-radius: 10;" +
+                "-fx-border-color: white;" +
+                "-fx-border-width: 5;" +
+                "-fx-border-radius: 10;" +
+                "-fx-border-style: dashed;"+
+                "-fx-border-style: segments(15, 30)"+
+                "-fx-padding: 12 12 12 12;"
+            );
+            String errorText = "Issues:\n";
+            int n = 1;
+            for(String s : errorSet)
+            {
+                errorText += n + "." +s + "\n";
+                n++;
+            }
+            errorTextArea.setText(errorText);
+        }
+    }
+    /**
+     * Builds a class param (method or datafield)
+     */
+    private HBox addClassParam(String title, Consumer<Button> onClicked)
+    {
+        HBox fieldRow = new HBox(1);
+        Button addDataField = new Button(title);
+        FXUtility.getInstance().applyIconsToButtons(title, addDataField,"/org/umlproject/icons/add_button.png",30,30);
+        
+        onClicked.accept(addDataField);
+        
+        guiButtons.add(addDataField);
+
+        fieldRow.getChildren().addAll(addDataField);//Incase we want to add anything else...
+        fieldRow.setAlignment(Pos.CENTER);
+        return fieldRow;
+    }
+    
     private void updateVbox(boolean isSelected, double time)
     {
         if(this.parentVBox == null)
             return;
         
-        double arc = 30;
+        final double arc = 30;
         double borderWidth = 5;
+        final double radiiSpecial = arc - borderWidth / 2;
         if(isSelected)
         {
             borderWidth = 5 + 2*Math.sin(time * 0.00000001);
             //this.parentVBox.setStrokeDashOffset();
-            
             BorderStrokeStyle dashedStyle = new BorderStrokeStyle(
                     StrokeType.INSIDE,                  // stroke type
                     StrokeLineJoin.MITER,               // corner join
@@ -539,11 +809,10 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
                     10*Math.sin(time * 0.000000001),
                 Arrays.asList(30.0, 15.0)
             );
-            Insets borderInsets = new Insets(5);
             // Background with adjusted radii for the border
             parentVBox.setBackground(new Background(new BackgroundFill(
                 GuiColor.CLASS_BACKGROUND_COLOR,
-                new CornerRadii(arc - borderWidth / 2),
+                new CornerRadii(0,0,radiiSpecial,radiiSpecial, false),
                 new Insets(-10)
             )));
 
@@ -551,18 +820,17 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
             parentVBox.setBorder(new Border(new BorderStroke(
                 GuiColor.SELECTION_COLOR,
                 dashedStyle,
-                new CornerRadii(arc),
+                new CornerRadii(0,0,arc,arc, false),
                 new BorderWidths(borderWidth),
                 new Insets(-15)
             )));
         }
         else
         {
-            Insets borderInsets = new Insets(5);
             // Background with adjusted radii for the border
             parentVBox.setBackground(new Background(new BackgroundFill(
                 GuiColor.CLASS_BACKGROUND_COLOR,
-                new CornerRadii(arc - borderWidth / 2),
+                new CornerRadii(0,0,radiiSpecial,radiiSpecial, false),
                 new Insets(-10)
             )));
 
@@ -570,14 +838,20 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
             parentVBox.setBorder(new Border(new BorderStroke(
                 Color.BLACK,
                     BorderStrokeStyle.SOLID,
-                new CornerRadii(arc),
+                new CornerRadii(0,0,arc,arc, false),
                 new BorderWidths(borderWidth),
                 new Insets(-15)
             )));
         }
     }
-
-
+    
+    public void formatForScreenshot()
+    {
+        for(Button b : guiButtons)
+        {
+            b.setVisible(false);
+        }
+    }
     /**This method will update the location of the gui element representing
      *the umlClass. That is, any calls to this function will visibly move
      *the class box on the screen.
@@ -585,6 +859,10 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
      */
      @Override
     public void updateLocation(UMLClass desiredElement) {
+        updateErrorText();
+        updateCosmetic();
+        shotgunCheckRelationshipOverlap();
+        
         if(this.nodeBackground == null)
             return;
         updateAllRelationships(desiredElement);
@@ -592,15 +870,16 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         this.nodeBackground.setLayoutY(desiredElement.getLocation().getY());
 
         //System.out.println("stackpane layout is changed to:" + ((UMLClass)(desiredElement)).getLocation());
+        if(this.nodeBackground.getParent() == null) return;
+        
         this.nodeBackground.getParent().requestLayout();
     }
     /**
      * Updates the GUI element of all my associated relationships.
      * Note: this bypasses global listener updates.
      */
-    public void updateAllRelationships(UMLClass desiredElement)
+    private void updateAllRelationships(UMLClass desiredElement)
     {
-
         if(UMLDocument.getDocumentState() != DocumentState.MEMENTO_STATE_RESET)//select newly added items.
         {
             ArrayList<UMLRelationship> list = UMLDocument.getInstance().getAllRelationshipsInstanceOf(desiredElement.getClassName());
@@ -620,7 +899,11 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
      *
      * @param oldName,newName - The name to be replaced and do the replacing
      */
-    public boolean updateRename(String oldName, String newName){
+    private boolean updateRename(String oldName, String newName){
+        
+        if(newName.trim().isEmpty())
+            return false;
+        
         boolean checkClass = UMLDocument.getInstance().renameClass(oldName, newName);
         if(!checkClass){
             Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -634,12 +917,20 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
 
     @Override
     public void cleanUp() {
+        guiButtons.clear();
         if(this.nodeBackground == null)
             return;
         this.world.getChildren().remove(this.nodeBackground);
+        
+        if(this.errorTextArea != null) this.world.getChildren().remove(this.errorTextArea);
+        
+        if(this.cosmetic != null) this.world.getChildren().remove(this.cosmetic);
+
     }
     @Override
     public void setSelected(boolean isSelected) {
+        if(this.isSelected != isSelected && isSelected)
+            this.update(parentClass);
         
         this.isSelected = isSelected;
         updateVbox(isSelected, 0);
@@ -657,12 +948,16 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
 
     @Override
     public boolean contains(Point2D selectionPoint) {
-        return false;
+        return this.getRectBounds().contains(selectionPoint);
     }
 
     @Override
     public boolean intersects(Rectangle2D selectionRectangle) {
-        return false;
+
+        //Reused getRectBounds code with more accurate to visual bounds.
+        if(this.parentVBox == null)
+            return false;
+        return selectionRectangle.intersects(getRectBounds());
     }
 
     @Override
@@ -676,6 +971,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     public void setLocation(Point2D location) {
         if(parentClass == null)
             return;
+        
         parentClass.setLocation(location, false);
     }
 
@@ -687,21 +983,33 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
      */
     public Rectangle2D getRectBounds()
     {
-        if(this.parentVBox == null)
-            return null;
-        Bounds bounds = this.parentVBox.getBoundsInLocal();
-
         Point2D offset = getLocation();
-        Rectangle2D rect = new Rectangle2D(
-                bounds.getMinX() + offset.getX(),
-                bounds.getMinY() + offset.getY(), 
-                bounds.getWidth(), 
-                bounds.getHeight()
-            );
-        return rect;
+        return new Rectangle2D(
+            offset.getX() - width / 2,
+            offset.getY() - height / 2,
+            width,
+            height
+        );
     }
-
-
+    /**
+     * This has to be pre-calculated due to how the A* relationships read class bounds.
+     */
+    private void computeSize()
+    {
+        /*
+        HEGHT IS MANUALLY CALCULATED BECAUSE READING FROM THE 'nodeBackground' IS ALWAYS ONE CYCLE LATE.
+        
+        USING THE nodeBackground BOUNDS IS UNACCEPTABLE!
+        */
+        
+        int expectedNumberOfElements = 0;
+        if(parentClass != null) expectedNumberOfElements = parentClass.countNumberOfElements();
+        
+        height = CLASS_DEFAULT_HEIGHT;
+        double spacing = CLASS_INSETS * expectedNumberOfElements - 1;
+        
+        height += (expectedNumberOfElements * (CLASS_TEXTBOX_HEIGHT)) + spacing;
+    }
     @Override
     public String toString(){
         return this.getParentClass().toString();

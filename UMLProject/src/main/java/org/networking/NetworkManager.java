@@ -5,6 +5,15 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import javafx.application.Platform;
+import javafx.scene.Node;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import org.umlproject.Main;
+import org.umlproject.UI.FXDialogueFactory;
 
 /**
  * This class manages startup and shutdown of network connections.
@@ -16,11 +25,13 @@ public class NetworkManager {
     public static final int MAX_PACKET_LENGTH = 60000;
     public static final int CONNECTION_TIMEOUT = 3;//in seconds
     public static final int unstuckTimeout = 10;//in seconds
-    
-    public static boolean isHosting;
-    
+
     private static Server serverManager = null;
     private static Client clientManager = null;
+    
+    public static List<NetworkManagerListener>  listeners = new ArrayList<>();
+    
+    public static final int DEFAULT_PORT = 56329;//Random port i guess...
     
     /**
      * Called on program startup.
@@ -28,6 +39,7 @@ public class NetworkManager {
     public static void initialize()
     {
         //While this method currently does nothing, it might come in handy later...
+        
     }
     
     /**
@@ -89,29 +101,53 @@ public class NetworkManager {
             clientManager = new Client(socket, dataInputStream, dataOutputStream, serverManager != null);
             clientManager.setDaemon(true);
             clientManager.start();
+            
             NetworkDocumentListener.setupListener();
+            
+            listeners.forEach((e) -> e.onNetworkConnect());
         }
         catch(IOException ex)
         {
-            System.out.println("Connection failed! " + address);
+            if(Main.isInTerminalMode())
+            {
+                System.out.println("Connection failed! " + address);
+            }
+            else
+            {
+                FXDialogueFactory.createAlertWindow(Alert.AlertType.ERROR, "Error!", 
+                        "Failed to connect to : " + address.getHostName() + ":" + address.getPort(), 
+                        address.isUnresolved()? "IP cannot resolve" : "Nobody responded", null).show();
+            }
             clientManager = null;
         }
+        
     }
     /**
      * Shutsdown all connections (Server & client)
      */
     public static void shutdown()
     {
-        if(clientManager != null)
-            clientManager.disconnect();
-        
-        if(serverManager != null)
-            serverManager.shutdown();
-        
-        setClientNull();
-        setServerNull();
-        NetworkDocumentListener.shutdownListener();
-        
+        try {
+            if(clientManager != null)
+                clientManager.disconnect();
+
+            if(serverManager != null)
+                serverManager.shutdown();
+
+            setClientNull();
+            setServerNull();
+            NetworkDocumentListener.shutdownListener();
+        } 
+        catch (Exception e) 
+        {
+            System.err.println("NETWORK SHUTDOWN EXCEPTION : " + e.getMessage());
+            e.printStackTrace();
+        }
+        finally
+        {
+            //If something goes wrong. Our listeners still will be called.
+            listeners.forEach((e) -> e.onNetworkDisconnect());
+        }
     }
     /**
      * ONLY DO THIS IF YOU KNOW WHAT YOU ARE DOING!
@@ -165,5 +201,13 @@ public class NetworkManager {
             return clientManager.getTick();
         }
         return -1;
+    }
+    public static boolean isHosting()
+    {
+        return getServerInstance() != null;
+    }
+    public static boolean isConnected()
+    {
+        return getServerInstance() != null || getClientInstance() != null;
     }
 }

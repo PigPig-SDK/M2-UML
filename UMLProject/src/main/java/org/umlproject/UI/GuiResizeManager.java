@@ -15,7 +15,7 @@ public class GuiResizeManager
         App.mainStage.heightProperty().addListener((obs, oldVal, newVal) -> {GuiResizeManager.sizeUpdate(); });
         sizeUpdate();//Call once to update locations of stuff.
     }
-    public static void sizeUpdate()
+    private static void sizeUpdate()
     {
         Pane p = GuiController.getInstance().getViewPane();
         p.setPrefHeight(App.mainStage.getHeight());

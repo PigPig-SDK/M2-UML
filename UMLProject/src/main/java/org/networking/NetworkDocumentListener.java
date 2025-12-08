@@ -1,8 +1,15 @@
 package org.networking;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+
+import javafx.geometry.Rectangle2D;
 import org.umlproject.DiagramElementListener;
 import org.umlproject.DocumentListner;
 import org.umlproject.DocumentState;
@@ -23,12 +30,16 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
             Set.of( DocumentState.FILE_LOADING, 
                     DocumentState.CLONING, 
                     DocumentState.MEMENTO_STATE_RESET,
-                    DocumentState.NETWORK_OPERATION);
+                    DocumentState.NETWORK_OPERATION,
+                    DocumentState.MASS_OPERATION_RENAME);
     
     private static NetworkDocumentListener instance;
     
     private static final double dragSendDelay = 0.02;//~50 times a second
-    private static long dragLastSent = 0;
+    
+    
+    
+    private static Map<UUID, AtomicLong> dragLastSent = new HashMap<>();
     
     /**
      * Get the memento of instance listener.
@@ -62,23 +73,6 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
         UMLDocument.documentListners.remove(instance);
         instance = null;
     }
-    
-    /**
-     * Sends the updated class to the server for validation
-     */
-    private void sendClassUpdate(UMLClass objectClass)
-    {
-        if(invalidDocumentStates.contains(UMLDocument.getDocumentState())) return;
-        NetworkPacket networkPacket = NetworkPacket.objectToNetworkPacket(objectClass.lastNetworkEditTime + 1, PacketType.CLASS_EDIT, objectClass);//Try for a new edit time
-        
-        try {
-            NetworkManager.getClientInstance().sendNetworkPacket(networkPacket);    
-        } 
-        catch (Exception e) {}
-        
-        
-        
-    }
     /**
      * Sends the new location for a UMLClass.
      */
@@ -94,19 +88,32 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
         }
         
         //Construct packet
-        NetworkPacket networkPacket = NetworkPacket.objectToNetworkPacket(
-                NetworkManager.getTick(), 
+        NetworkPacket networkPacket = NetworkPacket.objectToNetworkPacket( 
                 PacketType.ELEMENT_MOVED, 
                 new PayloadMoveElement( objectClass.getClassName(),
                                         (int)objectClass.getLocation().getX(), 
                                         (int)objectClass.getLocation().getY()));
-        try
+        client.sendNetworkPacket(networkPacket);
+    }
+    /**
+     * Sends the updated class to the server for validation
+     */
+    private void sendClassUpdate(UMLClass objectClass)
+    {
+        if(invalidDocumentStates.contains(UMLDocument.getDocumentState())) return;
+        
+        objectClass.lastNetworkEditTime++;//Increment last edit time...
+        NetworkPacket networkPacket = NetworkPacket.objectToNetworkPacket(PacketType.CLASS_EDIT, objectClass);
+        
+        if(NetworkManager.isHosting())//Bypass communication. Enforce everyone to use this packet.
         {
-            client.sendNetworkPacket(networkPacket);
+            Set serverAvoidance = new HashSet<ClientHandler>();
+            serverAvoidance.add(NetworkManager.getServerInstance().getServerClient());
+            NetworkManager.getServerInstance().sendMessageToAllClients(networkPacket, serverAvoidance);
         }
-        catch(IOException ex)
+        else //I am a client, send through my connection...
         {
-            System.err.println("Failed to send class location packet!" + ex.getMessage());
+            NetworkManager.getClientInstance().sendNetworkPacket(networkPacket);  
         }
     }
     /**
@@ -116,7 +123,24 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
     {
         if(invalidDocumentStates.contains(UMLDocument.getDocumentState())) return;
         
-        System.out.println("Update relationship : " + objectLRelationship.getSourceName());
+        objectLRelationship.lastNetworkEditTime++;//Increment last edit time...
+        UMLClass source = UMLDocument.getInstance().getClass(objectLRelationship.getSourceName());
+        UMLClass destination = UMLDocument.getInstance().getClass(objectLRelationship.getDestinationName());
+        if(source == null || destination == null) return;
+        
+        PayloadRelationship payloadRelationship = new PayloadRelationship(source.networkId, destination.networkId, objectLRelationship);
+        NetworkPacket networkPacket = NetworkPacket.objectToNetworkPacket(PacketType.RELATIONSHIP_EDIT, payloadRelationship);
+        
+        if(NetworkManager.isHosting())//Bypass communication. Enforce everyone to use this packet.
+        {
+            Set serverAvoidance = new HashSet<ClientHandler>();
+            serverAvoidance.add(NetworkManager.getServerInstance().getServerClient());
+            NetworkManager.getServerInstance().sendMessageToAllClients(networkPacket, serverAvoidance);
+        }
+        else //I am a client, send through my connection...
+        {
+            NetworkManager.getClientInstance().sendNetworkPacket(networkPacket);
+        }
     }
     
     /*---------------------------[ Listeners ]---------------------------*/
@@ -135,24 +159,34 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
         }
     }
     @Override public void updateLocation(Object desiredElement) {
-        
-        // This code checks for 'mid dragging' updates.
-        //We still send 'mid dragging' updates, just at a slower rate than what javafx gives.
-        if(UMLDocument.getDocumentState().equals(DocumentState.SILENT_MOVEMENT))
+        if(desiredElement instanceof UMLDiagramElement element)
         {
-            long delta = System.nanoTime() - dragLastSent;
-            double refireDelay = TimeUnit.SECONDS.toNanos(1) * dragSendDelay;//toNanos dosnt take 'double', jank workaround.
-            
-            if(delta < refireDelay) return;//Does not quality for sending network packet.
-            dragLastSent = System.nanoTime();
-        }
-        
-        switch(desiredElement)
-        {
-            case UMLClass umlClass -> sendClassTranslation(umlClass);
-            default ->
+            if(!dragLastSent.containsKey(element.networkId))
             {
-                System.out.println("Got location update from invalid source!");
+                dragLastSent.put(element.networkId, new AtomicLong(0));
+            }
+            // This code checks for 'mid dragging' updates.
+            //We still send 'mid dragging' updates, just at a slower rate than what javafx gives.
+            if(UMLDocument.getDocumentState().equals(DocumentState.SILENT_MOVEMENT))
+            {
+                long delta = System.nanoTime() - dragLastSent.get(element.networkId).longValue();
+                double refireDelay = TimeUnit.SECONDS.toNanos(1) * dragSendDelay;//toNanos dosnt take 'double', jank workaround.
+
+                if(delta < refireDelay) return;//Does not quality for sending network packet.
+                dragLastSent.get(element.networkId).set(System.nanoTime() + 0L);
+            }
+            else
+            {
+                return;
+            }
+
+            switch(desiredElement)
+            {
+                case UMLClass umlClass -> sendClassTranslation(umlClass);
+                default ->
+                {
+                    System.out.println("Got location update from invalid source!");
+                }
             }
         }
     }
@@ -160,17 +194,40 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
     @Override public void onRelationshipAdded(UMLRelationship umlRelationship) { sendRelationshipUpdate(umlRelationship); }
     
     @Override public void onClassRemove(UMLClass umlClass) {
-        System.out.println("TODO: IMPLEMENT onClassRemove!");
+        netRemoveDiagramElement(umlClass);
     }
     @Override public void onRelationshipRemove(UMLRelationship umlClass) {
-        System.out.println("TODO: IMPLEMENT onRelationshipRemove!");
+        netRemoveDiagramElement(umlClass);
     }
+    private void netRemoveDiagramElement(UMLDiagramElement element)
+    {
+        if(invalidDocumentStates.contains(UMLDocument.getDocumentState())) return;
+        
+        if(dragLastSent.containsKey(element.networkId))
+            dragLastSent.remove(element.networkId);
+        
+        NetworkPacket networkPacket = NetworkPacket.objectToNetworkPacket(PacketType.OBJECT_DELETED, new PayloadRemoveObject(element.networkId));
+        
+        if(NetworkManager.isHosting())//Bypass communication. Enforce everyone to use this packet.
+        {
+            Set serverAvoidance = new HashSet<ClientHandler>();
+            serverAvoidance.add(NetworkManager.getServerInstance().getServerClient());
+            NetworkManager.getServerInstance().sendMessageToAllClients(networkPacket, serverAvoidance);
+        }
+        else //I am a client, send through my connection...
+        {
+            NetworkManager.getClientInstance().sendNetworkPacket(networkPacket);
+        }
+    }
+    
+    
     /* Those no good do nothings */
     @Override public void cleanUp() {}//Do nothing!
+
     @Override public void loadFile(UMLDocument umlDocument) {
         Server server = NetworkManager.getServerInstance();
         if(server == null)
             return;//Not hosting...
-        server.sendMessageToAllClients(Server.generateDocumentPacket());
+        server.sendMessageToAllClients(PayloadDocument.generateDocumentPacket());
     }//Do nothing!
 }

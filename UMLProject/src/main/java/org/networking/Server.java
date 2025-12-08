@@ -115,7 +115,7 @@ public class Server extends Thread {
             }
             catch(IOException e)
             {
-                System.out.println("Server Socket:" +  e.getMessage());
+                //System.out.println("Server Socket:" +  e.getMessage());
                 //Try close socket! Something went wrong.
                 try { 
                     if(socket != null)
@@ -167,16 +167,28 @@ public class Server extends Thread {
     public synchronized void sendMessageToClient(NetworkPacket netPacket, ClientHandler client)
     {
         //Ensure we are not causing race conditions...
-        try
+        client.sendNetworkPacket(netPacket);
+    }
+    /**
+     * Returns a list of only terminal users...
+     */
+    public Set<ClientHandler> getAllTerminalUsers()
+    {
+        Set<ClientHandler> clientHandlers = getClients();
+        clientHandlers.removeIf(client -> !client.getUserID().isTerminalUser);
+        return clientHandlers;
+    }
+    /**
+     * Reports a chat message back to the user.
+     * @param message The message you desire to send.
+     */
+    public void sendChatMessageToAll(String message)
+    {
+        Set<ClientHandler> allClients = getClients();
+        
+        for(ClientHandler c : allClients)
         {
-            client.sendNetworkPacket(netPacket);
-        }
-        catch(IOException ex)
-        {
-            if("Socket closed".equalsIgnoreCase(ex.getMessage()))//Don't send messages to deadweight... Killem.
-            {
-                client.disconnect();//Stop talking to them...
-            }
+            c.sendChatToClient(message);
         }
     }
     /**
@@ -186,7 +198,7 @@ public class Server extends Thread {
     {
         //Shutdown all clients...
         clientUpdateTimer.cancel();
-        System.out.println("Shutdown server. Closing all clients!");
+        System.out.println("Shutdown server");
         sendMessageToAllClients(new NetworkPacket(0, PacketType.DISCONNECT,""));
         try {
             Thread.sleep(50);
@@ -258,12 +270,10 @@ public class Server extends Thread {
         }
         return tempList;
     }
-    public static NetworkPacket generateDocumentPacket()
-    {
-        return NetworkPacket.objectToNetworkPacket(NetworkManager.getTick(), PacketType.FULL_DOCUMENT, UMLDocument.getInstance());
-    }
     /**
-     * Gets the server
+     * Gets the server's local client handler.
+     * Good for avoiding your local machine from running network code.
+     * 
      * @return NULL if no local client exists.
      */
     public ClientHandler getServerClient()

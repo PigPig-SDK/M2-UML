@@ -2,6 +2,7 @@ package org.umlproject;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * This is an abstract base class for UML Document elements that will interface with the Observers.
@@ -15,6 +16,8 @@ public abstract class UMLDiagramElement
      * Used for storing a elements 'last edit network time'
      */
     public long lastNetworkEditTime = 0;
+    
+    public UUID networkId = UUID.randomUUID();
     
     /**
      * @return the dynamic listener OR null

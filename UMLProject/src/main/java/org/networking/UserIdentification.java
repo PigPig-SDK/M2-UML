@@ -17,7 +17,26 @@ import org.umlproject.Main;
 public class UserIdentification {
     public final String userName;
     public final boolean isTerminalUser;
-    private static final String[] anonNames = {"Jeff", "Diddy", "Bob"};
+    
+    //Ai generated list.
+    private static final String[] RANDOM_USERNAME_STRINGS = {
+        "Hamburger", "Corn Dog", "Pickles", "Cheeseburger", "Milkshake", "Big Mac", "Water", "Fry Sauce",
+        "Hot Dog", "French Fries", "Onion Rings", "Buffalo Wings", "BBQ Ribs", "Pulled Pork Sandwich",
+        "Mac and Cheese", "Meatwad", "Grilled Cheese", "BLT Sandwich", "Philly Cheesesteak", "Sloppy Joe",
+        "Potato Chips", "Cornbread", "Pancakes", "Waffles", "Apple Pie", "Pumpkin Pie",
+        "Chocolate Chip Cookies", "Brownies", "Donuts", "Bagels", "Cinnamon Rolls", "Chicken Nuggets",
+        "Tater Tots", "Fried Chicken", "Meatloaf", "Mashed Potatoes", "Coleslaw", "Bacon",
+        "Eggs and Bacon", "Breakfast Burrito", "Cheese Fries", "Cheesesteak Eggrolls", "Chicken Sandwich",
+        "Grits", "Funnel Cake", "Cheese Curds", "Corn on the Cob", "Hot Ham and Cheese", "Root Beer Float",
+        "Nachos", "Chili Dog", "Chicken Wings", "Mozzarella Sticks", "Caesar Salad", "Club Sandwich",
+        "Veggie Burger", "Fish Sandwich", "Turkey Club", "BBQ Chicken Pizza", "Pepperoni Pizza", "Sub Sandwich",
+        "Ice Cream Sundae", "Soft Pretzel", "Apple Turnover", "Strawberry Shortcake", "PoopManBob", "Fried Green Tomatoes",
+        "Cheeseburger Sliders", "Corn Fritters", "Chili", "Cheese Quesadilla", "Chicken Quesadilla",
+        "Pulled Pork Nachos", "Jalapeno Poppers", "Stuffed Peppers", "Baked Beans", "Sweet Potato Fries",
+        "Chicken Tenders", "Carl", "Caesar Wrap", "Club Wrap", "Potato Salad", "Macaroni Salad", "Cobb Salad"
+    };
+    
+    public static String username = null;
     
     public UserIdentification(String userName, boolean isTerminalUser)
     {
@@ -30,10 +49,13 @@ public class UserIdentification {
      * 
      * @return A randomly created userID.
      */
-    public static UserIdentification generateAnonymousUserInfo()
+    public static UserIdentification generateUserInfo()
     {
         Random random = new Random();
-        return new UserIdentification(anonNames[random.nextInt(anonNames.length)], Main.isInTerminalMode());
+
+        return new UserIdentification(
+                username == null? RANDOM_USERNAME_STRINGS[random.nextInt(RANDOM_USERNAME_STRINGS.length)] : username,
+                Main.isInTerminalMode());
     }
     /**
      * Is the given UserIdentification valid?

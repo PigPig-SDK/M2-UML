@@ -44,13 +44,20 @@ public record NetworkPacket(long sendTick, PacketType packetType, String payload
     /**
      * Creates a network packet with a wrapped payload.
      */
-    public static <T> NetworkPacket objectToNetworkPacket(long sendTick, PacketType packetType, T payload) throws JsonSyntaxException
+    public static <T> NetworkPacket objectToNetworkPacket(PacketType packetType, T payload) throws JsonSyntaxException
     {
         if(payload == null)
-            return new NetworkPacket(sendTick, packetType, null);
+            return new NetworkPacket(NetworkManager.getTick(), packetType, null);
         
         Gson gson = new Gson();
         String payloadString = gson.toJson(payload);
-        return new NetworkPacket(sendTick, packetType, payloadString);
+        return new NetworkPacket(NetworkManager.getTick(), packetType, payloadString);
+    }
+    /**
+     * Creates a network packet with a wrapped payload.
+     */
+    public static  NetworkPacket stringToNetworkPacket(PacketType packetType, String payload)
+    {
+        return new NetworkPacket(NetworkManager.getTick(), packetType, payload);
     }
 }

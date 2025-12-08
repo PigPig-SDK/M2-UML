@@ -1,27 +1,47 @@
-Command design pattern: consists of the ExportCommand interface, CommandInvoker class, ScreenshotCommand class, and the exportScreenshotMenuAction() method in the GuiController class on lines 274-298.
+1. Command design pattern: consists of the ExportCommand interface, CommandInvoker class, ScreenshotCommand class, and the exportScreenshotMenuAction() method in the GuiController class on lines 274-298.
 This design pattern allows us to convert actions into objects and then have a generalized Invoker class that executes those actions via a comman interface. Having a generalized command invoker like this
 makes the project more scalable since now we don't have to rely on lots of conditional branching to decide which command we want our code to use, we can just create a new concrete command class and then
 have our Invoker execute the command's methods. This will make it easier to introduce new Commands on a whim as the project progresses.
 
-Singleton design pattern: Consists of the UMLDocument class at lines 25, and 66-84. We used this design pattern because each instance of a UMLDocument represents a single specific UML diagram that the user is creating
+2. Singleton design pattern: Consists of the UMLDocument class at lines 25, and 66-84. We used this design pattern because each instance of a UMLDocument represents a single specific UML diagram that the user is creating
 and this way each time the user loads a file they know for certain that it represents only a single UML diagram. That is we prevent any uncertainty about the state of the program by using a singleton. 
 This way there is no uncertainty about which UML diagram to display or which one is having a class added to it or a method modified etc.
 
-Model View Controller: The primary Model class is UMLDocument, the controller is the GuiController class, and the View is comprised of GuiClass and GuiRelationship in combination with our FXML file.
+3. Model View Controller: The primary Model class is UMLDocument, the controller is the GuiController class, and the View is comprised of GuiClass and GuiRelationship in combination with our FXML file.
 We implemented this pattern to decouple the three core aspects of our code from each other to make it easier to track down and fix bugs in the code, as well as simplifying testing. The Model for example,
 can now be tested in isolation from the View and the Controller. Furthermore, MVC allowed us to implement the Memento design pattern directly on the Model.
 
-Memento design pattern: This was used for undo/redo to save the state of the current UMLDocument. When the user 'undoes' their last action, the program returns to a previously saved state inside the memento class.
+4. Memento design pattern: This was used for undo/redo to save the state of the current UMLDocument. When the user 'undoes' their last action, the program returns to a previously saved state inside the memento class.
 This design pattern was chosen for its implementation simplicity. Once deep coppies can be made from our UMLDocument, than memento is a breeze to implement.
 Memento.java is our implementation for design pattern, it was chosen to be a generic type for testability.
 
-Observer design pattern: The observer design pattern helped us quantify 'updates' inside our UMLDocument and its associated classes. This was useful when it came to undo/redo, as the observer of our main document would need to know when to create
-a new memento state. UndoRedoManager.java is the implementation of this. The observer pattern simplified the codebase in many ways while also providing some refactoring challenges. After the required re-tooling to ensure consistency in observer 'updates',
-the process for adding more listeners (such as for network updates) has become trivial. The observer can also be found in: GuiRelationship.java, GuiController.java, GuiClass.java, NetworkDocumentListener.java and AutoComplete.java.
-All of these classes listen for some sort of update from their 'attached' object.
-
-State design pattern: Our document observer was great at first, but then we came to realize some operations would call an update multiple times. One example of this is deleting multiple objects at once. 
+5. State design pattern: Our document observer was great at first, but then we came to realize some operations would call an update multiple times. One example of this is deleting multiple objects at once. 
 Before storing a document state, when each object was deleted an undo/redo save state would be made. This was counterintuitive to the user, as their 'deletion' action was only one keypress, yet it may accomplished many deletions at once. 
 To solve this we added 'state' to each action, specifically 'DocumentState.java'. Whenever the observer notices a change, the observer checks what state the UMLDocument was under during said change. 
 So now when deleting multiple objects at once, we can place the UMLDocument under 'MASS_OPERATION' before the operations are executed. Allowing the UMLDocument observers to ignore specific mass actions. Once all actions are executed, the document returns to the initial state it was in before execution.
 The implementation of the state changing process can be seen in UMLDocument's function "executeActionUnderState", in which a lambda of code will be executed under a specified document state.
+
+6. Factory design pattern: The Factory design pattern was used for javaFX Dialogue windows. 
+The object construction for popup windows was repetitive and scattered across the codebase. 
+The scattered instancing of these windows later became a problem while implementing networking. Dialogue windows would freeze a host's editor untill they finished their interaction with the context window.
+This pause would also stop all client messages from interfacing with the javaFX main thread of the host. 
+Basically, while a host was in a dialogue box, packets coming and going would pile up until the host finished their task. Shotgunning everyone in the session with a wave of updates.
+A centeral location for all dialogue box creation made it trivial to flag all windows to not pause the mainthread while a connection is established.
+It also allowed us to add a cool fade effect to all dialogue windows, and have the option of using a generic .CSS file so the diologues all appear in the same style.
+This can be seen in FXDialogueFactory.java. 
+
+7. Command design pattern: The Command design pattern was implemented as proof of concept for taking screenshots. 
+However if we were to continue developing this project after this quarter it would be incredibly useful across many locations in the codebase. 
+When a user takes a screenshot, a ScreenshotCommand is created and is then given to a CommandInvoker. The command invoker then executes the command's act function. This design pattern could solve many issues in the code because some actions are undetectable without writing the same detection boilerplate code.
+For instance when a network packet arrives, a command invoker could decouple the packet and execute its instructions (Assuming they are safe). This would allow for a freeform packet receiver with less boilerplate code.
+
+8. Observer design pattern (Part 1): The Observer design pattern was used for DiagramElementListeners.
+A DiagramElementListener is a class which observes a UMLDiagramElement. A UMLDiagramElement is something like a UMLClass or a UMLRelationship. The two main DiagramElementListeners are GuiClass and GuiRelationship. Whenever a UMLClass is changed, the UI responds with a redraw accordingly.
+Same goes for UMLClasses. The implementation for this can be seen within GuiClass.Java and GuiRelationship.java. Without these listeners, the UI code would be an absolute nightmare to manage.
+
+9. Observer design pattern (Part 2): The Observer design pattern was used for MementoListeners.
+When a Undo/Redo/Savestate within a Memento is called, some classes have to restructure themselves to account for the new state. This was accomplished by implementing a observer.
+This is specifically used for simplifying the autocomplete implementation with respect to Undo/Redo Save-states. Whenever a new instance of the memento is assigned, the autocomplete rescans for potental new dictionary words inside the memento instance.
+The structure of our program was geared to the Observer design, that is why it is listed twice. They are fantastic tools and they saved a ton of time.
+
+
