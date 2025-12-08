@@ -761,38 +761,38 @@
 #consoleOut {
     -fx-background-color: transparent;
 	-fx-border-width: 0px;
-	-fx-text-fill: #333333;
+	-fx-text-fill: black;
 }
 #consoleOut .scroll-pane {
     -fx-background-color: transparent;
-	-fx-text-fill: #333333;
+	-fx-text-fill: black;
 }
 #consoleOut:info {
-	-fx-text-fill: #333333;
+	-fx-text-fill: black;
 }
 
 #consoleOut .scroll-pane .viewport {
     -fx-background-color: transparent;
-	-fx-text-fill: #333333;
+	-fx-text-fill: black;
 }
 #consoleOut .scroll-pane .content {
     -fx-background-color: transparent;
-	-fx-text-fill: #333333;
+	-fx-text-fill: black;
 }
 #consoleOut .content {
     -fx-scale-y: -1;
-	-fx-text-fill: #333333;
+	-fx-text-fill: black;
 }
 #consoleOut .text {
     -fx-scale-y: -1;
-	-fx-text-fill: #333333;
+	-fx-text-fill: black;
 }
 #console {
 	-fx-background-color: #E6E6E6;
-	-fx-text-fill: #333333;
+	-fx-text-fill: black;
 	-fx-border-radius: 1;
     border-radius: 0;
 }
 #console .text {
-	-fx-text-fill: #333333;
+	-fx-text-fill: black;
 }

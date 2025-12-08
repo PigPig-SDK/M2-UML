@@ -740,12 +740,14 @@
 #consoleOut {
     -fx-background-color: transparent;
 	-fx-border-width: 0px;
+	-fx-text-fill: white;
 }
 #consoleOut .scroll-pane {
     -fx-background-color: transparent;
 }
 #consoleOut .scroll-pane .viewport {
     -fx-background-color: transparent;
+	-fx-text-fill: white;
 }
 #consoleOut .scroll-pane .content {
     -fx-background-color: transparent;
@@ -755,4 +757,5 @@
 }
 #consoleOut .text {
     -fx-scale-y: -1;
+	-fx-text-fill: white;
 }

@@ -140,31 +140,7 @@ public class GuiController implements DocumentListner {
     
     @FXML
     public void themeViewMenuAction() {
-        GridPane grid = new GridPane();
-        grid.setHgap(10);
-        grid.setVgap(10);
-        grid.setPadding(new Insets(20, 150, 10, 10));
-
-        ComboBox<String> ThemeBox = new ComboBox<>();
-        ThemeBox.getItems().add("Dark Mode");
-	ThemeBox.getItems().add("Light Mode");
-	//ThemeBox.getItems().add("Mesa");
-	//ThemeBox.getItems().add("Shoreline");
-	//ThemeBox.getItems().add("Forest");
-	grid.add(new Label("Theme"), 0, 0);
-	grid.add(ThemeBox, 1, 0);
-	Alert alert = FXDialogueFactory.createAlertWindow(Alert.AlertType.INFORMATION, "Change Theme", "Select a theme", null, grid);
-	Optional<ButtonType> result = alert.showAndWait();
-	
-        if (result.isPresent() && result.get() == ButtonType.OK) //User Acceptance
-        {
-            String oldTheme = curTheme;
-            curTheme = ThemeBox.getValue();
-            rootVBox.getStylesheets().add(getClass().getResource("/org/umlproject/" + curTheme + ".css").toExternalForm());    
-            rootVBox.getStylesheets().remove(getClass().getResource("/org/umlproject/" + oldTheme + ".css").toExternalForm());
-        }
-
-    
+        GuiThemes.getInstance().onThemeMenuItemPressed();
     }
 
     /**
