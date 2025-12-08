@@ -14,9 +14,7 @@ import javafx.scene.layout.GridPane;
 
 
 public class GuiThemes {
-    
-    static String curTheme = "Dark Mode";
-    
+   
     private static GuiThemes instance = new GuiThemes();
     
         public static synchronized GuiThemes getInstance()
@@ -28,6 +26,8 @@ public class GuiThemes {
         return instance;
     }
 
+    String curTheme = "Dark Mode";
+    
     public void onThemeMenuItemPressed() {
         GridPane grid = new GridPane();
         grid.setHgap(10);

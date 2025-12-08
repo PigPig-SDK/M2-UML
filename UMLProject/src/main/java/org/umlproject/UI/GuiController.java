@@ -37,7 +37,6 @@ import org.umlproject.UMLRelationship;
 import org.umlproject.DocumentListner;
 import org.umlproject.DiagramElementListener;
 import org.umlproject.DocumentState;
-import static org.umlproject.UI.GuiThemes.curTheme;
 
 public class GuiController implements DocumentListner {
     
