@@ -373,5 +373,116 @@ public class UMLClassTest {
         @Override public void updateLocation(UMLClass desiredElement) {}
         @Override public void cleanUp() {}
     }
-    
+
+
+    /* ------------------------------------------------------------
+     * Extra constructor tests (3-arg constructor)
+     * ------------------------------------------------------------ */
+
+    @Test
+    void constructor_withMaps_valid_setsFieldsAndMethods() {
+        HashMap<String, UMLDataField> fields = new HashMap<>();
+        HashMap<String, ArrayList<UMLMethod>> methods = new HashMap<>();
+
+        UMLClass c = new UMLClass("WithMaps", fields, methods);
+
+        assertEquals("WithMaps", c.getClassName());
+        assertSame(fields, c.getFieldsAll());
+        assertSame(methods, c.getMethodsAll());
+    }
+
+    @Test
+    void constructor_nullFields_throws() {
+        HashMap<String, ArrayList<UMLMethod>> methods = new HashMap<>();
+        assertThrows(IllegalArgumentException.class,
+                () -> new UMLClass("Bad", null, methods));
+    }
+
+    @Test
+    void constructor_nullMethods_throws() {
+        HashMap<String, UMLDataField> fields = new HashMap<>();
+        assertThrows(IllegalArgumentException.class,
+                () -> new UMLClass("Bad", fields, null));
+    }
+
+    /* ------------------------------------------------------------
+     * Location helpers (setLocation / setLocationSilent)
+     * ------------------------------------------------------------ */
+
+    @Test
+    void setLocationSilent_updatesLocation() {
+        UMLClass c = new UMLClass("LocTest");
+        Point2D p = new Point2D(5.5, -3.25);
+
+        c.setLocationSilent(p);
+
+        assertEquals(p, c.getLocation());
+    }
+
+    @Test
+    void setLocation_updatesLocation() {
+        UMLClass c = new UMLClass("LocTest");
+        Point2D p = new Point2D(-2, 8);
+
+        // We’re not checking listeners here, just the coordinates
+        c.setLocation(p, true);
+
+        assertEquals(p, c.getLocation());
+    }
+
+    /* ------------------------------------------------------------
+     * Dummy name helpers
+     * ------------------------------------------------------------ */
+
+    @Test
+    void findValidFieldDummySignature_skipsExistingDummyNames() {
+        HashMap<String, UMLDataField> fields = new HashMap<>();
+        // Keys matter, values can be null
+        fields.put("Dummy1", null);
+        fields.put("Dummy2", null);
+
+        UMLClass c = new UMLClass("HasFields", fields, new HashMap<>());
+
+        String sig = c.findValidFieldDummySignature();
+
+        assertEquals("PRIVATE INT Dummy3", sig);
+    }
+
+    @Test
+    void findValidMethodDummySignature_skipsExistingMethodNames() {
+        HashMap<String, ArrayList<UMLMethod>> methods = new HashMap<>();
+        methods.put("method1", new ArrayList<>());
+        methods.put("method2", new ArrayList<>());
+
+        UMLClass c = new UMLClass("HasMethods", new HashMap<>(), methods);
+
+        String sig = c.findValidMethodDummySignature();
+
+        assertEquals("method3 INT P1", sig);
+    }
+
+    /* ------------------------------------------------------------
+     * Extra equals / hashCode coverage
+     * ------------------------------------------------------------ */
+
+    @Test
+    void equals_differentType_false() {
+        assertNotEquals(clazz, "not-a-umlclass");
+    }
+
+    @Test
+    void setClassName_updatesEqualsAndHashCode() {
+        UMLClass c1 = new UMLClass("Same");
+        UMLClass c2 = new UMLClass("Same");
+
+        assertEquals(c1, c2);
+        assertEquals(c1.hashCode(), c2.hashCode());
+
+        c2.setClassName("Different");
+
+        assertNotEquals(c1, c2);
+        assertNotEquals(c1.hashCode(), c2.hashCode());
+    }
+
+
 }
