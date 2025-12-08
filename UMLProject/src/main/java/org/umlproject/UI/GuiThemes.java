@@ -1,6 +1,5 @@
 
 package org.umlproject.UI;
-
 import java.util.Optional;
 import javafx.geometry.Insets;
 import javafx.scene.control.Alert;
