@@ -42,6 +42,6 @@ Same goes for UMLClasses. The implementation for this can be seen within GuiClas
 9. Observer design pattern (Part 2): The Observer design pattern was used for MementoListeners.
 When a Undo/Redo/Savestate within a Memento is called, some classes have to restructure themselves to account for the new state. This was accomplished by implementing a observer.
 This is specifically used for simplifying the autocomplete implementation with respect to Undo/Redo Save-states. Whenever a new instance of the memento is assigned, the autocomplete rescans for potental new dictionary words inside the memento instance.
-The structure of our program was very suceptable to the Observer design, that is why it is used twice.
+The structure of our program was geared to the Observer design, that is why it is listed twice. They are fantastic tools and they saved a ton of time.
 
 
