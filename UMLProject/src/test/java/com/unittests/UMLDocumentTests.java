@@ -63,7 +63,7 @@ public class UMLDocumentTests
         assertEquals(1, umldocument.getClassCount());
         assertNull(testclass);
     }
-    
+
     @Test
     public void deleteClass_successfulDeletion_success()
     {
@@ -85,7 +85,7 @@ public class UMLDocumentTests
         // Assert
         assertNotNull(umldocument.removeClass("testclass1"));
     }
-    
+
     @Test
     public void deleteClass_classDoesntExist_success()
     {
@@ -117,7 +117,7 @@ public class UMLDocumentTests
         // Assert
         assertFalse(umldocument.renameClass("test class 2", "test class 3"));
     }
-    
+
     @Test
     public void renameClass_successfulRename_success()
     {
@@ -132,9 +132,9 @@ public class UMLDocumentTests
         assertNull(UMLDocument.getInstance().getClass("testclass1"));
         assertNotNull(UMLDocument.getInstance().getClass("testclass2"));
     }
-    
 
-    
+
+
     @Test
     public void getClass_doesntExist_success()
     {
@@ -147,7 +147,7 @@ public class UMLDocumentTests
         assertEquals(testclass1,testclass2);
         assertNull(umldocument.getClass("this class isnt real"));
     }
-     
+
     @Test
     public void addRelationship_nonExisting_success()
     {
@@ -250,8 +250,8 @@ public class UMLDocumentTests
         assertFalse(umldocument.addRelationship("a", "b", "aggregation"));
         assertEquals(1,umldocument.getAllRelationships("a").size());
     }
-       @Test 
-        public void save_load_UMLDocument_Success()
+    @Test
+    public void save_load_UMLDocument_Success()
     {
         // Arrange
         UMLDocument umldocument = new UMLDocument("test1");
@@ -267,7 +267,7 @@ public class UMLDocumentTests
         assertNotNull(umldocument2.getAllRelationships("a"));
         assertEquals(umldocument, umldocument2);
     }
-    @Test 
+    @Test
     public void isFileLocationValid_IsValid_Success()
     {
         // Arrange
@@ -278,7 +278,7 @@ public class UMLDocumentTests
         // Assert
         assertTrue(umldocument.isFileLocationValid());
     }
-    @Test 
+    @Test
     public void isFileLocationValid_FileNotValid_False()
     {
         // Arrange
@@ -333,7 +333,7 @@ public class UMLDocumentTests
                 this.incrementor++;
         }
     }
-    @Test 
+    @Test
     public void executeActionUnderState_MassOperation_Success()
     {
         // Arrange
@@ -342,7 +342,7 @@ public class UMLDocumentTests
         UMLDocument.executeActionUnderState(DocumentState.MASS_OPERATION, () -> umldocument.addClass("A"));
         // Act
         UMLClass toBeRemoved = UMLDocument.executeActionUnderState(DocumentState.MASS_OPERATION, () -> umldocument.removeClass("A"));
-        
+
         UMLDocument.documentListners.remove(listener);
         // Assert
         assertNotNull(toBeRemoved);
@@ -350,13 +350,13 @@ public class UMLDocumentTests
         //Cleanup, includes assertions...
         listener.cleanUp();
     }
-    
+
     /*
     ------------------------------------------------------------
     CLONABLE TESTING
     ------------------------------------------------------------
     */
-    @Test 
+    @Test
     public void copy_classList_isEqual()
     {
         // Arrange
@@ -368,7 +368,7 @@ public class UMLDocumentTests
         // Assert
         assertEquals(clone.getClassCount(), umldocument.getClassCount());
     }
-    @Test 
+    @Test
     public void copy_relationshipList_isEqual()
     {
         // Arrange
@@ -384,7 +384,7 @@ public class UMLDocumentTests
         assertEquals(clone.getRelationshipList().size(), umldocument.getRelationshipList().size());
         assertEquals(clone.getRelationshipList(), umldocument.getRelationshipList());
     }
-    @Test 
+    @Test
     public void copy_removeRelationship_isDeepCopy()
     {
         // Arrange
@@ -401,7 +401,7 @@ public class UMLDocumentTests
         assertTrue(isRemoved);
         assertNotEquals(clone.getRelationshipList(), umldocument.getRelationshipList());
     }
-    @Test 
+    @Test
     public void copy_modifyRelationship_isDeepCopy()
     {
         // Arrange
@@ -417,7 +417,7 @@ public class UMLDocumentTests
         assertNotEquals(RelationshipType.GENERALIZATION, umldocument.getRelationship("a", "b").getRelationshipType());
         assertNotEquals(umldocument.getRelationship("a", "b").getRelationshipType(), relationship.getRelationshipType());
     }
-    @Test 
+    @Test
     public void singletonReset_isProperReset_Success()
     {
         // Arrange
@@ -436,7 +436,7 @@ public class UMLDocumentTests
         assertEquals(1, UMLDocument.getMemento().getHistoryLength());
         assertEquals(0, UMLDocument.getMemento().getRedoHistoryLength());
     }
-    @Test 
+    @Test
     public void undoMementoState_savesHistory_Success()
     {
         // Arrange
@@ -476,7 +476,7 @@ public class UMLDocumentTests
         assertNull(UMLDocument.getInstance().getClass("B"));
         assertNull(UMLDocument.getInstance().getClass("A"));
     }
-    @Test 
+    @Test
     public void redoMementoState_savesHistory_Success()
     {
         // Arrange
@@ -487,12 +487,12 @@ public class UMLDocumentTests
         UMLDocument.saveMementoState();
         UMLDocument.getInstance().addClass("C");
         UMLDocument.saveMementoState();
-        
+
         //Undo all states...
         UMLDocument.undoMementoState();
         UMLDocument.undoMementoState();
         UMLDocument.undoMementoState();
-        
+
         //Redo 1
         UMLDocument.redoMementoState();
         assertEquals(2, UMLDocument.getMemento().getHistoryLength());
@@ -522,11 +522,151 @@ public class UMLDocumentTests
         assertNotNull(UMLDocument.getInstance().getClass("B"));
         assertNotNull(UMLDocument.getInstance().getClass("A"));
     }
+
+
+    @Test
+    public void getAllDiagramElements_emptyDocument_returnsEmptyList()
+    {
+        UMLDocument doc = new UMLDocument("empty");
+        var elements = doc.getAllDiagramElements();
+        assertNotNull(elements);
+        assertEquals(0, elements.size());
+    }
+
+    @Test
+    public void getAllDiagramElements_includesClassesAndRelationships()
+    {
+        UMLDocument doc = new UMLDocument("diagram");
+        doc.addClass("A");
+        doc.addClass("B");
+        doc.addRelationship("A", "B", "aggregation");
+
+        var elements = doc.getAllDiagramElements();
+
+        // We expect A, B, and the relationship A->B
+        assertEquals(3, elements.size());
+    }
+
+    @Test
+    public void getAllNetIdElements_matchesDiagramElements()
+    {
+        UMLDocument doc = new UMLDocument("netids");
+        doc.addClass("A");
+        doc.addClass("B");
+        doc.addRelationship("A", "B", "aggregation");
+
+        var elements = doc.getAllDiagramElements();
+        var map = doc.getAllNetIdElements();
+
+        assertEquals(elements.size(), map.size());
+        // Every element in the list should be in the map values
+        for (UMLDiagramElement element : elements) {
+            assertTrue(map.containsValue(element));
+        }
+    }
+
+    @Test
+    public void getAllRelationshipsInstanceOf_collectsIncomingAndOutgoing()
+    {
+        UMLDocument doc = new UMLDocument("instanceOf");
+        doc.addClass("A");
+        doc.addClass("B");
+        doc.addClass("C");
+
+        doc.addRelationship("A", "B", "aggregation"); // incoming to B
+        doc.addRelationship("B", "C", "aggregation"); // outgoing from B
+
+        var relsForB = doc.getAllRelationshipsInstanceOf("B");
+
+        // B participates in 2 relationships: A->B and B->C
+        assertEquals(2, relsForB.size());
+    }
+
+    @Test
+    public void insertRelationship_replacesExistingRelationship()
+    {
+        UMLDocument doc = new UMLDocument("insertRel");
+        doc.addClass("A");
+        doc.addClass("B");
+
+        assertTrue(doc.addRelationship("A", "B", "aggregation"));
+        UMLRelationship original = doc.getRelationship("A", "B");
+        assertNotNull(original);
+
+        UMLRelationship newRel = new UMLRelationship("A", "B", GENERALIZATION, null);
+        doc.insertRelationship(newRel);
+
+        UMLRelationship retrieved = doc.getRelationship("A", "B");
+        assertSame(newRel, retrieved);
+        assertEquals(GENERALIZATION, retrieved.getRelationshipType());
+    }
+
+    @Test
+    public void insertClass_replacesExistingClass()
+    {
+        UMLDocument.resetInstance(true);
+        UMLDocument doc = UMLDocument.getInstance();
+        doc.addClass("Foo");
+        assertEquals(1, doc.getClassCount());
+
+        UMLClass replacement = new UMLClass("Foo");
+        boolean result = doc.insertClass(replacement);
+
+        assertTrue(result);
+        assertSame(replacement, doc.getClass("Foo"));
+        assertEquals(1, doc.getClassCount());
+    }
+
+    @Test
+    public void findValidDummyName_incrementsCorrectly()
+    {
+        UMLDocument doc = new UMLDocument("dummy");
+        String first = doc.findValidDummyName();
+        assertEquals("NewClass1", first);
+
+        doc.addClass(first);
+        String second = doc.findValidDummyName();
+        assertEquals("NewClass2", second);
+    }
+
+    @Test
+    public void getUIListeners_returnsNonNullList()
+    {
+        UMLDocument doc = new UMLDocument("ui");
+        doc.addClass("A"); // Depending on implementation, this may or may not create listeners
+        var listeners = doc.getUIListeners();
+        assertNotNull(listeners);
+        // We don't assert size because listeners may be null in non-GUI contexts
+    }
+
+    @Test
+    public void equals_differentState_notEqual()
+    {
+        UMLDocument d1 = new UMLDocument("sameFile");
+        UMLDocument d2 = new UMLDocument("sameFile");
+
+        d1.addClass("A");
+        d2.addClass("A");
+        d2.addClass("B");
+
+        assertNotEquals(d1, d2);
+    }
+
+    @Test
+    public void executeActionUnderState_restoresPreviousStateOnException()
+    {
+        UMLDocument.resetInstance(true);
+        // Force a known state
+        UMLDocument.executeActionUnderState(DocumentState.MASS_OPERATION, () -> {
+            throw new RuntimeException("Boom");
+        });
+
+        // After exception, documentState should be restored back to NORMAL
+        assertEquals(DocumentState.NORMAL, UMLDocument.getDocumentState());
+    }
+
     @AfterEach
     public void killAnnoyingFiles() {
-        
-        
-        
         //God i hate these files. Die.
         Path file1 = Paths.get("ello.json");
         Path file2 = Paths.get("test.json");

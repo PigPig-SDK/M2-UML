@@ -234,4 +234,64 @@ public class MementoTests {
         assertEquals(0, memento.getRedoHistoryLength());//Clears redo history.
         assertEquals(3, memento.getHistoryLength());
     }
+
+    @Test
+    void addListener_sameListenerNotAddedTwice() {
+        // Arrange
+        ClonableClass cloneClass = new ClonableClass(0);
+        Memento<ClonableClass> memento = new Memento<>(cloneClass);
+        TestListener listener = new TestListener();
+
+        // Act
+        memento.addListener(listener);
+        memento.addListener(listener); // attempt to add twice
+
+        // Assert
+        assertEquals(1, memento.getListeners().size(),
+                "Same listener instance should not be added twice");
+    }
+
+    @Test
+    void removeListener_stopsFutureCallbacks() {
+        // Arrange
+        ClonableClass cloneClass = new ClonableClass(0);
+        Memento<ClonableClass> memento = new Memento<>(cloneClass);
+        TestListener listener = new TestListener();
+        memento.addListener(listener);
+
+        // First save – should notify
+        memento.saveState();
+        assertEquals(1, listener.updateCounter);
+
+        // Act: remove and trigger again
+        memento.removeListener(listener);
+        memento.saveState();
+
+        // Assert: counter should not increase after removal
+        assertEquals(1, listener.updateCounter,
+                "Listener should not be called after being removed");
+    }
+
+    @Test
+    void getListeners_returnsDefensiveCopy() {
+        // Arrange
+        ClonableClass cloneClass = new ClonableClass(0);
+        Memento<ClonableClass> memento = new Memento<>(cloneClass);
+        TestListener listener = new TestListener();
+        memento.addListener(listener);
+
+        // Act: grab copy and clear it
+        var copy = memento.getListeners();
+        copy.clear(); // should NOT affect the internal set
+
+        // Trigger an update
+        memento.saveState();
+
+        // Assert: internal listeners still active
+        assertEquals(1, listener.updateCounter,
+                "Clearing the returned set from getListeners() must not affect internal listeners");
+        assertEquals(1, memento.getListeners().size(),
+                "Internal listener set should remain unchanged");
+    }
+
 }
