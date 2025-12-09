@@ -24,6 +24,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
 import org.networking.NetworkManager;
@@ -530,14 +531,14 @@ public class GuiController implements DocumentListner {
      */
     public static Point2D findSafeLocation(Point2D currentCameraCenter, List<GuiClass> existingClasses) {
         //Initial class boxes have the following specifications.
-        final double NEW_CLASS_WIDTH = 350.0;
-        final double NEW_CLASS_HEIGHT = 350.0;
-        final double PADDING = 20.0;
+        final double NEW_CLASS_WIDTH = GuiClass.CLASS_WIDTH;
+        final double NEW_CLASS_HEIGHT = GuiClass.CLASS_DEFAULT_HEIGHT;
+        final double PADDING = 300.0;
         Point2D testLocation = currentCameraCenter;
 
         //Sstep sizes for calculating the horizontal and vertical neighbor tiles of the current testLocation.
-        final double STEPX = NEW_CLASS_WIDTH + PADDING;
-        final double STEPY = NEW_CLASS_HEIGHT + PADDING;
+        final double STEPX = (NEW_CLASS_WIDTH/2) + PADDING;
+        final double STEPY = (NEW_CLASS_HEIGHT/2) + PADDING;
 
         //OpenSet for tile locations to check.
         //ClosedSet stores tile locations we have already checked or that are in openSet.
@@ -552,7 +553,8 @@ public class GuiController implements DocumentListner {
         //existing classes.
         while (!openSet.isEmpty()) {
             testLocation = openSet.poll();
-            Rectangle2D newRect = new Rectangle2D(testLocation.getX(), testLocation.getY(), NEW_CLASS_WIDTH, NEW_CLASS_HEIGHT);
+            Rectangle2D newRect = new Rectangle2D(testLocation.getX() - (NEW_CLASS_WIDTH/2), testLocation.getY() - (NEW_CLASS_HEIGHT/2), NEW_CLASS_WIDTH, NEW_CLASS_HEIGHT);
+            GuiDebugging.showBounds(newRect, 1.0, 10, Color.CORAL);
             boolean overlaps = false;
             for (GuiClass existingClass : existingClasses) {
                 if (existingClass == null) continue;
