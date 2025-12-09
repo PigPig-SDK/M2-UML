@@ -63,8 +63,8 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     List<Button> guiButtons = new LinkedList<>();//No random access is required. Using linked list.
     private boolean isDragging = false;
     private boolean isSelected = false;
-    private static final int CLASS_WIDTH = 350;
-    private static final int CLASS_DEFAULT_HEIGHT = 275;
+    public static final int CLASS_WIDTH = 350;
+    public static final int CLASS_DEFAULT_HEIGHT = 275;
     private static final int CLASS_INSETS = 10;
     private static final int CLASS_TITLE_WIDTH = 300;
     private static final int CLASS_TEXTBOX_HEIGHT = 34;
