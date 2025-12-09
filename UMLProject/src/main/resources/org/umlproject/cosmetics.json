@@ -7,10 +7,52 @@
 			"yOffset":260.0,
 			"scale":0.25
 		},
-		"hamburger":{
+		".*burger$":{
 			"imageLocation":"/org/umlproject/icons/cosmetics/hamburger.png",
 			"xOffset":0.0,
 			"yOffset":200.5,
+			"scale":0.5
+		},
+		".*(manager|singleton)$":{
+			"imageLocation":"/org/umlproject/icons/cosmetics/manager.png",
+			"xOffset":40.0,
+			"yOffset":70.0,
+			"scale":0.5
+		},
+		".*(listener|listner|observer)$":{
+			"imageLocation":"/org/umlproject/icons/cosmetics/observer.png",
+			"xOffset":40.0,
+			"yOffset":75.0,
+			"scale":0.5
+		},
+		".*(factory|builder)$":{
+			"imageLocation":"/org/umlproject/icons/cosmetics/factory.png",
+			"xOffset":40.0,
+			"yOffset":85.0,
+			"scale":0.5
+		},
+		".*(adapter|bridge)$":{
+			"imageLocation":"/org/umlproject/icons/cosmetics/adapter.png",
+			"xOffset":40.0,
+			"yOffset":80.0,
+			"scale":0.5
+		},
+		".*(command)$":{
+			"imageLocation":"/org/umlproject/icons/cosmetics/command.png",
+			"xOffset":40.0,
+			"yOffset":80.0,
+			"scale":0.5
+		},
+		".*(extensions|extension)$":{
+			"imageLocation":"/org/umlproject/icons/cosmetics/extension.png",
+			"xOffset":40.0,
+			"yOffset":80.0,
+			"scale":0.5
+		},
+		"^.*(?:-copy\\d+)+$":{
+			"imageLocation":"/org/umlproject/icons/cosmetics/copy.png",
+			"xOffset":40.0,
+			"yOffset":85.0,
 			"scale":0.5
 		}
 	}
