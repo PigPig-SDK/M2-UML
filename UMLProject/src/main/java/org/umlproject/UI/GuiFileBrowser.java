@@ -2,25 +2,44 @@ package org.umlproject.UI;
 
 import java.io.File;
 import javafx.stage.FileChooser;
+import javax.swing.filechooser.FileSystemView;
 import org.umlproject.App;
 import org.umlproject.Main;
 import org.umlproject.UMLDocument;
 
 public class GuiFileBrowser {
-    
+    /**
+     * Returns the default directory for file IO prompts.
+     */
+    private static File defaultDirectory()
+    {
+        return FileSystemView.getFileSystemView().getDefaultDirectory();
+    }
+    private static FileChooser generateChooser(String title, String initialFileName, File initialDirectory, FileChooser.ExtensionFilter ... filters)
+    {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle(title);
+        if(initialFileName != null) fileChooser.setInitialFileName(initialFileName);
+        fileChooser.setInitialDirectory(initialDirectory);
+        
+        for(FileChooser.ExtensionFilter filter : filters)
+        {
+            fileChooser.getExtensionFilters().addAll(filter);
+        }
+        
+        return fileChooser;
+    }
     /**
      * This will open the users OS's save functionality.
      * @return The directory they have chosen to save to.
      */
     public static File promptForSaveDiectory()
     {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Save UML File");
-        fileChooser.setInitialFileName("MyUMLDocument.json");
-        fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
-        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("UMLDocument", "*.json"));
-        File selectedDirectory = fileChooser.showSaveDialog(App.mainStage);
-        return selectedDirectory;
+        return generateChooser(
+                "Save UML File",
+                "MyUMLDocument.json", 
+                defaultDirectory(), 
+                new FileChooser.ExtensionFilter("UMLDocument", "*.json")).showSaveDialog(App.mainStage);
     }
 
     /**
@@ -29,13 +48,12 @@ public class GuiFileBrowser {
      * @return The directory they have chosen to save to.
      */
     public static File promptForScreenshotExportDirectory(){
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Save Screenshot Image");
-        fileChooser.setInitialFileName("UMLDiagramScreenshot.png");
-        fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
-        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("UMLDiagramScreenshot", "*.png"));
-        File selectedDirectory = fileChooser.showSaveDialog(App.mainStage);
-        return selectedDirectory;
+        
+        return generateChooser(
+                "Save Screenshot Image",
+                "UMLDiagramScreenshot.png", 
+                defaultDirectory(), 
+                new FileChooser.ExtensionFilter("UMLDiagramScreenshot", "*.png")).showSaveDialog(App.mainStage);
     }
 
     /**
@@ -44,12 +62,12 @@ public class GuiFileBrowser {
      */
     public static File promptForLoadDirectory()
     {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Load UML File");
-        fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
-        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("UMLDocument", "*.json"));
-        File selectedDirectory = fileChooser.showOpenDialog(App.mainStage);
-        return selectedDirectory;
+        return generateChooser(
+        "Load UML File",
+        null, 
+        defaultDirectory(),
+        new FileChooser.ExtensionFilter("UMLDocument", "*.json")
+        ).showOpenDialog(App.mainStage);
     }
     /**
      * Removes the file UMLDocument default file extension from the input pathString.
