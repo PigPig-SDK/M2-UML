@@ -15,6 +15,9 @@ public class GuiFileBrowser {
     {
         return FileSystemView.getFileSystemView().getDefaultDirectory();
     }
+    /**
+     * A generic form of opening a FILEIO dialogue.
+     */
     private static FileChooser generateChooser(String title, String initialFileName, File initialDirectory, FileChooser.ExtensionFilter ... filters)
     {
         FileChooser fileChooser = new FileChooser();
