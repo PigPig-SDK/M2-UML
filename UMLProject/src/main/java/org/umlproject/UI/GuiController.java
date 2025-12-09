@@ -554,7 +554,6 @@ public class GuiController implements DocumentListner {
         while (!openSet.isEmpty()) {
             testLocation = openSet.poll();
             Rectangle2D newRect = new Rectangle2D(testLocation.getX() - (NEW_CLASS_WIDTH/2), testLocation.getY() - (NEW_CLASS_HEIGHT/2), NEW_CLASS_WIDTH, NEW_CLASS_HEIGHT);
-            GuiDebugging.showBounds(newRect, 1.0, 10, Color.CORAL);
             boolean overlaps = false;
             for (GuiClass existingClass : existingClasses) {
                 if (existingClass == null) continue;
