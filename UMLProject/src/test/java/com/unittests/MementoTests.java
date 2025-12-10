@@ -21,8 +21,9 @@ public class MementoTests {
     private class TestListener implements MementoListener<ClonableClass>
     {
         public int updateCounter = 0;
+
         @Override
-        public void update(Memento<ClonableClass> memento) {
+        public void update(Memento<ClonableClass> memento, MementoUpdateType type) {
             updateCounter++;
         }
         
