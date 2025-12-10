@@ -3,6 +3,7 @@ package org.umlproject.UI;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.URL;
 import java.util.*;
 
 import javafx.scene.control.TextField;
@@ -65,7 +66,7 @@ public class GuiController implements DocumentListner {
     @FXML
     public AnchorPane consoleAnchorPane;
     @FXML
-    private VBox rootVBox;
+    public VBox rootVBox;
     @FXML
     public TextArea consoleOut;
     @FXML
@@ -122,8 +123,6 @@ public class GuiController implements DocumentListner {
     }
     
     
-    String curTheme = "Dark Mode";
-    
     @FXML
     public void resetCameraViewMenuAction() {
         GuiCamera.resetCameraLocation();
@@ -141,32 +140,7 @@ public class GuiController implements DocumentListner {
     
     @FXML
     public void themeViewMenuAction() {
-        GridPane grid = new GridPane();
-        grid.setHgap(10);
-        grid.setVgap(10);
-        grid.setPadding(new Insets(20, 150, 10, 10));
-
-        ComboBox<String> ThemeBox = new ComboBox<>();
-		ThemeBox.getItems().add("Dark Mode");
-		ThemeBox.getItems().add("Light Mode");
-		ThemeBox.getItems().add("Mesa");
-		ThemeBox.getItems().add("Shoreline");
-		ThemeBox.getItems().add("Forest");
-		
-                
-                
-		grid.add(new Label("Theme"), 0, 0);
-		grid.add(ThemeBox, 1, 0);
-		Alert alert = FXDialogueFactory.createAlertWindow(Alert.AlertType.INFORMATION, "Change Theme", "Select a theme", null, grid);
-		Optional<ButtonType> result = alert.showAndWait();
-		if (result.isPresent() && result.get() == ButtonType.OK) //User Acceptance
-        {
-			curTheme = ThemeBox.getValue();
-                        //change css file
-                        //probably switch here
-                        //change non css elements
-		}
-
+        GuiThemes.getInstance().onThemeMenuItemPressed();
     }
 
     /**
