@@ -13,6 +13,12 @@
 }
 
 
+.dialog-pane > .header-panel {
+        -fx-background-color: #1F1F21;
+        -fx-border-color: #2D2D30;
+        -fx-border-width: 2px;
+        -fx-text-fill: white;
+}
 /* Label */
 .label{
     -fx-text-fill: #AFB1B3;

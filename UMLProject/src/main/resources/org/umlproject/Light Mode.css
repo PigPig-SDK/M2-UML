@@ -9,14 +9,15 @@
 .root{
     -fx-background-color: #F0F0F0;
     background-color: #F0F0F0;
-    -fx-font-family: "Monospaced"; 
+    -fx-font-family: "Monospaced";
+    -fx-text-fill: black;
 }
 
 
 
 /* Label */
 .label{
-    -fx-text-fill: #333333;
+    -fx-text-fill: black;
 }
 
 
@@ -58,7 +59,7 @@
     border-color: #222222;
     -fx-background-color: #E6E6E6;
     background-color: #E6E6E6;
-    -fx-text-fill: #333333;
+    -fx-text-fill: black;
     -fx-highlight-fill: #E6E6E6;
     -fx-min-height: 25;
     min-height: 25;
@@ -170,7 +171,7 @@
     -fx-background-radius: 0;
     -fx-border-width: 0;
     border-width: 0;
-    -fx-text-fill: #333333;
+    -fx-text-fill: black;
     -fx-background-color: #E6E6E6;
     background-color: #E6E6E6;
     -fx-min-height: 18;
@@ -239,7 +240,7 @@
     border-color: #222222;
     -fx-background-color: #E6E6E6;
     background-color: #E6E6E6;
-    -fx-text-fill: #333333;
+    -fx-text-fill: black;
 }
 .button:focused{
     -fx-border-color: #E6E6E6;
@@ -273,7 +274,7 @@
     -fx-insets: 0 0 0 -1;
     -fx-background-color: transparent;
     background-color: transparent;
-    -fx-text-fill: #333333;
+    -fx-text-fill: black;
     -fx-min-height: 25;
     min-height: 25;
     -fx-pref-height: 25;
@@ -321,7 +322,7 @@
     border-width: 1;
     -fx-border-color: #222222;
     border-color: #222222;
-    -fx-text-fill: #333333;
+    -fx-text-fill: black;
     -fx-highlight-fill: #E6E6E6;
     -fx-background-color: #E6E6E6;
     background-color: #E6E6E6;
@@ -401,18 +402,19 @@
 }
 
 #menubar {
-	-fx-background-color: #E6E6E6;
+    -fx-background-color: #E6E6E6;
     background-color: #E6E6E6;
-    -fx-border-width: 0;
+    -fx-border-color: black;
+    -fx-border-width: 0px;
     border-width: 0;
-	-fx-text-fill: #333333;
+    -fx-text-fill: black;
 }
 #menubar .menu-item {
 	-fx-background-color: #E6E6E6;
     background-color: #E6E6E6;
     -fx-border-width: 0;
     border-width: 0;
-	-fx-text-fill: #333333;
+	-fx-text-fill: black;
 }
 
 .menu:showing {
@@ -431,7 +433,7 @@
 .menu-bar .menu-button{
     -fx-background-color: #E6E6E6;
     background-color: #E6E6E6;
-    -fx-text-fill: #333333;
+    -fx-text-fill: black;
     -fx-min-height: 20;
     min-height: 20;
     -fx-pref-height: 20;
@@ -444,7 +446,7 @@
     -fx-background-radius: 0;
     -fx-border-width: 0;
     border-width: 0;
-    -fx-text-fill: #333333;
+    -fx-text-fill: black;
     -fx-background-color: #E6E6E6;
     background-color: #E6E6E6;
 }
@@ -492,7 +494,7 @@
 
 /* Slider */
 .slider{
-    -fx-text-fill: #333333;
+    -fx-text-fill: black;
 }
 .slider .track{
     -fx-background-color: #E6E6E6;
@@ -556,7 +558,7 @@
 .tree-cell{
     -fx-background-color: #E6E6E6;
     background-color: #E6E6E6;
-    -fx-text-fill: #333333;
+    -fx-text-fill: black;
     -fx-border-width: 0;
     border-width: 0;
     -fx-pref-width: 20;
@@ -606,7 +608,7 @@
     border-width: 0;
     -fx-background-color: #3E3E40;
     background-color: #3E3E40;
-    -fx-text-fill: #333333;
+    -fx-text-fill: black;
     -fx-min-height: 20;
     min-height: 20;
     -fx-pref-height: 20;
@@ -630,7 +632,7 @@
     cursor: HAND;
 }
 .tab .tab-label {
-    -fx-text-fill: #333333;
+    -fx-text-fill: black;
 }
 .tab-pane .tab-header-area .tab-header-background {
     -fx-opacity: 0.0;
@@ -640,7 +642,7 @@
 
 /* TitledPane */
 .titled-pane{
-    -fx-text-fill: #333333;
+    -fx-text-fill: black;
     -fx-label-padding: 0 0 -7 0;
     -fx-background-color: transparent;
     background-color: transparent;
@@ -698,7 +700,7 @@
     -fx-background-radius: 0;
     -fx-background-color: #E6E6E6;
     background-color: #E6E6E6;
-    -fx-text-fill: #333333;
+    -fx-text-fill: black;
 }
 .table-view .column-header {
     -fx-background-color: transparent;
@@ -754,7 +756,7 @@
     -fx-background-radius: 0;
     -fx-border-radius: 0;
     border-radius: 0;
-    -fx-text-fill: #333333;
+    -fx-text-fill: black;
     -fx-padding: 5;
     padding: 5;
 }

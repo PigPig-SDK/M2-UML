@@ -5,6 +5,7 @@ import javafx.geometry.Insets;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 
@@ -48,5 +49,11 @@ public class GuiThemes {
             GuiController.getInstance().rootVBox.getStylesheets().remove(getClass().getResource("/org/umlproject/" + oldTheme + ".css").toExternalForm());
             GuiConsole.updateTransparency();
         }
+    }
+    
+    public void applyAlertTheme(Alert alert) {
+        DialogPane dialogPane = alert.getDialogPane();
+        String cssPath = GuiController.getInstance().getClass().getResource("/org/umlproject/" + curTheme + ".css").toExternalForm();
+        dialogPane.getStylesheets().add(cssPath);
     }
 }

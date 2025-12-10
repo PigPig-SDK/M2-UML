@@ -74,7 +74,6 @@
                   <MenuItem mnemonicParsing="false" onAction="#editUndo" text="Undo" />
                   <MenuItem mnemonicParsing="false" onAction="#editRedo" text="Redo" />
             <SeparatorMenuItem mnemonicParsing="false" />
-                  <SeparatorMenuItem mnemonicParsing="false" />
             <MenuItem mnemonicParsing="false" onAction="#deleteEditMenuAction" text="Delete" />
           </items>
         </Menu>
