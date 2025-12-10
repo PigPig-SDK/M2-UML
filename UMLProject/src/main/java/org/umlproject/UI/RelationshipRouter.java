@@ -205,8 +205,14 @@ public class RelationshipRouter {
      * @return, a list of points representing the path from the source to the target.
      */
     public List<AStarSegment> AStarAlgorithm(UMLRelationship relationship,UMLClass source, UMLClass target){
+        
+        if(source == null || target == null) return null;
+        
+        
         GuiClass sourceGui = (GuiClass)source.getListener();
         GuiClass targetGui = (GuiClass)target.getListener();
+        if(sourceGui == null || targetGui == null) return null;
+        
         Rectangle2D targetBounds = targetGui.getRectBounds();
 
         openSet.clear();
