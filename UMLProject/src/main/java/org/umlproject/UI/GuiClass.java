@@ -34,6 +34,7 @@ import javafx.scene.shape.StrokeType;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
+import javafx.util.Duration;
 import org.umlproject.UMLClass;
 
 public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable, UIPositional {
@@ -725,7 +726,19 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         this.cosmetic = new ImageView(new Image(getClass().getResource(cosmeticInfo.imageLocation).toExternalForm()));
         this.cosmetic.setScaleX(cosmeticInfo.scale);
         this.cosmetic.setScaleY(cosmeticInfo.scale);
-        this.cosmetic.setMouseTransparent(true);
+        
+        if(cosmeticInfo.tooltip == null)
+        {
+            this.cosmetic.setMouseTransparent(true);
+        }
+        else
+        {
+            Tooltip tooltip = new Tooltip(cosmeticInfo.tooltip);
+            tooltip.setShowDelay(Duration.millis(50));
+            tooltip.setHideDelay(Duration.millis(200));
+            Tooltip.install(cosmetic, tooltip);
+        }
+        
         this.world.getChildren().add(this.cosmetic);
     }
     private void updateCosmetic()

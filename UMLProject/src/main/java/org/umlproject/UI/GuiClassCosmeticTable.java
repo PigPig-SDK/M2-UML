@@ -46,7 +46,6 @@ public class GuiClassCosmeticTable {
         {
             this.cosmeticsMapper.add(new Pair(Pattern.compile(regexString), this.cosmetics.get(regexString)));
         }
-        
     }
     
     public static GuiClassCosmeticTable getInstance()
