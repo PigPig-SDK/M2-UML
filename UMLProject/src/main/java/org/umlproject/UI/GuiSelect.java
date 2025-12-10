@@ -14,8 +14,12 @@ import javafx.animation.AnimationTimer;
 import org.umlproject.App;
 import org.umlproject.DiagramElementListener;
 import org.umlproject.DocumentState;
+import org.umlproject.Memento;
+import org.umlproject.MementoListener;
+import org.umlproject.MementoUpdateType;
 
-public class GuiSelect {
+public class GuiSelect implements MementoListener<UMLDocument>
+{
 
     private static GuiSelect instance;
 
@@ -189,5 +193,11 @@ public class GuiSelect {
 
     public ArrayList<UISelectable> getSelectedObjects(){
         return selectedObjects;
+    }
+
+    @Override
+    public void update(Memento<UMLDocument> memento,MementoUpdateType type) {
+        if(type == MementoUpdateType.SAVESTATE) return;
+        resetSelect();
     }
 }
