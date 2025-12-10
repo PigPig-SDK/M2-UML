@@ -66,6 +66,7 @@ public class GuiSearch {
 
             GuiCamera.resetCameraLocation();
             GuiCamera.setCameraLocation(GuiCamera.getScreenCenter().subtract(guiClass.getLocation()));
+            GuiSelect.getInstance().resetSelect();
             GuiSelect.getInstance().selectUiElement(guiClass);
 
         }
