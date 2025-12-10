@@ -40,7 +40,7 @@ MODIFYING RELATIONSHIPS
 
 <LINEBREAK>
 
-PATTERNS
+SPECIAL CLASSES
 
 · There are specific keywords that will display an icon if they appear in the name of a class.
 
