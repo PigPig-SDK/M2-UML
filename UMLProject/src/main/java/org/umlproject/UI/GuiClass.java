@@ -942,9 +942,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     }
     @Override
     public void setSelected(boolean isSelected) {
-        if(this.isSelected != isSelected && isSelected)
-            this.update(parentClass);
-        
+        //TODO: bring class to front once selected.
         this.isSelected = isSelected;
         updateVbox(isSelected, 0);
     }
