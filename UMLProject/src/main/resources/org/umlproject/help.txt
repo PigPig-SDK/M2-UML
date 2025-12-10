@@ -37,3 +37,11 @@ MODIFYING RELATIONSHIPS
   
 · If you are unhappy with your relationship lines, drag classes around to improve the visibility of your graph.
   Though this software tries to help your diagrams look beautiful, some configurations are impossible to improve.
+
+<LINEBREAK>
+
+PATTERNS
+
+· There are specific keywords that will display an icon if they appear in the name of a class.
+
+· These keywords are: Manager, Command, Extension, Bridge/Adapter, Factory, Observer.
