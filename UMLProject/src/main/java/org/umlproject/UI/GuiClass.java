@@ -719,7 +719,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     }
     private void initializeCosmetic()
     {
-        cosmeticInfo = GuiClassCosmeticTable.getInstance().cosmetics.get(this.parentClass.getClassName().toLowerCase().strip());
+        cosmeticInfo = GuiClassCosmeticTable.getCosmetic(this.parentClass.getClassName());
         if(cosmeticInfo == null) return;
         
         this.cosmetic = new ImageView(new Image(getClass().getResource(cosmeticInfo.imageLocation).toExternalForm()));
