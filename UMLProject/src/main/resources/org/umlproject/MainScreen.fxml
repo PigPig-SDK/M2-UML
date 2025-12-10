@@ -106,7 +106,7 @@
          <children>
             <Pane fx:id="world" prefHeight="352.0" prefWidth="640.0" stylesheets="@Dark%20Mode.css">
                <children>
-                  <Text fx:id="workspaceText" fill="#534b3e" layoutY="207.0" strokeType="OUTSIDE" strokeWidth="0.0" text="WORKSPACE" textAlignment="CENTER" wrappingWidth="640.28173828125">
+                  <Text fx:id="workspaceText" fill="#5b5b5b" layoutY="207.0" strokeType="OUTSIDE" strokeWidth="0.0" text="WORKSPACE" textAlignment="CENTER" wrappingWidth="640.28173828125">
                      <font>
                         <Font name="Monospaced Regular" size="93.0" />
                      </font>
