@@ -713,6 +713,12 @@
     background-color: #E6E6E6;
     -fx-pref-width: 1;
 }
+
+.separator .line {
+    -fx-border-color: gray;
+    -fx-border-width: 0 0 0 0; /* Solid black line, 1px height */
+}
+
 .table-row-cell{
     -fx-background-color: #E6E6E6;
     background-color: #E6E6E6;
