@@ -504,7 +504,9 @@ public class UMLDocument implements Copyable<UMLDocument>
             try (BufferedReader reader = new BufferedReader(new FileReader(filename + FILEEXTENT_STRING))) {
                 // Deserialize the JSON into your Java object
                 UMLDocument data = gson.fromJson(reader, UMLDocument.class);
+                data.setFileLocation(filename);
                 load(data);
+                this.fileLocation = filename;
                 //Clear all network times.
                 //Randomize all netIDS again...
                 for(UMLDiagramElement element : getAllDiagramElements())
@@ -512,8 +514,6 @@ public class UMLDocument implements Copyable<UMLDocument>
                     element.networkId = UUID.randomUUID();
                     element.lastNetworkEditTime = 0;
                 }
-                
-                this.fileLocation=filename;
             }
             catch (JsonIOException e)
             {
@@ -567,6 +567,7 @@ public class UMLDocument implements Copyable<UMLDocument>
     {
         cleanUpAllGuiListeners();
         UMLDocument.resetInstance(false);
+        documentListners.forEach(o -> o.loadFile(this));
     }
     /**
      * Calls Cleanup on all listener instances

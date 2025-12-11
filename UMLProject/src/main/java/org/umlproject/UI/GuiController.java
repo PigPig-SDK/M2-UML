@@ -30,6 +30,7 @@ import javafx.scene.text.Text;
 import javafx.util.Duration;
 import org.networking.NetworkManager;
 import org.networking.NetworkMouseHandler;
+import org.umlproject.App;
 import org.umlproject.RelationshipType;
 import org.umlproject.TerminalHandler;
 import org.umlproject.UMLClass;
@@ -88,7 +89,7 @@ public class GuiController implements DocumentListner {
     public TextField getTerminal(){return this.console;}
     public MenuBar getMenuBar(){return this.menubar;}
     public Pane getViewPane(){return this.viewpane;}
-    private boolean saveLocationSet = false;
+    public boolean saveLocationSet = false;
     
     @FXML
     private void initialize() {
@@ -204,6 +205,9 @@ public class GuiController implements DocumentListner {
             return;
         String pathString = GuiFileBrowser.removeFileExtension(outputDirectory.getAbsolutePath());
         UMLDocument.getInstance().load(pathString);
+        
+        saveLocationSet = true;
+        this.loadFile(UMLDocument.getInstance());
     }
     /**
      * Handles the "open" menu action.
@@ -247,6 +251,8 @@ public class GuiController implements DocumentListner {
         
         if(UMLDocument.getInstance().save())
             saveLocationSet = true;
+        
+        this.loadFile(UMLDocument.getInstance());
     }
     
     @FXML 
@@ -601,7 +607,10 @@ public class GuiController implements DocumentListner {
         }
     }
     @Override
-    public void loadFile(UMLDocument umlDocument) {}
+    public void loadFile(UMLDocument umlDocument) {
+        App.updateWindowContext();
+
+    }
     @Override
     public void onClassRemove(UMLClass umlClass) {
         System.out.println("CLeaned up. " + umlClass.getListener());
