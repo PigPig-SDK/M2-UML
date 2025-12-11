@@ -181,17 +181,23 @@ public class ClientHandler extends SocketManager
      */
     protected void sendEntireDocument()
     {
+        NetworkPacket networkPacket = NetworkPacket.stringToNetworkPacket(PacketType.CLEAR_DOCUMENT, "");
+        sendNetworkPacket(networkPacket);
         UMLDocument doc = UMLDocument.getInstance();
         //Send all relationships, then all classes.
         for(UMLClass umlClass: doc.getClassSet().values())
         {
-            NetworkDocumentListener.getInstance().sendClassUpdate(umlClass);
+            sendNetworkPacket(NetworkPacket.objectToNetworkPacket(PacketType.CLASS_EDIT, umlClass));
         }
         for(ArrayList<UMLRelationship> relationships: doc.getRelationshipList().values())
         {
             for(UMLRelationship r : relationships)
             {
-                NetworkDocumentListener.getInstance().sendRelationshipUpdate(r);
+                PayloadRelationship payloadRelationship = new PayloadRelationship(
+                        r.getSource()== null? UUID.randomUUID(): r.getSource().networkId,
+                        r.getDestination() == null? UUID.randomUUID(): r.getDestination().networkId, r);
+                NetworkPacket rPacket = NetworkPacket.objectToNetworkPacket(PacketType.RELATIONSHIP_EDIT, payloadRelationship);
+                sendNetworkPacket(rPacket);
             }
         }
         //sendNetworkPacket(PayloadDocument.generateDocumentPacket());

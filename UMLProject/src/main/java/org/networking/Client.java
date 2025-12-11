@@ -8,6 +8,7 @@ import static org.networking.PacketType.CLASS_EDIT;
 import static org.networking.PacketType.RELATIONSHIP_EDIT;
 import static org.networking.PacketType.REQUEST_DOCUMENT;
 import org.umlproject.MainThreadDispatcher;
+import org.umlproject.UMLDocument;
 
 /**
  * This class is the 'client' logic for handling server packets
@@ -71,6 +72,12 @@ public class Client extends SocketManager
                 if(isHosting)
                     return;
                 MainThreadDispatcher.dispatcher.dispatch(() -> PayloadClass.handleClassPacket(null, netPacket));
+            }
+            case CLEAR_DOCUMENT ->
+            {
+                if(isHosting)
+                    return;
+                MainThreadDispatcher.dispatcher.dispatch(() -> {UMLDocument.getInstance().clearFile();});
             }
             case RELATIONSHIP_EDIT ->
             {
