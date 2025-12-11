@@ -68,6 +68,10 @@ public class GuiKeyBinds {
                 {
                     GuiController.getInstance().aboutHelpMenuAction();
                 }
+                case F11 ->
+                {
+                    App.mainStage.setFullScreen(!App.mainStage.isFullScreen());
+                }
                 case F12->
                 {
                     CheckMenuItem terminalButton = GuiController.getInstance().viewTerminalMenuItem;

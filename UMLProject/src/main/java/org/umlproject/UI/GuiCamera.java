@@ -17,7 +17,7 @@ public class GuiCamera {
     private static final int ARROWKEY_SPEED = 4500;
     private static boolean up, down, left, right;
     private static final double ZOOM_SCALE_AMMOUNT = 0.005f;
-    private static final double ZOOM_SCALE_MIN = 0.25f;
+    private static final double ZOOM_SCALE_MIN = 0.15f;
     private static final double ZOOM_SCALE_MAX = 3f;
 
     private static long lastTime = 0;
