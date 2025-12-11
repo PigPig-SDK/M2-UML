@@ -29,6 +29,7 @@ public class UMLDocument implements Copyable<UMLDocument>
     transient String fileLocation = null;
     private Map<String, UMLClass> classSet = new HashMap<>();
     private Map<String,ArrayList<UMLRelationship>> relationshipList = new HashMap<>();
+    public static boolean usesMemento = true;
     
     public static final String FILEEXTENT_STRING = ".json";
     private static final String DEFAULT_FILEDIRECTORY = "Documents" + File.separator + "NewUMLDocument";
@@ -769,6 +770,7 @@ public class UMLDocument implements Copyable<UMLDocument>
     */
     public static void saveMementoState()
     {
+        if(!usesMemento) return;
         executeActionUnderState(DocumentState.MEMENTO_STATE_RESET, () ->instance.saveState());
     }
     /**
@@ -776,6 +778,7 @@ public class UMLDocument implements Copyable<UMLDocument>
     */
     public static void undoMementoState()
     {
+        if(!usesMemento) return;
         if(instance.getHistoryLength() != 1)//There are items to be undone.
         {
             instance.getInstance().cleanUpAllGuiListeners();
@@ -789,6 +792,8 @@ public class UMLDocument implements Copyable<UMLDocument>
     */
     public static void redoMementoState()
     {
+        if(!usesMemento) return;
+        
         if(instance.getRedoHistoryLength()!= 0)//There are items to be redone.
         {
             instance.getInstance().cleanUpAllGuiListeners();

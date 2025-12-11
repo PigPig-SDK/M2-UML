@@ -19,6 +19,7 @@ import org.networking.NetworkManagerListener;
 import org.networking.UserIdentification;
 import org.umlproject.RelationshipType;
 import org.umlproject.UMLDocument;
+import org.umlproject.UndoRedoManager;
 
 /**
  * This class handles the 'connect/disconnect' GUI for the server.
@@ -53,6 +54,7 @@ public class GuiNetwork  implements NetworkManagerListener
         undo.setDisable(true);
         redo.setDisable(true);
         disconnect.setDisable(false);
+        UMLDocument.usesMemento = false;
 
     }
 
@@ -73,6 +75,7 @@ public class GuiNetwork  implements NetworkManagerListener
         disconnect.setDisable(true);
         undo.setDisable(false);
         redo.setDisable(false);
+        UMLDocument.usesMemento = true;
     }
     
     public static void promptHostScreen()
