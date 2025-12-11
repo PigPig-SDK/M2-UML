@@ -627,6 +627,7 @@ public class UMLDocument implements Copyable<UMLDocument>
         
         classSet.put(umlClass.getClassName(), umlClass);
         documentListners.forEach(o -> o.onClassAdded(umlClass));
+        umlClass.updateListener(false);
         return true;//uhh...
     }
     /**
