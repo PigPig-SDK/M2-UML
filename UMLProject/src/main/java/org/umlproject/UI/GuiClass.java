@@ -305,7 +305,8 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     }
     private void redHighlightText(TextField text)
     {
-        text.setStyle("-fx-font-size: 16px; "
+        text.setStyle(
+              "-fx-font-size: 16px; "
             + "-fx-font-weight: bold; "
             + "-fx-background-radius: 0 10 10 0; "
             + "-fx-border-radius: 0;" 
@@ -771,7 +772,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
                 "-fx-border-width: 5;" +
                 "-fx-border-radius: 10;" +
                 "-fx-border-style: dashed;"+
-                "-fx-border-style: segments(15, 30)"+
+                "-fx-border-style: segments(15, 30);"+
                 "-fx-padding: 12 12 12 12;"
             );
             String errorText = "Issues:\n";
