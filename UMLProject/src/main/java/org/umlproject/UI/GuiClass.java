@@ -721,6 +721,15 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     }
     private void initializeCosmetic()
     {
+        //Always cleanup before spawning.
+        //There is some impossible to diagnose bug to do with cosmetics.
+        //This failsafe exists to fix it.
+        if(this.cosmetic != null)
+        {
+            this.world.getChildren().remove(this.cosmetic);
+            this.cosmetic = null;
+        }
+        
         cosmeticInfo = GuiClassCosmeticTable.getCosmetic(this.parentClass.getClassName());
         if(cosmeticInfo == null) return;
         
@@ -931,6 +940,10 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
 
     @Override
     public void cleanUp() {
+        
+        if(this.cosmetic != null) this.world.getChildren().remove(this.cosmetic);
+        this.cosmetic = null;
+        
         guiButtons.clear();
         if(this.nodeBackground == null)
             return;
@@ -938,7 +951,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         
         if(this.errorTextArea != null) this.world.getChildren().remove(this.errorTextArea);
         
-        if(this.cosmetic != null) this.world.getChildren().remove(this.cosmetic);
+        
 
     }
     @Override
