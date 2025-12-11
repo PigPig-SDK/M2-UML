@@ -64,7 +64,7 @@ public class GuiController implements DocumentListner {
     @FXML
     private Pane viewpane;
     @FXML 
-    private Text workspaceText;
+    public Text workspaceText;
     @FXML
     public AnchorPane consoleAnchorPane;
     @FXML
