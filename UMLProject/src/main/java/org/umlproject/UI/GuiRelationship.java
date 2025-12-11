@@ -400,7 +400,14 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
 
     @Override
     public boolean intersects(Rectangle2D selectionRectangle) {
-        return false; //TODO: Implement
+        
+        if(pathPoints == null) return false;
+        
+        for(Point2D point : pathPoints)
+        {
+            if(selectionRectangle.contains(point)) return true;
+        }
+        return false;
     }
 
     @Override
