@@ -54,8 +54,6 @@ public class GuiNetwork  implements NetworkManagerListener
         undo.setDisable(true);
         redo.setDisable(true);
         disconnect.setDisable(false);
-        UMLDocument.usesMemento = false;
-
     }
 
     @Override
@@ -75,7 +73,6 @@ public class GuiNetwork  implements NetworkManagerListener
         disconnect.setDisable(true);
         undo.setDisable(false);
         redo.setDisable(false);
-        UMLDocument.usesMemento = true;
     }
     
     public static void promptHostScreen()

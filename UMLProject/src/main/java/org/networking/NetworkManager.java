@@ -14,6 +14,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import org.umlproject.Main;
 import org.umlproject.UI.FXDialogueFactory;
+import org.umlproject.UMLDocument;
 
 /**
  * This class manages startup and shutdown of network connections.
@@ -59,6 +60,7 @@ public class NetworkManager {
             serverManager = new Server(port, summonLocalClient);
             serverManager.setDaemon(true);
             serverManager.start();
+            UMLDocument.usesMemento = false;
         }
         catch(IOException ex)
         {
@@ -70,6 +72,7 @@ public class NetworkManager {
         {
             //Wait for server to be 'accepting users'
             //Control flow managed VIA dirty while loop.
+            //I feel Thread.Sleep is OK enough here, even though Thread.Sleep is bad practice.
             while (!serverManager.isReadyForConnections() && serverManager.isAlive()) { try { Thread.sleep(10); } catch (InterruptedException ignored) {}}
             
             //System.out.println("Starting local client: " + port);
@@ -101,7 +104,7 @@ public class NetworkManager {
             clientManager = new Client(socket, dataInputStream, dataOutputStream, serverManager != null);
             clientManager.setDaemon(true);
             clientManager.start();
-            
+            UMLDocument.usesMemento = false;
             NetworkDocumentListener.setupListener();
             
             listeners.forEach((e) -> e.onNetworkConnect());
@@ -127,6 +130,7 @@ public class NetworkManager {
      */
     public static void shutdown()
     {
+        UMLDocument.usesMemento = true;
         try {
             if(clientManager != null)
                 clientManager.disconnect();
