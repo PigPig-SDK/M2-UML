@@ -17,6 +17,7 @@ import javafx.scene.layout.GridPane;
 import org.networking.NetworkManager;
 import org.networking.NetworkManagerListener;
 import org.networking.UserIdentification;
+import org.umlproject.App;
 import org.umlproject.RelationshipType;
 import org.umlproject.UMLDocument;
 import org.umlproject.UndoRedoManager;
@@ -54,6 +55,7 @@ public class GuiNetwork  implements NetworkManagerListener
         undo.setDisable(true);
         redo.setDisable(true);
         disconnect.setDisable(false);
+        App.updateWindowContext();
     }
 
     @Override
@@ -73,6 +75,7 @@ public class GuiNetwork  implements NetworkManagerListener
         disconnect.setDisable(true);
         undo.setDisable(false);
         redo.setDisable(false);
+        App.updateWindowContext();
     }
     
     public static void promptHostScreen()

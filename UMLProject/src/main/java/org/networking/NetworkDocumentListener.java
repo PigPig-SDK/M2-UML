@@ -45,7 +45,7 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
      * Get the memento of instance listener.
      * NOTE: This can be null! That is because setupListener() is expected to be called.
      */
-    public NetworkDocumentListener getInstance()
+    public static NetworkDocumentListener getInstance()
     {
         //Null is an intended return value.
         return instance;
@@ -98,7 +98,7 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
     /**
      * Sends the updated class to the server for validation
      */
-    private void sendClassUpdate(UMLClass objectClass)
+    public void sendClassUpdate(UMLClass objectClass)
     {
         if(invalidDocumentStates.contains(UMLDocument.getDocumentState())) return;
         
@@ -119,7 +119,7 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
     /**
      * Sends the updated relationship to the server for validation
      */
-    private void sendRelationshipUpdate(UMLRelationship objectLRelationship)
+    public void sendRelationshipUpdate(UMLRelationship objectLRelationship)
     {
         if(invalidDocumentStates.contains(UMLDocument.getDocumentState())) return;
         
@@ -228,6 +228,7 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
         Server server = NetworkManager.getServerInstance();
         if(server == null)
             return;//Not hosting...
-        server.sendMessageToAllClients(PayloadDocument.generateDocumentPacket());
+        server.resendDocumentToAll();
+        
     }//Do nothing!
 }
