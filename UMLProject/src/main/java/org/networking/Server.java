@@ -280,4 +280,13 @@ public class Server extends Thread {
     {
         return localClient;
     }
+    
+    public void resendDocumentToAll()
+    {
+        for(ClientHandler client : clients)
+        {
+            if(client == null) continue;
+            client.sendEntireDocument();
+        }
+    }
 }
