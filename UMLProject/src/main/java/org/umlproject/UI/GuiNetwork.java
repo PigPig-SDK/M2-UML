@@ -50,7 +50,10 @@ public class GuiNetwork  implements NetworkManagerListener
         
         connect.setDisable(true);
         host.setDisable(true);
-        openFile.setDisable(true);
+        
+        if(!NetworkManager.isHosting())
+            openFile.setDisable(true);
+        
         newFile.setDisable(true);
         undo.setDisable(true);
         redo.setDisable(true);
