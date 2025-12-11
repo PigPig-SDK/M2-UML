@@ -81,9 +81,9 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
         if(invalidDocumentStates.contains(UMLDocument.getDocumentState())) return;
         
         Client client = NetworkManager.getClientInstance();//Our local client.
-        if(client != null)
+        if(client == null)
         {
-            client.disconnect();
+            NetworkManager.shutdown();
             return;
         }
         
