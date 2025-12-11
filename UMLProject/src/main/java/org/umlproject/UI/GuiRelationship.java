@@ -245,6 +245,16 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
         //When the user gives our textbox a new value, we push the data and that causes a redraw...
         this.relationshipText.setOnAction(event -> {
             String input = relationshipText.getText();
+            
+            if(input == null || input.strip().isEmpty())
+            {
+                RelationshipType type = desiredElement.getRelationshipType();
+                if(type == OTHER)
+                    input = desiredElement.getCustomNameType();
+                else
+                    input = type.toString();
+            }
+            
             RelationshipType relationship = RelationshipType.stringToRelationshipType(input);
             if(relationship == OTHER)
                 desiredElement.setCustomNameType(input);

@@ -22,6 +22,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -178,10 +179,7 @@ public class GuiController implements DocumentListner {
     @FXML
     public void newFileMenuAction()
     {
-        Alert alert = new Alert(Alert.AlertType.WARNING);
-        alert.setTitle("New File");
-        alert.setHeaderText("Any unsaved progress will be lost!");
-        alert.setContentText("Are you sure you want to create a new file?");
+        Alert alert = FXDialogueFactory.createAlertWindow(Alert.AlertType.WARNING, "New File", "Any unsaved progress will be lost!", "Are you sure you want to create a new file?", null);
         ButtonType yesButton = new ButtonType("New File", ButtonBar.ButtonData.YES);
         ButtonType noButton  = new ButtonType("Close", ButtonBar.ButtonData.NO);
         alert.getButtonTypes().setAll(yesButton, noButton);
@@ -613,7 +611,6 @@ public class GuiController implements DocumentListner {
     }
     @Override
     public void onClassRemove(UMLClass umlClass) {
-        System.out.println("CLeaned up. " + umlClass.getListener());
         umlClass.disposeOfListener();
     }
     @Override

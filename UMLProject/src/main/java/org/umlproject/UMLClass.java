@@ -514,10 +514,6 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
         final String dummyName = "Dummy";
         //print the fields so we can see whats happening
         ArrayList<String> fieldList = new ArrayList<>(fields.keySet());
-        System.out.println("printing dummy fields in existence");
-        for(int i = 0; i < fieldList.size(); i++){
-            System.out.println(fieldList.get(i));
-        }
         int increment = 1;
         while(true)
         {
