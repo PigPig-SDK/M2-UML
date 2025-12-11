@@ -11,6 +11,7 @@ import javafx.stage.Stage;
 import org.umlproject.UI.GuiController;
 
 import java.io.BufferedInputStream;
+import java.io.IOException;
 
 public class App extends Application {
     
@@ -54,7 +55,7 @@ public class App extends Application {
                 scene.setOnMouseEntered(e -> mouseInWindow = true);
                 scene.setOnMouseExited(e -> mouseInWindow = false);
             }
-            catch(Exception e){
+            catch(IOException e){
                 System.out.println(e);//Stop crash, print error to user.
             }
         }
@@ -74,7 +75,7 @@ public class App extends Application {
 
 
                 }
-            catch (Exception e){
+            catch (IOException | InterruptedException e){
                 System.out.println("CMD Error");
             }
             //main(new String[]{terminalLaunchString});

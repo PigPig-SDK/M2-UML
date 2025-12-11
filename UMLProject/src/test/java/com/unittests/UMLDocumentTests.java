@@ -1,5 +1,6 @@
 package com.unittests;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -674,6 +675,6 @@ public class UMLDocumentTests
             Files.deleteIfExists(file1);
             Files.deleteIfExists(file2);
         }
-        catch(Exception e){}
+        catch(IOException e){}
     }
 }
