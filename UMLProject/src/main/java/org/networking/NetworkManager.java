@@ -138,7 +138,7 @@ public class NetworkManager {
             setServerNull();
             NetworkDocumentListener.shutdownListener();
         } 
-        catch (Exception e) 
+        catch (Exception e)//Don't have time to fix this. Using generic catch
         {
             System.err.println("NETWORK SHUTDOWN EXCEPTION : " + e.getMessage());
             e.printStackTrace();
