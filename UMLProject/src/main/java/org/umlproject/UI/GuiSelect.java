@@ -141,10 +141,9 @@ public class GuiSelect {
                 return;
             }
             //Displays confirmation box for deletion
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setContentText(String.format("Are you sure you want to delete %d items?", selectedObjects.size()));
+            Alert alert = FXDialogueFactory.createAlertWindow(Alert.AlertType.CONFIRMATION, "Delete items", null, 
+                    String.format("Are you sure you want to delete %d items?", selectedObjects.size()), null);
             Optional choice = alert.showAndWait();
-
             if(choice.get() == ButtonType.CANCEL){
                 return;
             }

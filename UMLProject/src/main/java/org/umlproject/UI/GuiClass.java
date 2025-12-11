@@ -926,9 +926,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         
         boolean checkClass = UMLDocument.getInstance().renameClass(oldName, newName);
         if(!checkClass){
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setContentText("Unable To Rename Class Error: Class Already Exists");
-            alert.showAndWait();
+            FXDialogueFactory.createAlertWindow(Alert.AlertType.ERROR, "Rename Error", null, "Unable To Rename Class Error: Class Already Exists", null).show();
             return false;
         }
         updateAllRelationships(parentClass);
