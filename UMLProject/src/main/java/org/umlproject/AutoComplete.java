@@ -97,7 +97,7 @@ public class AutoComplete implements MementoListener<UMLDocument> {
 
 
     @Override
-    public void update(Memento<UMLDocument> memento) {
+    public void update(Memento<UMLDocument> memento, MementoUpdateType type) {
         this.autoWordList.clear();
         //Add classes
         this.autoWordList.addAll(memento.getInstance().getClassSet().keySet());
@@ -126,5 +126,4 @@ public class AutoComplete implements MementoListener<UMLDocument> {
         }
         reader = newLineReader();
     }
-
 }

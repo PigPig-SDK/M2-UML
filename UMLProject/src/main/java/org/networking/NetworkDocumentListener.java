@@ -83,7 +83,7 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
         Client client = NetworkManager.getClientInstance();//Our local client.
         if(client == null)
         {
-            client.disconnect();
+            NetworkManager.shutdown();
             return;
         }
         

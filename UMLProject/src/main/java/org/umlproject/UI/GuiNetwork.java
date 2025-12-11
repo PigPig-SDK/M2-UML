@@ -20,6 +20,7 @@ import org.networking.UserIdentification;
 import org.umlproject.App;
 import org.umlproject.RelationshipType;
 import org.umlproject.UMLDocument;
+import org.umlproject.UndoRedoManager;
 
 /**
  * This class handles the 'connect/disconnect' GUI for the server.

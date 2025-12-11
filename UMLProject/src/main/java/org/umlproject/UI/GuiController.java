@@ -171,6 +171,7 @@ public class GuiController implements DocumentListner {
         //Setup button icons.
         FXUtility.getInstance().applyIconsToButtons("Add Class", addClassButton,"/org/umlproject/icons/new_class.png",50,50);
         FXUtility.getInstance().applyIconsToButtons("Add Relationship", addRelationshipButton,"/org/umlproject/icons/new_relationship.png",50,50);
+        UMLDocument.getMemento().addListener(GuiSelect.getInstance());
     }
     //----------------- Menu bar callbacks -----------------
     /**
