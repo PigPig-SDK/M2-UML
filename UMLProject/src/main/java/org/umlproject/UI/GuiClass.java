@@ -633,11 +633,8 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
      */
     @Override
     public final void update(UMLClass desiredElement) {
-        //Clear out the previous GUI.
         cleanUp();
         computeSize();
-        errorSet.clear();
-//        GuiDebugging.showBounds(getRectBounds(), 5, 10, Color.GREEN);
         //--=======================================================Clone start
         this.dataFieldTextFields = new VBox(CLASS_INSETS);
         this.methodTextFields = new VBox(CLASS_INSETS);
@@ -951,7 +948,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         
         if(this.errorTextArea != null) this.world.getChildren().remove(this.errorTextArea);
         
-        
+        errorSet.clear();
 
     }
     @Override
