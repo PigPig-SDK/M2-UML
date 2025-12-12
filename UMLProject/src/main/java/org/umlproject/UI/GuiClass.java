@@ -70,6 +70,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     private static final int CLASS_INSETS = 10;
     private static final int CLASS_TITLE_WIDTH = 300;
     private static final int CLASS_TEXTBOX_HEIGHT = 34;
+    public static final int TEXT_INSET = 120;
     private Label errorTextArea;
     private ImageView cosmetic = null;
     private ImageView dragLabel = null;
@@ -941,7 +942,8 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         List<TextField> fields = getAllTextFields(this.parentVBox);
         for(TextField tf : fields)
         {
-            tf.setMinWidth(desiredElement.getWidth()* 0.75);
+            
+            tf.setMinWidth(desiredElement.getWidth() - TEXT_INSET);
         }
     }
     /**
