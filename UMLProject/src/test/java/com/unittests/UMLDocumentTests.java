@@ -318,7 +318,7 @@ public class UMLDocumentTests
         }
         protected abstract void eventCalled();
         @Override public void update(Object desiredElement) { eventCalled();}
-        @Override public void updateLocation(Object desiredElement) { eventCalled();}
+        @Override public void updateTranslation(Object desiredElement) { eventCalled();}
         @Override public void onClassRemove(UMLClass umlClass) { eventCalled();}
         @Override public void onRelationshipRemove(UMLRelationship umlClass) { eventCalled();}
         @Override public void onClassAdded(UMLClass umlClass) { eventCalled();}

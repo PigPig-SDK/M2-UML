@@ -17,6 +17,8 @@ import java.util.Set;
 import java.util.function.Consumer;
 import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
+import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Background;
@@ -56,7 +58,6 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     Point2D mouseWorldSpace;
     Point2D dragStartLocation = Point2D.ZERO;
     
-    private double width = CLASS_WIDTH;
     private double height = 0;
     
     Set<String> errorSet = new HashSet<>();
@@ -64,13 +65,15 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     List<Button> guiButtons = new LinkedList<>();//No random access is required. Using linked list.
     private boolean isDragging = false;
     private boolean isSelected = false;
-    public static final int CLASS_WIDTH = 350;
+    
     public static final int CLASS_DEFAULT_HEIGHT = 275;
     private static final int CLASS_INSETS = 10;
     private static final int CLASS_TITLE_WIDTH = 300;
     private static final int CLASS_TEXTBOX_HEIGHT = 34;
+    public static final int TEXT_INSET = 120;
     private Label errorTextArea;
     private ImageView cosmetic = null;
+    private ImageView dragLabel = null;
     private GuiClassCosmetic cosmeticInfo = null;
     /**
      * Constructor for GuiClass responsible for building the initial class box and setting all the proper
@@ -174,9 +177,9 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     /**
      * This 'shotguns' into the 'occupiedPathCells' to see if any relationships might desire a redraw.
      */
-    private void shotgunCheckRelationshipOverlap()
+    private void shotgunCheckRelationshipOverlap(boolean overrideDistanceCheck)
     {
-        if(lastShotgunLocation.distance(this.getLocation())  <= SHOTGUN_DISTANCE_REFIRE) return;
+        if(lastShotgunLocation.distance(this.getLocation())  <= SHOTGUN_DISTANCE_REFIRE && !overrideDistanceCheck) return;
         
         lastShotgunLocation = getLocation();
         
@@ -641,8 +644,8 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         this.parentVBox = new VBox(CLASS_INSETS);
         this.parentVBox.setSpacing(CLASS_INSETS);
         this.parentVBox.setPadding(new Insets(CLASS_INSETS, CLASS_INSETS, CLASS_INSETS, CLASS_INSETS));
-        this.parentVBox.setMinWidth(CLASS_WIDTH);
-        this.parentVBox.setPrefWidth(CLASS_WIDTH);
+        this.parentVBox.setMinWidth(desiredElement.getWidth());
+        this.parentVBox.setPrefWidth(desiredElement.getWidth());
         this.parentVBox.setAlignment(Pos.CENTER);
         this.nodeBackground = new StackPane();
         this.nodeBackground.setManaged(false);
@@ -688,9 +691,28 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         HashMap<String, ArrayList<UMLMethod>> umlMethods = desiredElement.getMethodsAll();
         convertMethodsToHBoxes(umlMethods);
         HBox addMethodConfiguration = addClassParam("Add method", this::addMethodButtonClickable);
-        this.parentVBox.getChildren().addAll(methodsLabel, this.methodTextFields, addMethodConfiguration);
         //-------------------------------------------------------------------------------------------------
-
+        //Make expandable classes
+        this.dragLabel = new ImageView(new Image(getClass().getResource("/org/umlproject/icons/expand.png").toExternalForm()));
+        this.dragLabel.setScaleX(0.35f);
+        this.dragLabel.setScaleY(0.35f);
+        
+        //Bind drag
+        this.dragLabel.setOnMouseDragged(e -> {
+            if(e.getButton() == MouseButton.PRIMARY) {
+                mouseWorldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
+                UMLDocument.executeActionUnderState(DocumentState.SILENT_MOVEMENT, () -> desiredElement.setWidth( (Math.abs(desiredElement.getLocation().getX() - mouseWorldSpace.getX())*2) - 60, true));
+                shotgunCheckRelationshipOverlap(true);
+            }
+            e.consume(); // Prevent event from propagating to other nodes
+        });
+        //Mouse up
+        dragLabel.setOnMouseReleased(e -> {
+            UMLDocument.saveMementoState();
+        });
+        //-------------------------------------------------------------------------------------------------
+        
+        this.parentVBox.getChildren().addAll(methodsLabel, this.methodTextFields, addMethodConfiguration);
         this.nodeBackground.getChildren().add(this.parentVBox);
 
         //Here we bind the StackPane to the location of the UMLClass, then
@@ -704,6 +726,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         makeDraggable(this.nodeBackground);
         //add classbox to world to display
         this.world.getChildren().add(this.nodeBackground);
+        this.world.getChildren().add(this.dragLabel);
         updateAllRelationships(desiredElement);
         setSelected(isSelected);//Update our selected state
 
@@ -712,9 +735,26 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         this.errorTextArea.setViewOrder(-50);
         this.world.getChildren().add(this.errorTextArea);
         updateErrorText();
-        
+        updateDragLabel(desiredElement);
         initializeCosmetic();
         updateCosmetic();
+    }
+    private static List<TextField> getAllTextFields(Node root) {
+        List<TextField> result = new ArrayList<>();
+        collectTextFields(root, result);
+        return result;
+    }
+
+    private static void collectTextFields(Node node, List<TextField> result) {
+        if (node instanceof TextField tf) {
+            result.add(tf);
+        }
+
+        if (node instanceof Parent parent) {
+            for (Node child : parent.getChildrenUnmodifiable()) {
+                collectTextFields(child, result);
+            }
+        }
     }
     private void initializeCosmetic()
     {
@@ -752,7 +792,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     {
         if(this.cosmetic == null || cosmeticInfo == null) return;
         
-        this.cosmetic.setTranslateX(getLocation().getX() - (width/2) - cosmeticInfo.xOffset);
+        this.cosmetic.setTranslateX(getLocation().getX() - (parentClass.getWidth()/2) - cosmeticInfo.xOffset);
         this.cosmetic.setTranslateY(getLocation().getY() - (height/2) - cosmeticInfo.yOffset);
     }
     /**
@@ -762,7 +802,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     {
         if(this.errorTextArea == null) return;
 
-        this.errorTextArea.setTranslateX(getLocation().getX() + (CLASS_WIDTH/2) + 25);
+        this.errorTextArea.setTranslateX(getLocation().getX() + (parentClass.getWidth()/2) + 25);
         this.errorTextArea.setTranslateY(getLocation().getY() - ((height/2) - 10));
         
         if(!errorSet.isEmpty())
@@ -871,6 +911,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         {
             b.setVisible(false);
         }
+        dragLabel.setVisible(false);
     }
     /**This method will update the location of the gui element representing
      *the umlClass. That is, any calls to this function will visibly move
@@ -878,21 +919,37 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
      * @param desiredElement, this is the UMLClass whose location data field is used to update nodeBackground
      */
      @Override
-    public void updateLocation(UMLClass desiredElement) {
+    public void updateTranslation(UMLClass desiredElement) {
         updateErrorText();
         updateCosmetic();
-        shotgunCheckRelationshipOverlap();
+        shotgunCheckRelationshipOverlap(false);
         
         if(this.nodeBackground == null)
             return;
         updateAllRelationships(desiredElement);
         this.nodeBackground.setLayoutX(desiredElement.getLocation().getX());
         this.nodeBackground.setLayoutY(desiredElement.getLocation().getY());
+        //Updwte width.
+        this.parentVBox.setMinWidth(desiredElement.getWidth());
+        this.parentVBox.setPrefWidth(desiredElement.getWidth());
+        
+        updateDragLabel(desiredElement);
 
         //System.out.println("stackpane layout is changed to:" + ((UMLClass)(desiredElement)).getLocation());
         if(this.nodeBackground.getParent() == null) return;
         
         this.nodeBackground.getParent().requestLayout();
+    }
+    private void updateDragLabel(UMLClass desiredElement)
+    {
+        this.dragLabel.setTranslateX(getLocation().getX() + (parentClass.getWidth()/2)-25);
+        this.dragLabel.setTranslateY(getLocation().getY() - 50);
+        //Update widths of child nodes. Oh brother.
+        List<TextField> fields = getAllTextFields(this.parentVBox);
+        for(TextField tf : fields)
+        {
+            tf.setMinWidth(desiredElement.getWidth() - TEXT_INSET);
+        }
     }
     /**
      * Updates the GUI element of all my associated relationships.
@@ -940,9 +997,10 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         this.cosmetic = null;
         
         guiButtons.clear();
-        if(this.nodeBackground == null)
-            return;
-        this.world.getChildren().remove(this.nodeBackground);
+        
+        if(this.dragLabel != null) this.world.getChildren().remove(this.dragLabel);
+        
+        if(this.nodeBackground != null) this.world.getChildren().remove(this.nodeBackground);
         
         if(this.errorTextArea != null) this.world.getChildren().remove(this.errorTextArea);
         
@@ -1005,9 +1063,9 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     {
         Point2D offset = getLocation();
         return new Rectangle2D(
-            offset.getX() - width / 2,
+            offset.getX() - parentClass.getWidth() / 2,
             offset.getY() - height / 2,
-            width,
+            parentClass.getWidth(),
             height
         );
     }

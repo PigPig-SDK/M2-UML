@@ -90,9 +90,7 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
         //Construct packet
         NetworkPacket networkPacket = NetworkPacket.objectToNetworkPacket( 
                 PacketType.ELEMENT_MOVED, 
-                new PayloadMoveElement( objectClass.getClassName(),
-                                        (int)objectClass.getLocation().getX(), 
-                                        (int)objectClass.getLocation().getY()));
+                new PayloadMoveElement(objectClass.getClassName(),(int)objectClass.getLocation().getX(), (int)objectClass.getLocation().getY(), objectClass.getWidth()));
         client.sendNetworkPacket(networkPacket);
     }
     /**
@@ -158,7 +156,7 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
             }
         }
     }
-    @Override public void updateLocation(Object desiredElement) {
+    @Override public void updateTranslation(Object desiredElement) {
         if(desiredElement instanceof UMLDiagramElement element)
         {
             if(!dragLastSent.containsKey(element.networkId))

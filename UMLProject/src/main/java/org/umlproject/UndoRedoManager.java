@@ -48,7 +48,7 @@ public class UndoRedoManager implements DiagramElementListener, DocumentListner
         onDocumentUpdated("objUpdate");
     }
 
-    @Override public void updateLocation(Object desiredElement) {
+    @Override public void updateTranslation(Object desiredElement) {
         if(UMLDocument.getDocumentState() == DocumentState.SILENT_MOVEMENT)
             return;
         

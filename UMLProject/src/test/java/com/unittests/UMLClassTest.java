@@ -370,7 +370,7 @@ public class UMLClassTest {
         public int timesUpdateCalled = 0;
 
         @Override public void update(UMLClass desiredElement) { timesUpdateCalled++; }
-        @Override public void updateLocation(UMLClass desiredElement) {}
+        @Override public void updateTranslation(UMLClass desiredElement) {}
         @Override public void cleanUp() {}
     }
 

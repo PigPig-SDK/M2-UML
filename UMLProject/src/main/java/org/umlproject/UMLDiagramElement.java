@@ -53,14 +53,14 @@ public abstract class UMLDiagramElement
      * Specifically updates under "positional updates"
      * @param informGlobals If the global listeners should be notified of this update.
      */
-    public void updateListnerAboutLocation(boolean informGlobals)
+    public void updateListnerAboutTranslation(boolean informGlobals)
     {
         if(informGlobals)
-            globalListeners.forEach(o->o.updateLocation(this));
+            globalListeners.forEach(o->o.updateTranslation(this));
         
         if(listener == null)
             return;
-        listener.updateLocation(this);
+        listener.updateTranslation(this);
     }
     /**
      * Calls the dynamic listener to dispose.

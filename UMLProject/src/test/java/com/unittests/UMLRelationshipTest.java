@@ -11,7 +11,7 @@ public class UMLRelationshipTest {
     static class DummyListener implements DiagramElementListener<UMLRelationship> {
         public int timesUpdateCalled = 0;
         @Override public void update(UMLRelationship desiredElement) { timesUpdateCalled++; }
-        @Override public void updateLocation(UMLRelationship desiredElement) {}
+        @Override public void updateTranslation(UMLRelationship desiredElement) {}
         @Override public void cleanUp() {}
     }
 
