@@ -2,7 +2,7 @@ To create a class, click the 'add class' icon in the top left of the main viewpo
 
 To create a relationship, click the 'add relationship' icon in the top left of the main viewport, or press R.
 · In order to edit relationship types, ensure both source and destination classes are far enough apart to display the textbox.
-· If you select two classes before creating a relationship, then the source and destination will automatically be populated by those classes.
+· If you select two classes before creating a relationship, then the source and destination will be populated by those classes.
 To delete a class or relationship, first select it, then press Delete to remove it.
 
 <LINEBREAK>
