@@ -131,6 +131,11 @@ public class GuiController implements DocumentListner {
     }
     
     @FXML
+    public void SearchViewMenuAction() {
+        GuiSearch.OpenSearchBox();
+    }
+    
+    @FXML
     public void zoomInViewMenuAction() {
         GuiCamera.setZoom(GuiCamera.getCameraZoom()*1.15, GuiCamera.getScreenCenter());
     }

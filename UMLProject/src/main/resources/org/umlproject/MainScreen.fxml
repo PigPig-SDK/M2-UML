@@ -84,6 +84,7 @@
                   <MenuItem mnemonicParsing="false" onAction="#resetCameraViewMenuAction" text="Reset Camera" />
                   <MenuItem mnemonicParsing="false" onAction="#zoomInViewMenuAction" text="Zoom In" />
                   <MenuItem mnemonicParsing="false" onAction="#zoomOutViewMenuAction" text="Zoom Out" />
+                  <MenuItem mnemonicParsing="false" onAction="#SearchViewMenuAction" text="Search" />
               </items>
             </Menu>
             <Menu mnemonicParsing="false" text="Network">

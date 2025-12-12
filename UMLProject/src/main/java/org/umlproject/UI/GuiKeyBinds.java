@@ -31,6 +31,7 @@ public class GuiKeyBinds {
     {
         //Setup CTRL+S for "Save"
         addAccelerator(new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN), "Save");
+        addAccelerator(new KeyCodeCombination(KeyCode.F, KeyCombination.CONTROL_DOWN), "Search");
         addAccelerator(new KeyCodeCombination(KeyCode.Z, KeyCombination.CONTROL_DOWN), "Undo");
         addAccelerator(new KeyCodeCombination(KeyCode.Y, KeyCombination.CONTROL_DOWN), "Redo");
         addAccelerator(new KeyCodeCombination(KeyCode.O, KeyCombination.CONTROL_DOWN), "Open…");
