@@ -18,7 +18,5 @@ public class GuiHelpWindow {
         scrollPane.setFitToWidth(true);
         scrollPane.setPrefHeight(600);
         FXDialogueFactory.createAlertWindow(Alert.AlertType.INFORMATION, "Help", null, null, scrollPane).show();
-    
-        //FXDialogueFactory.createAlertWindow(Alert.AlertType.INFORMATION, "Help", null, null, FXDialogueFactory.parseTextToVBox(in)).show();
     }
 }
