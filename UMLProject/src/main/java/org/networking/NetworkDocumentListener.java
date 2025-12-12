@@ -90,9 +90,7 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
         //Construct packet
         NetworkPacket networkPacket = NetworkPacket.objectToNetworkPacket( 
                 PacketType.ELEMENT_MOVED, 
-                new PayloadMoveElement( objectClass.getClassName(),
-                                        (int)objectClass.getLocation().getX(), 
-                                        (int)objectClass.getLocation().getY()));
+                new PayloadMoveElement(objectClass.getClassName(),(int)objectClass.getLocation().getX(), (int)objectClass.getLocation().getY(), objectClass.getWidth()));
         client.sendNetworkPacket(networkPacket);
     }
     /**

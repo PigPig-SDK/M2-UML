@@ -177,9 +177,9 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     /**
      * This 'shotguns' into the 'occupiedPathCells' to see if any relationships might desire a redraw.
      */
-    private void shotgunCheckRelationshipOverlap()
+    private void shotgunCheckRelationshipOverlap(boolean overrideDistanceCheck)
     {
-        if(lastShotgunLocation.distance(this.getLocation())  <= SHOTGUN_DISTANCE_REFIRE) return;
+        if(lastShotgunLocation.distance(this.getLocation())  <= SHOTGUN_DISTANCE_REFIRE && !overrideDistanceCheck) return;
         
         lastShotgunLocation = getLocation();
         
@@ -692,7 +692,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         convertMethodsToHBoxes(umlMethods);
         HBox addMethodConfiguration = addClassParam("Add method", this::addMethodButtonClickable);
         //-------------------------------------------------------------------------------------------------
-        //Make expandable methods
+        //Make expandable classes
         this.dragLabel = new ImageView(new Image(getClass().getResource("/org/umlproject/icons/expand.png").toExternalForm()));
         this.dragLabel.setScaleX(0.35f);
         this.dragLabel.setScaleY(0.35f);
@@ -701,9 +701,14 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         this.dragLabel.setOnMouseDragged(e -> {
             if(e.getButton() == MouseButton.PRIMARY) {
                 mouseWorldSpace = GuiCamera.screenToWorld(new Point2D(e.getSceneX(), e.getSceneY()));
-                desiredElement.setWidth( (Math.abs(desiredElement.getLocation().getX() - mouseWorldSpace.getX())*2) - 60, false);
+                UMLDocument.executeActionUnderState(DocumentState.SILENT_MOVEMENT, () -> desiredElement.setWidth( (Math.abs(desiredElement.getLocation().getX() - mouseWorldSpace.getX())*2) - 60, true));
+                shotgunCheckRelationshipOverlap(true);
             }
             e.consume(); // Prevent event from propagating to other nodes
+        });
+        //Mouse up
+        dragLabel.setOnMouseReleased(e -> {
+            UMLDocument.saveMementoState();
         });
         //-------------------------------------------------------------------------------------------------
         
@@ -906,6 +911,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         {
             b.setVisible(false);
         }
+        dragLabel.setVisible(false);
     }
     /**This method will update the location of the gui element representing
      *the umlClass. That is, any calls to this function will visibly move
@@ -916,7 +922,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     public void updateTranslation(UMLClass desiredElement) {
         updateErrorText();
         updateCosmetic();
-        shotgunCheckRelationshipOverlap();
+        shotgunCheckRelationshipOverlap(false);
         
         if(this.nodeBackground == null)
             return;
@@ -942,7 +948,6 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         List<TextField> fields = getAllTextFields(this.parentVBox);
         for(TextField tf : fields)
         {
-            
             tf.setMinWidth(desiredElement.getWidth() - TEXT_INSET);
         }
     }
