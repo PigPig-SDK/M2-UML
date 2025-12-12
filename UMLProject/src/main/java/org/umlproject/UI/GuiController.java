@@ -510,7 +510,7 @@ public class GuiController implements DocumentListner {
      */
     public static Point2D findSafeLocation(Point2D currentCameraCenter, List<GuiClass> existingClasses) {
         //Initial class boxes have the following specifications.
-        final double NEW_CLASS_WIDTH = GuiClass.CLASS_WIDTH;
+        final double NEW_CLASS_WIDTH = UMLClass.DEFAULT_WIDTH;
         final double NEW_CLASS_HEIGHT = GuiClass.CLASS_DEFAULT_HEIGHT;
         final double PADDING = 300.0;
         Point2D testLocation = currentCameraCenter;

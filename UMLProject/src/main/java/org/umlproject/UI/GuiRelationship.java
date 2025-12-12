@@ -379,7 +379,7 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
         this.world.getChildren().removeAll(this.lineMain, this.lineOutline, this.selectionOutline, this.relationshipDiagramElement, this.relationshipText);
     }
     @Override
-    public void updateLocation(UMLRelationship desiredElement) {
+    public void updateTranslation(UMLRelationship desiredElement) {
         //Do nothing...
     }
     @Override

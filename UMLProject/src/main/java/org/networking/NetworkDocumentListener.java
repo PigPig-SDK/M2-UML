@@ -158,7 +158,7 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
             }
         }
     }
-    @Override public void updateLocation(Object desiredElement) {
+    @Override public void updateTranslation(Object desiredElement) {
         if(desiredElement instanceof UMLDiagramElement element)
         {
             if(!dragLastSent.containsKey(element.networkId))

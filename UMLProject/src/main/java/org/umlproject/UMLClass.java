@@ -28,13 +28,30 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
      * This has to be contained within UMLClass because the document layout must be retained between saves.
      */
     private double locationX, locationY = 0;
+    public static final int DEFAULT_WIDTH = 350;
+    private double width = DEFAULT_WIDTH;
     
     public Point2D getLocation() { return new Point2D(locationX, locationY); }
     
     public void setLocation(Point2D location, boolean informGlobals) { 
         setLocationSilent(location);
-        updateListnerAboutLocation(informGlobals);
+        updateListnerAboutTranslation(informGlobals);
     }
+    
+    public void setWidth(double width, boolean informGlobals)
+    {
+        this.width = width;
+        updateListnerAboutTranslation(informGlobals);
+    }
+    public void setWidthSilent(double width)
+    {
+        this.width = width;
+    }
+    public double getWidth()
+    {
+        return Math.max(DEFAULT_WIDTH,this.width);
+    }
+    
     /**
      * Set the location of this class without alerting the horde of observers
      */
@@ -588,6 +605,7 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
 
            UMLClass umlc = new UMLClass(this.className);
            umlc.setLocationSilent(this.getLocation());
+           umlc.setWidthSilent(this.width);
            for (UMLDataField dataField : this.fields.values()) {
                umlc.addField(dataField.clone());
            }

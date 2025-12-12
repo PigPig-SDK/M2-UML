@@ -10,7 +10,7 @@ public interface DiagramElementListener<T> {
     /**
      * Tells the GUIListener to only update the 'location' of its drawn elements.
      */
-    void updateLocation(T desiredElement);
+    void updateTranslation(T desiredElement);
     /**
      * When this is called, our object removes all leftover UI elements.
      * Called when the bound Object is no longer valid.
