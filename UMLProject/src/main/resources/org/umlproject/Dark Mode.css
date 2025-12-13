@@ -12,6 +12,17 @@
     -fx-font-family: "Monospaced"; 
 }
 
+.scroll-pane {
+   -fx-background-color: #2D2D30;
+    background-color: #2D2D30; 
+    -fx-text-fill: white;
+}
+
+.scroll-pane > .viewport{
+   -fx-background-color: #2D2D30;
+    background-color: #2D2D30; 
+    -fx-text-fill: white;
+}
 
 .dialog-pane > .header-panel {
         -fx-background-color: #1F1F21;
