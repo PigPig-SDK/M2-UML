@@ -1,9 +1,9 @@
-To create a class, click the 'add class' icon in the top left of the main viewport.
+To create a class, click the 'add class' icon in the top left of the main viewport, or press C.
 
-To create a relationship, click the 'add relationship' icon in the top left of the main viewport.
+To create a relationship, click the 'add relationship' icon in the top left of the main viewport, or press R.
 · In order to edit relationship types, ensure both source and destination classes are far enough apart to display the textbox.
-
-To delete a class or relationship, select it using Ctrl+Click, then press Ctrl+Delete to remove it.
+· If you select two classes before creating a relationship, then the source and destination will be populated by those classes.
+To delete a class or relationship, first select it, then press Delete to remove it.
 
 <LINEBREAK>
 
@@ -26,6 +26,8 @@ MODIFYING CLASSES
 
 · You can click and drag class Boxes.
 
+· You can select multiple classes with Ctrl+Click, or by dragging with your cursor over the classes you wish to select.
+
 <LINEBREAK>
 
 MODIFYING RELATIONSHIPS
@@ -35,3 +37,11 @@ MODIFYING RELATIONSHIPS
   
 · If you are unhappy with your relationship lines, drag classes around to improve the visibility of your graph.
   Though this software tries to help your diagrams look beautiful, some configurations are impossible to improve.
+
+<LINEBREAK>
+
+SPECIAL CLASSES
+
+· There are specific keywords that will display an icon if they appear in the name of a class.
+
+· These keywords are: Manager, Command, Extension, Bridge/Adapter, Factory, Observer.

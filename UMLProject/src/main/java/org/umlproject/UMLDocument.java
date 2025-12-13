@@ -29,6 +29,7 @@ public class UMLDocument implements Copyable<UMLDocument>
     transient String fileLocation = null;
     private Map<String, UMLClass> classSet = new HashMap<>();
     private Map<String,ArrayList<UMLRelationship>> relationshipList = new HashMap<>();
+    public static boolean usesMemento = true;
     
     public static final String FILEEXTENT_STRING = ".json";
     private static final String DEFAULT_FILEDIRECTORY = "Documents" + File.separator + "NewUMLDocument";
@@ -504,7 +505,9 @@ public class UMLDocument implements Copyable<UMLDocument>
             try (BufferedReader reader = new BufferedReader(new FileReader(filename + FILEEXTENT_STRING))) {
                 // Deserialize the JSON into your Java object
                 UMLDocument data = gson.fromJson(reader, UMLDocument.class);
+                data.setFileLocation(filename);
                 load(data);
+                this.fileLocation = filename;
                 //Clear all network times.
                 //Randomize all netIDS again...
                 for(UMLDiagramElement element : getAllDiagramElements())
@@ -512,8 +515,6 @@ public class UMLDocument implements Copyable<UMLDocument>
                     element.networkId = UUID.randomUUID();
                     element.lastNetworkEditTime = 0;
                 }
-                
-                this.fileLocation=filename;
             }
             catch (JsonIOException e)
             {
@@ -567,6 +568,7 @@ public class UMLDocument implements Copyable<UMLDocument>
     {
         cleanUpAllGuiListeners();
         UMLDocument.resetInstance(false);
+        documentListners.forEach(o -> o.loadFile(this));
     }
     /**
      * Calls Cleanup on all listener instances
@@ -626,6 +628,7 @@ public class UMLDocument implements Copyable<UMLDocument>
         
         classSet.put(umlClass.getClassName(), umlClass);
         documentListners.forEach(o -> o.onClassAdded(umlClass));
+        umlClass.updateListener(false);
         return true;//uhh...
     }
     /**
@@ -769,6 +772,7 @@ public class UMLDocument implements Copyable<UMLDocument>
     */
     public static void saveMementoState()
     {
+        if(!usesMemento) return;
         executeActionUnderState(DocumentState.MEMENTO_STATE_RESET, () ->instance.saveState());
     }
     /**
@@ -776,6 +780,7 @@ public class UMLDocument implements Copyable<UMLDocument>
     */
     public static void undoMementoState()
     {
+        if(!usesMemento) return;
         if(instance.getHistoryLength() != 1)//There are items to be undone.
         {
             instance.getInstance().cleanUpAllGuiListeners();
@@ -789,6 +794,8 @@ public class UMLDocument implements Copyable<UMLDocument>
     */
     public static void redoMementoState()
     {
+        if(!usesMemento) return;
+        
         if(instance.getRedoHistoryLength()!= 0)//There are items to be redone.
         {
             instance.getInstance().cleanUpAllGuiListeners();

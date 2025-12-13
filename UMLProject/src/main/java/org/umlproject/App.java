@@ -11,6 +11,8 @@ import javafx.stage.Stage;
 import org.umlproject.UI.GuiController;
 
 import java.io.BufferedInputStream;
+import java.io.IOException;
+import org.networking.NetworkManager;
 
 public class App extends Application {
     
@@ -45,7 +47,7 @@ public class App extends Application {
                 currentScene = scene;
                 mainStage.setScene(scene);
                 mainStage.setResizable(true);
-                mainStage.setTitle("UML editor");
+                setWindowContext(null);
                 GuiController.getInstance().lateInitialization();
                 
                 //Setup blah blahs.
@@ -54,7 +56,7 @@ public class App extends Application {
                 scene.setOnMouseEntered(e -> mouseInWindow = true);
                 scene.setOnMouseExited(e -> mouseInWindow = false);
             }
-            catch(Exception e){
+            catch(IOException e){
                 System.out.println(e);//Stop crash, print error to user.
             }
         }
@@ -74,7 +76,7 @@ public class App extends Application {
 
 
                 }
-            catch (Exception e){
+            catch (IOException | InterruptedException e){
                 System.out.println("CMD Error");
             }
             //main(new String[]{terminalLaunchString});
@@ -111,7 +113,37 @@ public class App extends Application {
     {
         return isFocused;
     }
-    
+    public static void updateWindowContext()
+    {
+        String context = null;
+        
+        if(GuiController.getInstance().saveLocationSet)
+            context = "["+UMLDocument.getInstance().getFileLocation()+"]";
+        
+        if(NetworkManager.isConnected())
+        {
+            if(context == null)
+                context = "[Network session]";
+            else
+                context += " [Network session]";
+        }
+        
+        setWindowContext(context);
+    }
+    private static void setWindowContext(String context)
+    {
+        if(mainStage == null) return;
+        
+        if(context == null)
+        {
+            mainStage.setTitle("UML editor");
+        }
+        else
+        {
+            mainStage.setTitle("UML editor - " + context);
+        }
+        
+    }
     @Override
     public void stop(){
         System.out.println("Stopping Application");

@@ -17,12 +17,14 @@ public class PayloadMoveElement
     public final String objectName;
     public final int x;
     public final int y;
+    public final double width;
     
-    public PayloadMoveElement(String objectName, int x, int y)
+    public PayloadMoveElement(String objectName, int x, int y, double width)
     {
         this.objectName = objectName;
         this.x = x;
         this.y = y;
+        this.width = width;
     }
     /**
      * Handles a UML Element movement packet
@@ -34,7 +36,7 @@ public class PayloadMoveElement
         
         if(networkPacket.packetType() != PacketType.ELEMENT_MOVED)
             return;//Cannot execute, send client back packet
-        
+        //Ok. now on main thread.
         MainThreadDispatcher.dispatcher.dispatch(() ->
         {
             try 
@@ -45,8 +47,10 @@ public class PayloadMoveElement
                 UMLClass umlc = UMLDocument.getInstance().getClass(payloadMoveElement.objectName);
                 if(umlc == null) return;
                 //We got a class, try to move it.
-                UMLDocument.executeActionUnderState(DocumentState.NETWORK_OPERATION,
-                                                    () -> umlc.setLocation(new Point2D(payloadMoveElement.x,payloadMoveElement.y), true));
+                UMLDocument.executeActionUnderState(DocumentState.NETWORK_OPERATION, () -> {
+                                                        umlc.setLocation(new Point2D(payloadMoveElement.x,payloadMoveElement.y), true);
+                                                        umlc.setWidth(payloadMoveElement.width, false);
+                                                    });
             } 
             catch (JsonSyntaxException e){}
         });

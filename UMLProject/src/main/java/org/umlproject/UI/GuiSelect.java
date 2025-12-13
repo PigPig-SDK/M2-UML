@@ -14,8 +14,12 @@ import javafx.animation.AnimationTimer;
 import org.umlproject.App;
 import org.umlproject.DiagramElementListener;
 import org.umlproject.DocumentState;
+import org.umlproject.Memento;
+import org.umlproject.MementoListener;
+import org.umlproject.MementoUpdateType;
 
-public class GuiSelect {
+public class GuiSelect implements MementoListener<UMLDocument>
+{
 
     private static GuiSelect instance;
 
@@ -141,10 +145,9 @@ public class GuiSelect {
                 return;
             }
             //Displays confirmation box for deletion
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setContentText(String.format("Are you sure you want to delete %d items?", selectedObjects.size()));
+            Alert alert = FXDialogueFactory.createAlertWindow(Alert.AlertType.CONFIRMATION, "Delete items", null, 
+                    String.format("Are you sure you want to delete %d items?", selectedObjects.size()), null);
             Optional choice = alert.showAndWait();
-
             if(choice.get() == ButtonType.CANCEL){
                 return;
             }
@@ -189,5 +192,11 @@ public class GuiSelect {
 
     public ArrayList<UISelectable> getSelectedObjects(){
         return selectedObjects;
+    }
+
+    @Override
+    public void update(Memento<UMLDocument> memento,MementoUpdateType type) {
+        if(type == MementoUpdateType.SAVESTATE) return;
+        resetSelect();
     }
 }

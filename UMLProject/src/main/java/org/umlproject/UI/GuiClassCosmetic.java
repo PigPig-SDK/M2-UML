@@ -6,4 +6,5 @@ public class GuiClassCosmetic {
     double xOffset;
     double yOffset;
     double scale;
+    String tooltip = null;
 }

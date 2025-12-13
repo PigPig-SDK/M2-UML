@@ -31,6 +31,7 @@ public class GuiKeyBinds {
     {
         //Setup CTRL+S for "Save"
         addAccelerator(new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN), "Save");
+        addAccelerator(new KeyCodeCombination(KeyCode.F, KeyCombination.CONTROL_DOWN), "Search");
         addAccelerator(new KeyCodeCombination(KeyCode.Z, KeyCombination.CONTROL_DOWN), "Undo");
         addAccelerator(new KeyCodeCombination(KeyCode.Y, KeyCombination.CONTROL_DOWN), "Redo");
         addAccelerator(new KeyCodeCombination(KeyCode.O, KeyCombination.CONTROL_DOWN), "Open…");
@@ -44,13 +45,13 @@ public class GuiKeyBinds {
         addAccelerator(new KeyCodeCombination(KeyCode.F2), "About UML Editor");
         addAccelerator(new KeyCodeCombination(KeyCode.F12), GuiController.getInstance().viewTerminalMenuItem);
 
-        addAccelerator(new KeyCodeCombination(KeyCode.UP), "Get Previous Command");
-        addAccelerator(new KeyCodeCombination(KeyCode.DOWN), "Get Next Command");
+        //addAccelerator(new KeyCodeCombination(KeyCode.UP), "Get Previous Command");
+        //addAccelerator(new KeyCodeCombination(KeyCode.DOWN), "Get Next Command");
         addAccelerator(new KeyCodeCombination(KeyCode.MINUS, KeyCombination.CONTROL_DOWN), "Zoom Out");
         addAccelerator(new KeyCodeCombination(KeyCode.PLUS, KeyCombination.CONTROL_DOWN), "Zoom In");
         addAccelerator(new KeyCodeCombination(KeyCode.F), "Reset Camera");
-        addAccelerator(new KeyCodeCombination(KeyCode.R), "Add Relationship");
-        addAccelerator(new KeyCodeCombination(KeyCode.C), "Add Class");
+        //addAccelerator(new KeyCodeCombination(KeyCode.R), "Add Relationship");
+        //addAccelerator(new KeyCodeCombination(KeyCode.C), "Add Class");
         
         
         App.currentScene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
@@ -67,6 +68,10 @@ public class GuiKeyBinds {
                 case F2->
                 {
                     GuiController.getInstance().aboutHelpMenuAction();
+                }
+                case F11 ->
+                {
+                    App.mainStage.setFullScreen(!App.mainStage.isFullScreen());
                 }
                 case F12->
                 {

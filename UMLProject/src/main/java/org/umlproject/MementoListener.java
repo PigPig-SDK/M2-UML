@@ -8,5 +8,5 @@ package org.umlproject;
  */
 public interface MementoListener<T extends Copyable<T>> {
     
-    void update(Memento<T> memento);
+    void update(Memento<T> memento, MementoUpdateType type);
 }

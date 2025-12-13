@@ -3,6 +3,7 @@ package org.umlproject.UI;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.URL;
 import java.util.*;
 
 import javafx.scene.control.TextField;
@@ -21,13 +22,16 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
 import org.networking.NetworkManager;
 import org.networking.NetworkMouseHandler;
+import org.umlproject.App;
 import org.umlproject.RelationshipType;
 import org.umlproject.TerminalHandler;
 import org.umlproject.UMLClass;
@@ -60,11 +64,11 @@ public class GuiController implements DocumentListner {
     @FXML
     private Pane viewpane;
     @FXML 
-    private Text workspaceText;
+    public Text workspaceText;
     @FXML
     public AnchorPane consoleAnchorPane;
     @FXML
-    private VBox rootVBox;
+    public VBox rootVBox;
     @FXML
     public TextArea consoleOut;
     @FXML
@@ -86,7 +90,7 @@ public class GuiController implements DocumentListner {
     public TextField getTerminal(){return this.console;}
     public MenuBar getMenuBar(){return this.menubar;}
     public Pane getViewPane(){return this.viewpane;}
-    private boolean saveLocationSet = false;
+    public boolean saveLocationSet = false;
     
     @FXML
     private void initialize() {
@@ -121,11 +125,14 @@ public class GuiController implements DocumentListner {
     }
     
     
-    String curTheme = "Dark Mode";
-    
     @FXML
     public void resetCameraViewMenuAction() {
         GuiCamera.resetCameraLocation();
+    }
+    
+    @FXML
+    public void SearchViewMenuAction() {
+        GuiSearch.OpenSearchBox();
     }
     
     @FXML
@@ -140,32 +147,7 @@ public class GuiController implements DocumentListner {
     
     @FXML
     public void themeViewMenuAction() {
-        GridPane grid = new GridPane();
-        grid.setHgap(10);
-        grid.setVgap(10);
-        grid.setPadding(new Insets(20, 150, 10, 10));
-
-        ComboBox<String> ThemeBox = new ComboBox<>();
-		ThemeBox.getItems().add("Dark Mode");
-		ThemeBox.getItems().add("Light Mode");
-		ThemeBox.getItems().add("Mesa");
-		ThemeBox.getItems().add("Shoreline");
-		ThemeBox.getItems().add("Forest");
-		
-                
-                
-		grid.add(new Label("Theme"), 0, 0);
-		grid.add(ThemeBox, 1, 0);
-		Alert alert = FXDialogueFactory.createAlertWindow(Alert.AlertType.INFORMATION, "Change Theme", "Select a theme", null, grid);
-		Optional<ButtonType> result = alert.showAndWait();
-		if (result.isPresent() && result.get() == ButtonType.OK) //User Acceptance
-        {
-			curTheme = ThemeBox.getValue();
-                        //change css file
-                        //probably switch here
-                        //change non css elements
-		}
-
+        GuiThemes.getInstance().onThemeMenuItemPressed();
     }
 
     /**
@@ -194,6 +176,7 @@ public class GuiController implements DocumentListner {
         //Setup button icons.
         FXUtility.getInstance().applyIconsToButtons("Add Class", addClassButton,"/org/umlproject/icons/new_class.png",50,50);
         FXUtility.getInstance().applyIconsToButtons("Add Relationship", addRelationshipButton,"/org/umlproject/icons/new_relationship.png",50,50);
+        UMLDocument.getMemento().addListener(GuiSelect.getInstance());
     }
     //----------------- Menu bar callbacks -----------------
     /**
@@ -202,10 +185,7 @@ public class GuiController implements DocumentListner {
     @FXML
     public void newFileMenuAction()
     {
-        Alert alert = new Alert(Alert.AlertType.WARNING);
-        alert.setTitle("New File");
-        alert.setHeaderText("Any unsaved progress will be lost!");
-        alert.setContentText("Are you sure you want to create a new file?");
+        Alert alert = FXDialogueFactory.createAlertWindow(Alert.AlertType.WARNING, "New File", "Any unsaved progress will be lost!", "Are you sure you want to create a new file?", null);
         ButtonType yesButton = new ButtonType("New File", ButtonBar.ButtonData.YES);
         ButtonType noButton  = new ButtonType("Close", ButtonBar.ButtonData.NO);
         alert.getButtonTypes().setAll(yesButton, noButton);
@@ -229,6 +209,9 @@ public class GuiController implements DocumentListner {
             return;
         String pathString = GuiFileBrowser.removeFileExtension(outputDirectory.getAbsolutePath());
         UMLDocument.getInstance().load(pathString);
+        
+        saveLocationSet = true;
+        this.loadFile(UMLDocument.getInstance());
     }
     /**
      * Handles the "open" menu action.
@@ -272,6 +255,8 @@ public class GuiController implements DocumentListner {
         
         if(UMLDocument.getInstance().save())
             saveLocationSet = true;
+        
+        this.loadFile(UMLDocument.getInstance());
     }
     
     @FXML 
@@ -530,14 +515,14 @@ public class GuiController implements DocumentListner {
      */
     public static Point2D findSafeLocation(Point2D currentCameraCenter, List<GuiClass> existingClasses) {
         //Initial class boxes have the following specifications.
-        final double NEW_CLASS_WIDTH = 350.0;
-        final double NEW_CLASS_HEIGHT = 350.0;
-        final double PADDING = 20.0;
+        final double NEW_CLASS_WIDTH = UMLClass.DEFAULT_WIDTH;
+        final double NEW_CLASS_HEIGHT = GuiClass.CLASS_DEFAULT_HEIGHT;
+        final double PADDING = 300.0;
         Point2D testLocation = currentCameraCenter;
 
         //Sstep sizes for calculating the horizontal and vertical neighbor tiles of the current testLocation.
-        final double STEPX = NEW_CLASS_WIDTH + PADDING;
-        final double STEPY = NEW_CLASS_HEIGHT + PADDING;
+        final double STEPX = (NEW_CLASS_WIDTH/2) + PADDING;
+        final double STEPY = (NEW_CLASS_HEIGHT/2) + PADDING;
 
         //OpenSet for tile locations to check.
         //ClosedSet stores tile locations we have already checked or that are in openSet.
@@ -552,7 +537,7 @@ public class GuiController implements DocumentListner {
         //existing classes.
         while (!openSet.isEmpty()) {
             testLocation = openSet.poll();
-            Rectangle2D newRect = new Rectangle2D(testLocation.getX(), testLocation.getY(), NEW_CLASS_WIDTH, NEW_CLASS_HEIGHT);
+            Rectangle2D newRect = new Rectangle2D(testLocation.getX() - (NEW_CLASS_WIDTH/2), testLocation.getY() - (NEW_CLASS_HEIGHT/2), NEW_CLASS_WIDTH, NEW_CLASS_HEIGHT);
             boolean overlaps = false;
             for (GuiClass existingClass : existingClasses) {
                 if (existingClass == null) continue;
@@ -626,10 +611,12 @@ public class GuiController implements DocumentListner {
         }
     }
     @Override
-    public void loadFile(UMLDocument umlDocument) {}
+    public void loadFile(UMLDocument umlDocument) {
+        App.updateWindowContext();
+
+    }
     @Override
     public void onClassRemove(UMLClass umlClass) {
-        System.out.println("CLeaned up. " + umlClass.getListener());
         umlClass.disposeOfListener();
     }
     @Override

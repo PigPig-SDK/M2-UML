@@ -12,6 +12,8 @@ import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
 import org.umlproject.App;
 
 public class GuiConsole extends OutputStream {
@@ -140,11 +142,17 @@ public class GuiConsole extends OutputStream {
             }
         }.start();
     }
-    private static void updateTransparency()
+    public static void updateTransparency()
     {
-        GuiController.getInstance().consoleOut.setStyle("-fx-text-fill: rgba(255, 255, 255," +  
-                Math.max(transparency, 0.005)//Failsafe, as transparency approaches zero, a crash will occur. Javafx error!
-                +");");
+        String consoleColor = "255,255,255";
+        if ("Light Mode".equals(GuiThemes.getInstance().curTheme)) {
+            consoleColor = "0,0,0";
+        }
+        GuiController.getInstance().consoleOut.setStyle("-fx-text-fill: rgba(" + consoleColor + "," +
+        Math.max(transparency, 0.005)//Failsafe, as transparency approaches zero, a crash will occur. Javafx error!
+        +");"); 
+
+        
     }
     public static void updateSize() {
         TextArea consoleOut = GuiController.getInstance().consoleOut;

@@ -17,8 +17,10 @@ import javafx.scene.layout.GridPane;
 import org.networking.NetworkManager;
 import org.networking.NetworkManagerListener;
 import org.networking.UserIdentification;
+import org.umlproject.App;
 import org.umlproject.RelationshipType;
 import org.umlproject.UMLDocument;
+import org.umlproject.UndoRedoManager;
 
 /**
  * This class handles the 'connect/disconnect' GUI for the server.
@@ -48,12 +50,15 @@ public class GuiNetwork  implements NetworkManagerListener
         
         connect.setDisable(true);
         host.setDisable(true);
-        openFile.setDisable(true);
+        
+        if(!NetworkManager.isHosting())
+            openFile.setDisable(true);
+        
         newFile.setDisable(true);
         undo.setDisable(true);
         redo.setDisable(true);
         disconnect.setDisable(false);
-
+        App.updateWindowContext();
     }
 
     @Override
@@ -73,6 +78,7 @@ public class GuiNetwork  implements NetworkManagerListener
         disconnect.setDisable(true);
         undo.setDisable(false);
         redo.setDisable(false);
+        App.updateWindowContext();
     }
     
     public static void promptHostScreen()

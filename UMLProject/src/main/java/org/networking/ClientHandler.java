@@ -5,6 +5,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -12,7 +13,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.umlproject.MainThreadDispatcher;
+import org.umlproject.UMLClass;
 import org.umlproject.UMLDocument;
+import org.umlproject.UMLRelationship;
 
 
 /**
@@ -178,7 +181,26 @@ public class ClientHandler extends SocketManager
      */
     protected void sendEntireDocument()
     {
-        sendNetworkPacket(PayloadDocument.generateDocumentPacket());
+        NetworkPacket networkPacket = NetworkPacket.stringToNetworkPacket(PacketType.CLEAR_DOCUMENT, "");
+        sendNetworkPacket(networkPacket);
+        UMLDocument doc = UMLDocument.getInstance();
+        //Send all relationships, then all classes.
+        for(UMLClass umlClass: doc.getClassSet().values())
+        {
+            sendNetworkPacket(NetworkPacket.objectToNetworkPacket(PacketType.CLASS_EDIT, umlClass));
+        }
+        for(ArrayList<UMLRelationship> relationships: doc.getRelationshipList().values())
+        {
+            for(UMLRelationship r : relationships)
+            {
+                PayloadRelationship payloadRelationship = new PayloadRelationship(
+                        r.getSource()== null? UUID.randomUUID(): r.getSource().networkId,
+                        r.getDestination() == null? UUID.randomUUID(): r.getDestination().networkId, r);
+                NetworkPacket rPacket = NetworkPacket.objectToNetworkPacket(PacketType.RELATIONSHIP_EDIT, payloadRelationship);
+                sendNetworkPacket(rPacket);
+            }
+        }
+        //sendNetworkPacket(PayloadDocument.generateDocumentPacket());
     }
     /**
      * Called on connection shutdown.

@@ -5,13 +5,63 @@
 			"imageLocation":"/org/umlproject/icons/cosmetics/dog.png",
 			"xOffset":25.0,
 			"yOffset":260.0,
-			"scale":0.25
+			"scale":0.25,
+			"tooltip":"Woof!"
 		},
-		"hamburger":{
+		".*burger$":{
 			"imageLocation":"/org/umlproject/icons/cosmetics/hamburger.png",
 			"xOffset":0.0,
 			"yOffset":200.5,
 			"scale":0.5
+		},
+		".*(manager|singleton)$":{
+			"imageLocation":"/org/umlproject/icons/cosmetics/manager.png",
+			"xOffset":40.0,
+			"yOffset":80.0,
+			"scale":0.5,
+			"tooltip":"This class appears to be a manager"
+		},
+		".*(listener|listner|observer)$":{
+			"imageLocation":"/org/umlproject/icons/cosmetics/observer.png",
+			"xOffset":40.0,
+			"yOffset":75.0,
+			"scale":0.5,
+			"tooltip":"This class appears to be a listener"
+		},
+		".*(factory|builder)$":{
+			"imageLocation":"/org/umlproject/icons/cosmetics/factory.png",
+			"xOffset":40.0,
+			"yOffset":85.0,
+			"scale":0.5,
+			"tooltip":"This class appears to be a factory"
+		},
+		".*(adapter|bridge)$":{
+			"imageLocation":"/org/umlproject/icons/cosmetics/adapter.png",
+			"xOffset":40.0,
+			"yOffset":80.0,
+			"scale":0.5,
+			"tooltip":"This class appears to be an adapter"
+		},
+		".*(command)$":{
+			"imageLocation":"/org/umlproject/icons/cosmetics/command.png",
+			"xOffset":40.0,
+			"yOffset":80.0,
+			"scale":0.5,
+			"tooltip":"This class appears to be an command"
+		},
+		".*(extensions|extension)$":{
+			"imageLocation":"/org/umlproject/icons/cosmetics/extension.png",
+			"xOffset":40.0,
+			"yOffset":80.0,
+			"scale":0.5,
+			"tooltip":"This class appears to be an extension"
+		},
+		"^.*(?:-copy\\d+)+$":{
+			"imageLocation":"/org/umlproject/icons/cosmetics/copy.png",
+			"xOffset":40.0,
+			"yOffset":85.0,
+			"scale":0.5,
+			"tooltip":"This class appears to be a clone"
 		}
 	}
 }

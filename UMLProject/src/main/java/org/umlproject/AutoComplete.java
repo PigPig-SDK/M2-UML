@@ -1,5 +1,6 @@
 package org.umlproject;
 
+import java.io.IOException;
 import org.fusesource.jansi.AnsiConsole;
 import org.jline.reader.*;
 import org.jline.terminal.Terminal;
@@ -73,7 +74,7 @@ public class AutoComplete implements MementoListener<UMLDocument> {
                         }
                     }).build();
         }
-        catch (Exception e){
+        catch (IOException e){
             System.out.println("Error: " + e);
             return null;
         }
@@ -96,7 +97,7 @@ public class AutoComplete implements MementoListener<UMLDocument> {
 
 
     @Override
-    public void update(Memento<UMLDocument> memento) {
+    public void update(Memento<UMLDocument> memento, MementoUpdateType type) {
         this.autoWordList.clear();
         //Add classes
         this.autoWordList.addAll(memento.getInstance().getClassSet().keySet());
@@ -125,5 +126,4 @@ public class AutoComplete implements MementoListener<UMLDocument> {
         }
         reader = newLineReader();
     }
-
 }

@@ -45,7 +45,7 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
      * Get the memento of instance listener.
      * NOTE: This can be null! That is because setupListener() is expected to be called.
      */
-    public NetworkDocumentListener getInstance()
+    public static NetworkDocumentListener getInstance()
     {
         //Null is an intended return value.
         return instance;
@@ -83,22 +83,20 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
         Client client = NetworkManager.getClientInstance();//Our local client.
         if(client == null)
         {
-            client.disconnect();
+            NetworkManager.shutdown();
             return;
         }
         
         //Construct packet
         NetworkPacket networkPacket = NetworkPacket.objectToNetworkPacket( 
                 PacketType.ELEMENT_MOVED, 
-                new PayloadMoveElement( objectClass.getClassName(),
-                                        (int)objectClass.getLocation().getX(), 
-                                        (int)objectClass.getLocation().getY()));
+                new PayloadMoveElement(objectClass.getClassName(),(int)objectClass.getLocation().getX(), (int)objectClass.getLocation().getY(), objectClass.getWidth()));
         client.sendNetworkPacket(networkPacket);
     }
     /**
      * Sends the updated class to the server for validation
      */
-    private void sendClassUpdate(UMLClass objectClass)
+    public void sendClassUpdate(UMLClass objectClass)
     {
         if(invalidDocumentStates.contains(UMLDocument.getDocumentState())) return;
         
@@ -119,7 +117,7 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
     /**
      * Sends the updated relationship to the server for validation
      */
-    private void sendRelationshipUpdate(UMLRelationship objectLRelationship)
+    public void sendRelationshipUpdate(UMLRelationship objectLRelationship)
     {
         if(invalidDocumentStates.contains(UMLDocument.getDocumentState())) return;
         
@@ -158,7 +156,7 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
             }
         }
     }
-    @Override public void updateLocation(Object desiredElement) {
+    @Override public void updateTranslation(Object desiredElement) {
         if(desiredElement instanceof UMLDiagramElement element)
         {
             if(!dragLastSent.containsKey(element.networkId))
@@ -228,6 +226,7 @@ public class NetworkDocumentListener implements DiagramElementListener, Document
         Server server = NetworkManager.getServerInstance();
         if(server == null)
             return;//Not hosting...
-        server.sendMessageToAllClients(PayloadDocument.generateDocumentPacket());
+        server.resendDocumentToAll();
+        
     }//Do nothing!
 }

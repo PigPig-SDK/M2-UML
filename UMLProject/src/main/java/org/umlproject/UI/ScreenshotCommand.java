@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.IOException;
 import javafx.scene.paint.Color;
 import javafx.scene.transform.Transform;
+import org.umlproject.App;
 import org.umlproject.DiagramElementListener;
 import org.umlproject.DocumentState;
 import org.umlproject.UMLDocument;
@@ -55,6 +56,7 @@ public class ScreenshotCommand implements ExportCommand {
                 guiClass.formatForScreenshot();
             }
         }
+        GuiController.getInstance().workspaceText.setVisible(false);
         
         //Convert World to WriteableImage object.
         WritableImage fxImage = world.snapshot(snapshotParameters, null);
@@ -65,6 +67,7 @@ public class ScreenshotCommand implements ExportCommand {
         
         //Return scene to normal
         GuiController.getInstance().redrawAllElements();
+        GuiController.getInstance().workspaceText.setVisible(true);
     }
 
     /**

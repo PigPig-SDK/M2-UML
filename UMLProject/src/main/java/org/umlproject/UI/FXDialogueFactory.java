@@ -15,6 +15,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
 import javafx.scene.control.TextArea;
@@ -38,10 +39,14 @@ public class FXDialogueFactory {
     public static Alert createAlertWindow(Alert.AlertType allertType, String titleText, String headerText, String contentText, Node content)
     {
         Alert alert = new Alert(allertType);
+        GuiThemes.getInstance().applyAlertTheme(alert);
         alert.setTitle(titleText);
         alert.setContentText(contentText);
         alert.setHeaderText(headerText);
         alert.getDialogPane().setContent(content);
+        
+
+
         
         FadeTransition fade = new FadeTransition(Duration.millis(250), alert.getDialogPane());
         fade.setFromValue(0);

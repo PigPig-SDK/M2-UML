@@ -1,5 +1,6 @@
 package com.unittests;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -317,7 +318,7 @@ public class UMLDocumentTests
         }
         protected abstract void eventCalled();
         @Override public void update(Object desiredElement) { eventCalled();}
-        @Override public void updateLocation(Object desiredElement) { eventCalled();}
+        @Override public void updateTranslation(Object desiredElement) { eventCalled();}
         @Override public void onClassRemove(UMLClass umlClass) { eventCalled();}
         @Override public void onRelationshipRemove(UMLRelationship umlClass) { eventCalled();}
         @Override public void onClassAdded(UMLClass umlClass) { eventCalled();}
@@ -674,6 +675,6 @@ public class UMLDocumentTests
             Files.deleteIfExists(file1);
             Files.deleteIfExists(file2);
         }
-        catch(Exception e){}
+        catch(IOException e){}
     }
 }

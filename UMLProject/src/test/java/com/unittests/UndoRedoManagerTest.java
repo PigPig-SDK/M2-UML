@@ -80,7 +80,7 @@ class UndoRedoManagerTests {
         int before = UMLDocument.getMemento().getHistoryLength();
 
         // Directly call the listener method
-        manager.updateLocation(new Object());
+        manager.updateTranslation(new Object());
 
         int after = UMLDocument.getMemento().getHistoryLength();
         assertEquals(before + 1, after,
@@ -96,7 +96,7 @@ class UndoRedoManagerTests {
 
         // SILENT_MOVEMENT is handled specially in updateLocation()
         UMLDocument.executeActionUnderState(DocumentState.SILENT_MOVEMENT, () -> {
-            manager.updateLocation(new Object());
+            manager.updateTranslation(new Object());
             return null;
         });
 

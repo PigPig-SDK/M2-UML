@@ -31,7 +31,7 @@ public final class Memento<T extends Copyable<T>>
     {
         redoHistory.clear();
         undoHistory.add(instance.clone());
-        callListenersToUpdate();
+        callListenersToUpdate(MementoUpdateType.SAVESTATE);
     }
     /**
      * Moves back one location in history.
@@ -44,7 +44,7 @@ public final class Memento<T extends Copyable<T>>
         }
         instance = undoHistory.peek().clone();
 
-        callListenersToUpdate();
+        callListenersToUpdate(MementoUpdateType.UNDO);
     }
     /**
      * Appends top of undo stack to history
@@ -59,7 +59,7 @@ public final class Memento<T extends Copyable<T>>
         undoHistory.push(redoHistory.pop());
         instance = undoHistory.peek().clone();
 
-        callListenersToUpdate();
+        callListenersToUpdate(MementoUpdateType.REDO);
     }
     /**
      * Clears the current undo/redo. Suggesting a new object be 'king'.
@@ -71,6 +71,7 @@ public final class Memento<T extends Copyable<T>>
         undoHistory.clear();
         //Suggest new king, populate them as first in list.
         instance = newInstance;
+        
         saveState();
     }
     /**
@@ -116,11 +117,11 @@ public final class Memento<T extends Copyable<T>>
         cloneSet.addAll(listeners);
         return cloneSet;
     }
-    private void callListenersToUpdate()
+    private void callListenersToUpdate(MementoUpdateType type)
     {
         for(MementoListener<T> mementoListener : listeners)
         {
-            mementoListener.update(this);
+            mementoListener.update(this, type);
         }
     }
 }
