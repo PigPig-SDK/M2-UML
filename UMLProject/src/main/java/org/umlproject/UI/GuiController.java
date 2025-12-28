@@ -355,20 +355,15 @@ public class GuiController implements DocumentListner {
         }
         //Create a ScreenshotCommand instance to call execute() on.
         ScreenshotCommand newScreenshot = new ScreenshotCommand(exportLocation, world);
-        CommandInvoker invoker = new CommandInvoker(newScreenshot);
+        
         try {
             //Export the image.
-            invoker.invoke();
+            newScreenshot.execute();
         }
         catch(IOException e){
             alert.show();
-            return;
         }
     }
-    //----------------- UMLGuiController Interface -----------------
-
-
-
     /** This method will listen for when +C is pushed inside gui. It then retrieves the
      * UMLDocument instance and calls addClass() with findValidDummyName() as the argument. This argument
      * function will generate a new unique name for the new class that isn't one already stored in UMLDocument.".
