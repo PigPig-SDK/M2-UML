@@ -28,9 +28,17 @@ public class Main
             Thread userInputThread = new Thread(()->{
                     while(true)
                     {
-                        String inputString = AutoComplete.getInstance().lineInConsole().toLowerCase();
-                        //When we get user input, execute the input on main thread...
-                        MainThreadDispatcher.dispatcher.dispatch(()->TerminalHandler.runCommand(inputString));
+                        try {
+                            String inputString = AutoComplete.getInstance().lineInConsole();
+                            if(inputString == null) continue;
+
+                            //When we get user input, execute the input on main thread...
+                            MainThreadDispatcher.dispatcher.dispatch(()->TerminalHandler.runCommand(inputString.toLowerCase()));
+                        } 
+                        catch (Exception e) {
+                            //Hard shutdown causes issues.
+                            if(!MainThreadDispatcher.dispatcher.shutDown) e.printStackTrace();
+                        }
                     }
                 });
             userInputThread.setDaemon(true);
@@ -42,6 +50,7 @@ public class Main
                 MainThreadDispatcher.dispatcher.processQueuedActions();
                 Thread.sleep(15);//Stop 100% cpu usage when nothing is going on...
             }
+            
         }
         //Is FX mode, launch FX app.
         App.main(args);

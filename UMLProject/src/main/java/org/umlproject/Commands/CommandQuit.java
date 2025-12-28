@@ -1,5 +1,6 @@
 package org.umlproject.Commands;
 
+import org.umlproject.MainThreadDispatcher;
 import org.umlproject.TerminalHandler;
 
 public class CommandQuit extends BaseCommand
@@ -13,6 +14,7 @@ public class CommandQuit extends BaseCommand
     public void act(String[] args)
     {
         System.out.println("Have a nice day!");
+        MainThreadDispatcher.dispatcher.shutDown = true;//Stop side thread safely-ish.
         System.exit(0);//Die.
     }
     @Override
