@@ -9,6 +9,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.util.Duration;
+import org.umlproject.App;
 
 /**
  * Displays the About dialog for the UML Editor.
@@ -21,16 +22,13 @@ public class GuiAboutWindow {
         VBox content = new VBox(10);
         content.setAlignment(Pos.CENTER_LEFT);
 
-        Label title = new Label("UML Editor");
-        title.setFont(Font.font("System", FontWeight.BOLD, 20));
-
-        Label subtitle = new Label("CSCD 350 – Software Development | Version 1.0");
+        Label subtitle = new Label(App.editorName + " | Version 1.0");
         subtitle.setFont(Font.font(13));
 
         Separator line1 = new Separator();
 
         Label teamInfo = new Label("""
-                Developed by Team Microsoft-2
+                Developed by Team M-2
                 Eastern Washington University
 
                 Team Members:
@@ -58,18 +56,12 @@ public class GuiAboutWindow {
                 • Zoom and pan the workspace.
                 • Save and load UML projects as JSON files.
                 • Selection highlighting and keyboard shortcuts.
-                • F1 opens Help | F2 opens About.
-
-                Technical Design:
-                Built using JavaFX and an MVC-style architecture.
-                Model layer: UMLDocument, UMLClass, UMLRelationship
-                View/Controller layer: GuiController, GuiClass, GuiRelationship,
-                GuiSelect, GuiCamera, and GuiResizeManager.
+                • Connect with others to speed up UML document development
                 """);
         description.setFont(Font.font(12));
         description.setWrapText(true);
 
-        content.getChildren().addAll(title, subtitle, line1, teamInfo, line2, description);
+        content.getChildren().addAll(subtitle, line1, teamInfo, line2, description);
         Alert aboutBox = FXDialogueFactory.createAlertWindow(Alert.AlertType.INFORMATION, "About UML Editor", null, null, content);
         aboutBox.show();
         

@@ -16,7 +16,7 @@ import org.networking.NetworkManager;
 
 public class App extends Application {
     
-
+    public static String editorName = "M2 UML";
     public static Stage mainStage;
     public static Scene currentScene;
 
@@ -86,11 +86,11 @@ public class App extends Application {
         
         if(context == null)
         {
-            mainStage.setTitle("UML editor");
+            mainStage.setTitle(editorName);
         }
         else
         {
-            mainStage.setTitle("UML editor - " + context);
+            mainStage.setTitle(editorName + " - " + context);
         }
         
     }
