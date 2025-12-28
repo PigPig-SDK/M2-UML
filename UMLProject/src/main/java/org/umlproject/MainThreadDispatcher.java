@@ -16,6 +16,7 @@ public class MainThreadDispatcher {
      * This can be FXDispatcher or MainThreadDispatcher.
      */
     public static MainThreadDispatcher dispatcher;
+    public boolean shutDown = false;
     
     /**
      * Runs the queued actions
@@ -24,10 +25,13 @@ public class MainThreadDispatcher {
     public void processQueuedActions() {
         Runnable task;
         while ((task = queue.poll()) != null) {
+            
+            if(shutDown) return;//Stop working on thread!
+            
             try {
                 task.run();
             } catch (Exception e) {
-                e.printStackTrace();
+                if(!shutDown) e.printStackTrace();
             }
         }
     }
