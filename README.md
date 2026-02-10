@@ -2,10 +2,8 @@
 **Team Members:** Adam, Aidan, Keetyn, Michelle, Sean, Ty Greene
 
 # Downloading the program (No compilation required)
-1. **Install Java Development Kit (JDK) (Specifically Java 25)**  
-   Download and install the latest JDK from [Oracle Java Downloads](https://www.oracle.com/java/technologies/downloads/).
-2. **Download the executable**  
-   [Gui 3.0 Release](https://github.com/jprichard1ewu/microsoft-2/releases/tag/Sprint4)
+1. **Download the executable**  
+   [Gui 3.5 Release](https://github.com/jprichard1ewu/microsoft-2/releases/tag/Sprint4.5)
 
    Enjoy!
 
@@ -36,4 +34,3 @@ Execute `compilenrun.sh`
 | `redo` | Reapply a change you previously undid |
 | `quit` | Exits the UML editor application. |
 | `net <host <port>, connect <ip:port>, say, list, disconnect>` | Network commands for connecting to a server, disconnecting, hosting, talking, ect... |
-

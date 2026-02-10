@@ -12,6 +12,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import javafx.scene.transform.Transform;
+import org.umlproject.App;
 import org.umlproject.DiagramElementListener;
 import org.umlproject.UMLDocument;
 
