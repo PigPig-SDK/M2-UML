@@ -11,19 +11,13 @@ import java.awt.image.BufferedImage;
 
 import java.io.File;
 import java.io.IOException;
-import javafx.scene.paint.Color;
 import javafx.scene.transform.Transform;
 import org.umlproject.App;
 import org.umlproject.DiagramElementListener;
-import org.umlproject.DocumentState;
 import org.umlproject.UMLDocument;
 
-/**
- * Concrete command class within the Command design pattern. This class implements the exportCommand interface
- * by defining the execute method. This object, once created by the client (the exportScreenshotMenuAction method
- * in GuiController) will be passed to the invoker class which will call the execute() method on it.
- */
-public class ScreenshotCommand implements ExportCommand {
+
+public class ScreenshotCommand {
     //world is the receiver in the Command design pattern
     Pane world;
     File saveLocation;
@@ -37,8 +31,7 @@ public class ScreenshotCommand implements ExportCommand {
     }
 
     /**
-     * Implementation of the ExportCommand interface's execute() method. Will generate a png image
-     * and save it to the user designated saveLocation.
+     * Will generate a png image and save it to the user designated saveLocation.
      * @throws IOException which may result from the ImageIO.write() call.
      */
     public void execute() throws IOException {
