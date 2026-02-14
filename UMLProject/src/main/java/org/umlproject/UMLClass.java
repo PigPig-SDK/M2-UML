@@ -354,9 +354,9 @@ public class UMLClass extends UMLDiagramElement implements Cloneable{
         if (methodName == null || methodName.isEmpty()) {
             return false;
         }
-
-        if(!methods.containsKey(methodName))
+        if(!methods.containsKey(methodName) ||  index >= methods.get(methodName).size())
             return  false;
+        
         boolean isRemoved = methods.get(methodName).remove(index) != null;
         if(isRemoved)
             updateListener(true);

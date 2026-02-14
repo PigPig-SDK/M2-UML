@@ -164,7 +164,7 @@ public class UMLClassTest {
         assertFalse(clazz.removeMethod(null, 0), "Null name should return false");
 
         // invalid index -> should throw IndexOutOfBoundsException
-        assertThrows(IndexOutOfBoundsException.class, () -> clazz.removeMethod("x", 5),
+        assertFalse(clazz.removeMethod("x", 5),
                 "Out of bounds index should throw IndexOutOfBoundsException");
     }
 
