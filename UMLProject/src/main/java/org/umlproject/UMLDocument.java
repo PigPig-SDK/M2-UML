@@ -113,7 +113,10 @@ public class UMLDocument implements Copyable<UMLDocument>
     {
         UMLDocument doc = new UMLDocument(DEFAULT_FILEDIRECTORY);
         if(clearListeners || instance == null)
+        {
+            documentListners.clear();
             instance = new Memento<UMLDocument>(doc);
+        }
         else
         {
             instance.resetHistory(doc);
