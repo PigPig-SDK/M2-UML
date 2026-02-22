@@ -432,7 +432,9 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
                 + "-fx-font-weight: bold; "
                 + "-fx-background-radius: 0 10 10 0; "
                 + "-fx-border-radius: 0;" 
-                + "-fx-border-width: 0;");
+                + "-fx-border-width: 0;"
+                + "-fx-background-color: black; "
+                + "-fx-text-fill: white;");
                 
                 methodText.setPrefWidth(300);
                 methodRow.getChildren().addAll(deleteMethod, methodText);
@@ -610,7 +612,9 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
                 + "-fx-font-weight: bold; "
                 + "-fx-background-radius: 0 10 10 0; "
                 + "-fx-border-radius: 0;" 
-                + "-fx-border-width: 0;");
+                + "-fx-border-width: 0;"
+                + "-fx-background-color: black; "
+                + "-fx-text-fill: white;");
             
             nextTextField.setPrefWidth(300);
             //setUserData as the string representing the field so that we can easily delete the field later if need be.
@@ -656,11 +660,14 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
 
         //Create modifiable className and put into VBox
         TextField classNameField = new TextField(parentClass.getClassName());
-        classNameField.setStyle("-fx-font-size: 16px; "
-                + "-fx-font-weight: bold; "
-                + "-fx-background-radius: 0 0 10 10; "
-                + "-fx-border-radius: 0;" 
-                + "-fx-border-width: 0;");
+        classNameField.setStyle("-fx-font-size: 30px; "
+                        + "-fx-font-weight: bold; "
+                        + "-fx-background-radius: 0 0 10 10; "
+                        + "-fx-border-radius: 0;" 
+                        + "-fx-border-width: 0;"
+                        + "-fx-background-color: black; "
+                        + "-fx-text-fill: white;"
+                        + "-fx-min-height: 40px;");
         
         classNameField.setMaxWidth(CLASS_TITLE_WIDTH);
         classNameField.setFocusTraversable(false);
