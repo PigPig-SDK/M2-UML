@@ -43,6 +43,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
     public static final Font DEFAULT_CLASS_FONT = Font.font("Monospaced", FontWeight.NORMAL, FontPosture.REGULAR, 18);
     
     private static final double SHOTGUN_DISTANCE_REFIRE = 50;
+    private static final float cosmeticGenericOffset = -10.0f;
     
     private Pane world;
     private UMLClass parentClass;
@@ -800,7 +801,7 @@ public class GuiClass implements DiagramElementListener<UMLClass>, UISelectable,
         if(this.cosmetic == null || cosmeticInfo == null) return;
         
         this.cosmetic.setTranslateX(getLocation().getX() - (parentClass.getWidth()/2) - cosmeticInfo.xOffset);
-        this.cosmetic.setTranslateY(getLocation().getY() - (height/2) - cosmeticInfo.yOffset);
+        this.cosmetic.setTranslateY(getLocation().getY() + cosmeticGenericOffset - (height/2) - cosmeticInfo.yOffset);
     }
     /**
      * Updates the text areas location and text.
