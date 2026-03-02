@@ -240,7 +240,7 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
         this.relationshipText.setStyle(
                 "-fx-font-size: 16px; "
                 + "-fx-font-weight: bold; "
-                + "-fx-background-radius: 0 10 10 0; "
+                + "-fx-background-radius: 10 10 10 10; "
                 + "-fx-border-radius: 0;" 
                 + "-fx-border-width: 0;"
                 + colorString);
