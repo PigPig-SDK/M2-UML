@@ -235,7 +235,15 @@ public final class GuiRelationship implements DiagramElementListener<UMLRelation
         //Bias starting towards the endpoint
         Point2D midpoint = pathPoints.get(pathPoints.size()/2);
         
-        this.relationshipText = new TextField(desiredElement.getRelationshipName());
+        this.relationshipText = new  TextField(desiredElement.getRelationshipName());
+        String colorString = String.format("-fx-text-fill: rgb(%d, %d, %d);", (int)(GuiColor.SELECTION_COLOR.getRed() * 255.0), (int)(GuiColor.SELECTION_COLOR.getGreen() * 255.0), (int)(GuiColor.SELECTION_COLOR.getBlue() * 255.0));
+        this.relationshipText.setStyle(
+                "-fx-font-size: 16px; "
+                + "-fx-font-weight: bold; "
+                + "-fx-background-radius: 10 10 10 10; "
+                + "-fx-border-radius: 0;" 
+                + "-fx-border-width: 0;"
+                + colorString);
         this.relationshipText.setAlignment(Pos.CENTER);
         this.relationshipText.setMinWidth(TEXT_LENGTH);
         this.relationshipText.setLayoutX(midpoint.getX() - (TEXT_LENGTH/2));//Magical number for offsetting correctly

@@ -1,4 +1,4 @@
-# Welcome to the Microsoft2 UML Editor
+# M2 UML Editor
 **Team Members:** Adam, Aidan, Keetyn, Michelle, Sean, Ty Greene
 
 # Downloading the program (No compilation required)
