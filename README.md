@@ -1,9 +1,9 @@
-# M2 UML Editor
+# M2-UML Editor
 **Team Members:** Adam, Aidan, Keetyn, Michelle, Sean, Ty Greene
 
 # Downloading the program (No compilation required)
 1. **Download the executable**  
-   [Gui 3.5 Release](https://github.com/jprichard1ewu/microsoft-2/releases/tag/Sprint4.5)
+   [4.0 Release](https://github.com/PigPig-SDK/M2-UML/releases/tag/4.0-Release)
 
    Enjoy!
 
