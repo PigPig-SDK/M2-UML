@@ -1,9 +1,25 @@
+<div align="center">
+<img src="./images/appicon.png" height=128></img>
+
+
 # M2 UML Editor
+A networked UML editor
+
+
+
 **Team Members:** Adam, Aidan, Keetyn, Michelle, Sean, Ty Greene
 
-# Downloading the program (No compilation required)
+<div align="center">
+    <img src="./images/overview.gif" height="256">
+</div>
+
+<div align="center">
+    <img src="./images/network.gif" height="256">
+</div>
+
+# Downloading the program
 1. **Download the executable**  
-   [Gui 3.5 Release](https://github.com/jprichard1ewu/microsoft-2/releases/tag/Sprint4.5)
+   [4.0 Release](https://github.com/PigPig-SDK/M2-UML/releases/tag/4.0-Release)
 
    Enjoy!
 
@@ -34,3 +50,4 @@ Execute `compilenrun.sh`
 | `redo` | Reapply a change you previously undid |
 | `quit` | Exits the UML editor application. |
 | `net <host <port>, connect <ip:port>, say, list, disconnect>` | Network commands for connecting to a server, disconnecting, hosting, talking, ect... |
+</div>
