@@ -1,13 +1,30 @@
-# M2-UML Editor
+<div align="center">
+<img src="./images/appicon.png" height=128></img>
+
+
+# M2 UML Editor
+A networked UML editor
+
+
+
 **Team Members:** Adam, Aidan, Keetyn, Michelle, Sean, Ty Greene
 
-# Downloading the program (No compilation required)
-1. **Download the executable**  
+<div align="center">
+    <img src="./images/overview.gif" height="256">
+</div>
+
+<div align="center">
+    <img src="./images/network.gif" height="256">
+</div>
+
+# Download
    [4.0 Release](https://github.com/PigPig-SDK/M2-UML/releases/tag/4.0-Release)
 
    Enjoy!
 
-# Compiling the program 
+# Compiling
+<div align="left">
+
 1. **Install Java Development Kit (JDK)**  
    Download and install the latest JDK from [Oracle Java Downloads](https://www.oracle.com/java/technologies/downloads/).
 2. **Clone the Repository**  
@@ -16,6 +33,8 @@ In the cloned repository, open your terminal and run
 `./mvnw clean package`  
 Alternatively, if you only want to compile and run the project  
 Execute `compilenrun.sh`
+
+</div>
 
 # Terminal commands
 > **Note:** `_` represents a blank space.  
@@ -34,3 +53,4 @@ Execute `compilenrun.sh`
 | `redo` | Reapply a change you previously undid |
 | `quit` | Exits the UML editor application. |
 | `net <host <port>, connect <ip:port>, say, list, disconnect>` | Network commands for connecting to a server, disconnecting, hosting, talking, ect... |
+</div>
