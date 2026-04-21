@@ -17,13 +17,14 @@ A networked UML editor
     <img src="./images/network.gif" height="256">
 </div>
 
-# Downloading the program
-1. **Download the executable**  
+# Download
    [4.0 Release](https://github.com/PigPig-SDK/M2-UML/releases/tag/4.0-Release)
 
    Enjoy!
 
-# Compiling the program 
+# Compiling
+<div align="left">
+
 1. **Install Java Development Kit (JDK)**  
    Download and install the latest JDK from [Oracle Java Downloads](https://www.oracle.com/java/technologies/downloads/).
 2. **Clone the Repository**  
@@ -32,6 +33,8 @@ In the cloned repository, open your terminal and run
 `./mvnw clean package`  
 Alternatively, if you only want to compile and run the project  
 Execute `compilenrun.sh`
+
+</div>
 
 # Terminal commands
 > **Note:** `_` represents a blank space.  
